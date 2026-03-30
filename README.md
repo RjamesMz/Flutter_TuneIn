@@ -1,17 +1,18 @@
-# tunely
+🎧 TuneIn App
 
-A new Flutter project.
+ITRACKA3 – Platform Technologies: Data-Driven Mobile Application
 
-## Getting Started
+📌 Overview
 
-This project is a starting point for a Flutter application.
+TuneIn is a data-driven mobile application that simulates a music streaming platform. It allows users to explore songs, search for music, and control playback through a simple and user-friendly interface.
 
-A few resources to get you started if this is your first Flutter project:
+The app is designed to demonstrate modern mobile development concepts such as state management, modular design, and collaborative development.
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+🚀 Features
+🔐 User Login Interface
+🎵 Browse and view music list
+🔍 Search songs easily
+▶️ Music player controls (play, pause, next, previous)
+👤 User profile with logout option
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+
