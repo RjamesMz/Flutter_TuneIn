@@ -13,6 +13,8 @@
 
         List<String> songs = [];
 
+         String searchQuery = ""; //1 
+
         void addSong() {
 
           TextEditingController controller = TextEditingController();
@@ -65,6 +67,9 @@
 
         @override
         Widget build(BuildContext context) {
+final filteredSongs = songs.where((song) {
+      return song.toLowerCase().contains(searchQuery);
+    }).toList(); // 2 the filtered logic music 
 
         return Scaffold(
        
@@ -106,6 +111,25 @@
               ),
             ),
 
+              const SizedBox(height: 10),//3. the input for searching music
+                TextField(
+                  onChanged: (value) {
+                    setState(() {
+                      searchQuery = value.toLowerCase();
+                    });
+                  },
+                  decoration: InputDecoration(
+                    hintText: "Search songs...",
+                    prefixIcon: const Icon(Icons.search),
+                    filled: true,
+                    fillColor: Colors.white,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                ),
+
             Expanded(
               child: songs.isEmpty
                   ? const Center(
@@ -119,7 +143,7 @@
                     )
                  : ListView.builder(
                   padding: const EdgeInsets.only(top: 100),
-                  itemCount: songs.length,
+                 itemCount: filteredSongs.length,//4. modifthe count of music in the playlist
                   itemBuilder: (context, index) {
 
                     return Card(
@@ -128,13 +152,15 @@
 
                       child: ListTile(
                         leading: const Icon(Icons.music_note),
-                        title: Text(songs[index]),
+                        
+                        title: Text(filteredSongs[index]),//5. the music title in the playlist
 
                         trailing: IconButton(
                           icon: const Icon(Icons.delete),
-                          onPressed: (){
-                            deleteSong(index);
-                            },
+                           onPressed: (){
+                                    int originalIndex = songs.indexOf(filteredSongs[index]);
+                                    deleteSong(originalIndex);
+                                  }, //6. modified 
                           ),
                         ),
                       );
