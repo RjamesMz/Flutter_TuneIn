@@ -20,7 +20,7 @@ class _MainPage extends State<MainPage> {
   @override
   Widget build(BuildContext context) {
     final List<Widget> pages = [
-      HomePage(username: widget.username),
+     const HomeScreen(),
       const SearchPage(),
       const PlaylistPage(),
        ProfilePage(username: widget.username),
