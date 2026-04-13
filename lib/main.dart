@@ -3,7 +3,7 @@ import 'package:tunely/mainpage.dart';
 import 'package:tunely/pages/home.dart';
 import 'package:tunely/pages/login.dart';
 import 'package:tunely/pages/profile.dart';
-import 'package:tunely/pages/searchpage.dart';
+import 'package:tunely/pages/search_screen.dart';
 import 'package:tunely/pages/playlist_page.dart';
 
 void main() {
@@ -21,7 +21,7 @@ class MyApp extends StatelessWidget {
       routes: {
         '/': (context) => const LoginPage(),
         '/home': (context) => const HomeScreen(),
-        '/search': (context) => const SearchPage(),
+        '/search': (context) => const SearchScreen(),
         '/profile': (context) => const ProfilePage(username: ''),
         '/playlist': (context) => const PlaylistPage(),
       },
