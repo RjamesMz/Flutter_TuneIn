@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:tunely/pages/main_screen.dart';
+import 'package:tunely/mainpage.dart';
 import 'package:tunely/pages/home.dart';
 import 'package:tunely/pages/login.dart';
 import 'package:tunely/pages/profile.dart';
