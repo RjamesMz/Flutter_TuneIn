@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:tunely/mainpage.dart';
+import 'package:tunely/pages/main_screen.dart';
 import 'package:tunely/pages/home.dart';
 import 'package:tunely/pages/login.dart';
 import 'package:tunely/pages/profile.dart';
@@ -20,7 +20,7 @@ class MyApp extends StatelessWidget {
 
       routes: {
         '/': (context) => const LoginPage(),
-        '/home': (context) => const HomePage(username: '',),
+        '/home': (context) => const HomeScreen(),
         '/search': (context) => const SearchPage(),
         '/profile': (context) => const ProfilePage(username: ''),
         '/playlist': (context) => const PlaylistPage(),
