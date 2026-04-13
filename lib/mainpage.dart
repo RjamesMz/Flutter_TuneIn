@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tunely/pages/home.dart';
 import 'package:tunely/pages/profile.dart';
-import 'package:tunely/pages/searchpage.dart';
+import 'package:tunely/pages/search_screen.dart';
 import 'package:tunely/pages/playlist_page.dart';
 
 class MainPage extends StatefulWidget {
@@ -21,7 +21,7 @@ class _MainPage extends State<MainPage> {
   Widget build(BuildContext context) {
     final List<Widget> pages = [
      const HomeScreen(),
-      const SearchPage(),
+      const SearchScreen(),
       const PlaylistPage(),
        ProfilePage(username: widget.username),
     ];
