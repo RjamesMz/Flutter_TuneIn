@@ -1,171 +1,230 @@
 import 'package:flutter/material.dart';
+import '../core/app_colors.dart';
+import '../widgets/category_chip.dart';
+import '../widgets/song_tile.dart';
 
-class HomePage extends StatefulWidget {
-  final String username;
-  const HomePage({super.key, required this.username});
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomePageState extends State<HomePage> {
-  
+class _HomeScreenState extends State<HomeScreen> {
+  String selectedCategory = 'All';
+
+  final List<String> categories = [
+    'All', 'Trending', 'Lo-Fi', 'Indie', 'R&B', 'Pop', 'Jazz'
+  ];
+
+  // Dummy song data
+  final List<Map<String, String>> songs = [
+    {'title': 'Blinding Lights',  'artist': 'The Weeknd',    'duration': '3:20', 'cover': 'https://picsum.photos/seed/song1/200'},
+    {'title': 'Levitating',       'artist': 'Dua Lipa',      'duration': '3:23', 'cover': 'https://picsum.photos/seed/song2/200'},
+    {'title': 'Stay',             'artist': 'Kid LAROI',      'duration': '2:21', 'cover': 'https://picsum.photos/seed/song3/200'},
+    {'title': 'Good 4 U',         'artist': 'Olivia Rodrigo', 'duration': '2:58', 'cover': 'https://picsum.photos/seed/song4/200'},
+    {'title': 'Peaches',          'artist': 'Justin Bieber',  'duration': '3:18', 'cover': 'https://picsum.photos/seed/song5/200'},
+    {'title': 'Montero',          'artist': 'Lil Nas X',      'duration': '2:17', 'cover': 'https://picsum.photos/seed/song6/200'},
+  ];
+
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: SafeArea(
-        top: true,
-        bottom: false,
-        child: Container(
-         width: double.infinity,
-         height: double.infinity,
-          decoration: const BoxDecoration(
-           gradient: LinearGradient(
-                colors: [
-                  Color(0xFFC24C7A),
-                  Color(0xFFD96C8C),
-                  Color(0xFFF08F98),
-                ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+    return CustomScrollView(
+      slivers: [
+
+        // ── App Bar ────────────────────────────────────────────────────────
+        SliverAppBar(
+          floating: true,
+          snap: true,
+          pinned: false,
+          expandedHeight: 0,
+          backgroundColor: kSurface.withOpacity(0.9),
+          title: const Text(
+            'TuneIn',
+            style: TextStyle(
+              color: kPrimary,
+              fontWeight: FontWeight.w800,
+              fontSize: 22,
+            ),
+          ),
+          actions: [
+            Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: CircleAvatar(
+                radius: 17,
+                backgroundColor: kSurfaceContainerHighest,
+                child: const Icon(Icons.person, color: kPrimary, size: 18),
+              ),
+            ),
+          ],
+        ),
+
+        // ── Featured Banner ────────────────────────────────────────────────
+        SliverToBoxAdapter(
+          child: _FeaturedBanner(
+            title: songs.first['title']!,
+            artist: songs.first['artist']!,
+            coverUrl: songs.first['cover']!,
           ),
         ),
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
- 
-            Row(
-                children: [
-                   Image.asset(
-                    'assets/image/logo/TuneIn_Logo.png',
-                    height: 60,
-                  ),
 
-                   Text(
-                    "Welcome ${widget.username}!",
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
+        // ── Browse + Category Chips ────────────────────────────────────────
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 20, 0, 8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Browse',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    color: kOnSurface,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: categories.map((cat) {
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: CategoryChip(
+                          label: cat,
+                          isSelected: selectedCategory == cat,
+                          onTap: () => setState(() => selectedCategory = cat),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        // ── Song List ──────────────────────────────────────────────────────
+        SliverPadding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 120),
+          sliver: SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (context, index) => SongTile(
+                title:    songs[index]['title']!,
+                artist:   songs[index]['artist']!,
+                duration: songs[index]['duration']!,
+                coverUrl: songs[index]['cover']!,
+              ),
+              childCount: songs.length,
+            ),
+          ),
+        ),
+
+      ],
+    );
+  }
+}
+
+// ── Featured Banner ────────────────────────────────────────────────────────────
+class _FeaturedBanner extends StatelessWidget {
+  final String title;
+  final String artist;
+  final String coverUrl;
+
+  const _FeaturedBanner({
+    required this.title,
+    required this.artist,
+    required this.coverUrl,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+      child: GestureDetector(
+        onTap: () {},
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(24),
+          child: SizedBox(
+            height: 180,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                // Cover image
+                Image.network(
+                  coverUrl,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => Container(color: kSurfaceContainer),
+                ),
+                // Gradient overlay
+                Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.transparent,
+                        kOnSurface.withOpacity(0.75),
+                      ],
                     ),
                   ),
-                ],
-              ),
-
-            const SizedBox(height: 20),
-
-            const Text(
-              "Featured Playlist",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.white
-              ),
-            ),
-
-            const SizedBox(height: 10),
-
-            
-            Card(
-              elevation: 4,
-              child: ListTile(
-                leading: const Icon(Icons.album, size: 40),
-                title: const Text("Top Hits 2026"),
-                subtitle: const Text("Best trending songs"),
-                trailing: IconButton(
-                  icon: const Icon(Icons.play_arrow),
-                  onPressed: () {},
                 ),
-              ),
-            ),
-
-            const SizedBox(height: 20),
-
-            const Text(
-              "Recommended Songs",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.white
-              ),
-            ),
-
-            const SizedBox(height: 10),
-
-            
-               SizedBox(
-                height: 350,
-                child: Container(
-                   decoration: BoxDecoration(
-                      color: Colors.white,
-                        border: Border.all(
-                          color: Colors.black,
-                          width: 2,
-                        ),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                                  
-                  child: ListView(
-                    children: const [
-
-                      ListTile(
-                        leading: Icon(Icons.music_note),
-                        title: Text("Blinding Lights"),
-                        subtitle: Text("The Weeknd"),
-                        trailing: Icon(Icons.play_arrow),
-                      ),
-
-                      ListTile(
-                        leading: Icon(Icons.music_note),
-                        title: Text("Shape of You"),
-                        subtitle: Text("Ed Sheeran"),
-                        trailing: Icon(Icons.play_arrow),
-                      ),
-
-                      ListTile(
-                        leading: Icon(Icons.music_note),
-                        title: Text("Levitating"),
-                        subtitle: Text("Dua Lipa"),
-                        trailing: Icon(Icons.play_arrow),
-                      ),
-
-                      ListTile(
-                        leading: Icon(Icons.music_note),
-                        title: Text("Stay"),
-                        subtitle: Text("Justin Bieber"),
-                        trailing: Icon(Icons.play_arrow),
-                      ),
-
-                        ListTile(
-                        leading: Icon(Icons.music_note),
-                        title: Text("Stay"),
-                        subtitle: Text("Justin Bieber1"),
-                        trailing: Icon(Icons.play_arrow),
-                      ),
-
-                        ListTile(
-                        leading: Icon(Icons.music_note),
-                        title: Text("Stay"),
-                        subtitle: Text("Justin Bieber2"),
-                         trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: const [
-                                Icon(Icons.add),
-                                SizedBox(width: 10),
-                                Icon(Icons.play_arrow),
-                              ],
+                // Text
+                Positioned(
+                  bottom: 16, left: 16, right: 60,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: const [
+                          Icon(Icons.auto_awesome, color: kPrimaryContainer, size: 14),
+                          SizedBox(width: 6),
+                          Text(
+                            'FEATURED',
+                            style: TextStyle(
+                              color: kPrimaryContainer,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 1.5,
                             ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      Text(
+                        artist,
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.75),
+                          fontSize: 13,
+                        ),
                       ),
                     ],
                   ),
                 ),
-              )
-
-          ],
+                // Play button
+                Positioned(
+                  bottom: 16, right: 16,
+                  child: Container(
+                    width: 44, height: 44,
+                    decoration: const BoxDecoration(
+                      color: kPrimary,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.play_arrow, color: Colors.white, size: 26),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
-      ),
       ),
     );
   }

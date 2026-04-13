@@ -1,29 +1,44 @@
-/// Global app string constants for localization and UI text.
+// ─── Route Names ──────────────────────────────────────────────────────────────
+class AppRoutes {
+  AppRoutes._();
+
+  static const String login  = '/';
+  static const String shell  = '/shell';
+  static const String player = '/player';
+}
+
+// ─── App Strings ─────────────────────────────────────────────────────────────
 class AppStrings {
-  AppStrings._(); // Private constructor to prevent instantiation
+  AppStrings._();
 
-  // ── App Info ───────────────────────────────────────────────────────────────
-  static const String appName   = 'Tunely';
-  static const String tagline   = 'Your music, your way';
+  static const String appName       = 'TuneIn';
+  static const String tagline       = 'Tune into your world';
+  static const String home          = 'Home';
+  static const String search        = 'Search';
+  static const String nowPlaying    = 'Now Playing';
+  static const String profile       = 'Profile';
+  static const String playlists     = 'Playlists';
+  static const String login         = 'Login';
+  static const String logout        = 'Logout';
+  static const String email         = 'Email';
+  static const String password      = 'Password';
+  static const String welcomeBack   = 'Welcome back 👋';
+  static const String signInToContinue = 'Sign in to continue listening.';
+}
 
-  // ── Authentication ─────────────────────────────────────────────────────────
-  static const String welcomeBack       = 'Welcome Back';
-  static const String signInToContinue  = 'Sign in to continue';
-  static const String email             = 'Email';
-  static const String password          = 'Password';
-  static const String login             = 'Login';
-  static const String logout            = 'Logout';
-  static const String signup            = 'Sign Up';
+// ─── Music Categories ────────────────────────────────────────────────────────
+class MusicCategories {
+  MusicCategories._();
 
-  // ── Home & Navigation ──────────────────────────────────────────────────────
-  static const String home              = 'Home';
-  static const String search            = 'Search';
-  static const String playlist          = 'Playlists';
-  static const String profile           = 'Profile';
+  static const String all      = 'All';
+  static const String trending = 'Trending';
+  static const String loFi     = 'Lo-Fi';
+  static const String indie    = 'Indie';
+  static const String rnb      = 'R&B';
+  static const String pop      = 'Pop';
+  static const String jazz     = 'Jazz';
 
-  // ── General ────────────────────────────────────────────────────────────────
-  static const String cancel            = 'Cancel';
-  static const String save              = 'Save';
-  static const String delete            = 'Delete';
-  static const String close             = 'Close';
+  static const List<String> all_categories = [
+    all, trending, loFi, indie, rnb, pop, jazz
+  ];
 }
