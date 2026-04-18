@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../core/app_colors.dart';
 import '../pages/home.dart';
+import '../pages/playlist_page.dart';
 import '../pages/profile.dart';
 import '../pages/search_screen.dart';
 import '../widgets/mini_player.dart';
@@ -27,6 +28,7 @@ class _MainScreenState extends State<MainScreen> {
   static const List<Widget> _screens = [
     HomeScreen(),
     SearchScreen(),
+    PlaylistPage(),
     ProfilePage(username: '',),
   ];
 
@@ -55,7 +57,7 @@ class _MainScreenState extends State<MainScreen> {
           // Navigation bar (standalone widget)
           BottomNavBar(
             currentIndex: _currentIndex,
-            onTap: (i) => setState(() => _currentIndex = i),
+            onTap: (i) => setState(() => _currentIndex = i), 
           ),
         ],
       ),

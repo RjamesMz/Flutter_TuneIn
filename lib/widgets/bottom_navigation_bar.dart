@@ -6,7 +6,7 @@ import '../core/app_colors.dart';
 // MainScreen controls the selected tab via IndexedStack.
 
 class BottomNavBar extends StatelessWidget {
-  final int currentIndex; // 0=Home, 1=Search, 2=Now Playing, 3=Profile
+  final int currentIndex; // 0=Home, 1=Search, 2=Playlist, 3=Profile
   final void Function(int) onTap; // called when a tab is tapped
 
   const BottomNavBar({
@@ -27,7 +27,7 @@ class BottomNavBar extends StatelessWidget {
           children: [
             _NavItem(icon: Icons.home,             label: 'Home',       index: 0, currentIndex: currentIndex, onTap: onTap),
             _NavItem(icon: Icons.search,           label: 'Search',     index: 1, currentIndex: currentIndex, onTap: onTap),
-            _NavItem(icon: Icons.headphones,       label: 'Now Playing',index: 2, currentIndex: currentIndex, onTap: onTap),
+            _NavItem(icon: Icons.headphones,       label: 'Playlist',   index: 2, currentIndex: currentIndex, onTap: onTap),
             _NavItem(icon: Icons.person,           label: 'Profile',    index: 3, currentIndex: currentIndex, onTap: onTap),
           ],
         ),
