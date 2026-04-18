@@ -28,7 +28,7 @@ class _MainScreenState extends State<MainScreen> {
   static const List<Widget> _screens = [
     HomeScreen(),
     SearchScreen(),
-    PlaylistPage(),
+    PlaylistPage(), 
     ProfilePage(username: '',),
   ];
 

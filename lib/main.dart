@@ -22,8 +22,8 @@ class MyApp extends StatelessWidget {
         '/': (context) => const LoginPage(),
         '/home': (context) => const HomeScreen(),
         '/search': (context) => const SearchScreen(),
-        '/profile': (context) => const ProfilePage(username: ''),
         '/playlist': (context) => const PlaylistPage(),
+        '/profile': (context) => const ProfilePage(username: ''), 
       },
       onGenerateRoute: (settings) {
         if (settings.name == '/main') {
