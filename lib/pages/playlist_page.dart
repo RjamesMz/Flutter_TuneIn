@@ -1,174 +1,199 @@
-    import 'package:flutter/material.dart';
-    import 'playlist_music.dart';
+import 'package:flutter/material.dart';
+import '../core/app_colors.dart';
+import 'playlist_music.dart';
 
+class PlaylistPage extends StatefulWidget {
+  const PlaylistPage({super.key});
 
+  @override
+  State<PlaylistPage> createState() => _PlaylistPageState();
+}
 
-    class PlaylistPage extends StatefulWidget {
-    const PlaylistPage({super.key});
+class _PlaylistPageState extends State<PlaylistPage> {
 
-      @override
-      State<PlaylistPage> createState() => _PlaylistPageState();
-    }
+  List<String> playlists = [];
 
-    class _PlaylistPageState extends State<PlaylistPage> {
+  void addPlaylist() {
+    TextEditingController controller = TextEditingController();
 
-
-
-      List<String> playlists = [];
-
-      void addPlaylist() {
-
-        TextEditingController controller = TextEditingController();
-
-        showDialog(
-          context: context,
-          builder: (context) {
-            return AlertDialog(
-              title: const Text("Create Playlist"),
-              content: TextField(
-                controller: controller,
-                decoration: const InputDecoration(
-                  hintText: "Playlist name",
-                ),
-              ),
-              actions: [
-
-                TextButton(
-                  onPressed: (){
-                    Navigator.pop(context);
-                  },
-                  child: const Text("Cancel"),
-                ),
-
-
-
-                TextButton(
-                  onPressed: (){
-                    if(controller.text.isNotEmpty){
-                      setState(() {
-                        playlists.add(controller.text);
-                      });
-                    }
-                    Navigator.pop(context);
-                  },
-                  child: const Text("Create"),
-                ),
-              ],
-            );
-          },
-        );
-      }
-
-
-
-      void deletePlaylist(int index) {
-        setState(() {
-          playlists.removeAt(index);
-        });
-      }
-
-      void openPlaylist(String name) {
-
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => PlaylistDetailPage(playlistName: name),
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: kSurface,
+          title: const Text(
+            "Create Playlist",
+            style: TextStyle(color: kOnSurface),
           ),
+          content: TextField(
+            controller: controller,
+            style: const TextStyle(color: kOnSurface),
+            decoration: const InputDecoration(
+              hintText: "Playlist name",
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Cancel"),
+            ),
+            TextButton(
+              onPressed: () {
+                if (controller.text.isNotEmpty) {
+                  setState(() {
+                    playlists.add(controller.text);
+                  });
+                }
+                Navigator.pop(context);
+              },
+              child: const Text("Create"),
+            ),
+          ],
         );
-      }
+      },
+    );
+  }
 
-      @override
-      Widget build(BuildContext context) {
+  void deletePlaylist(int index) {
+    setState(() {
+      playlists.removeAt(index);
+    });
+  }
 
-        return Material(
-      color: Colors.transparent,
-      child: Stack(
-        children: [
-      SafeArea(
-      child:Container(
-        width: double.infinity,
-        height: double.infinity,
-      
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFFB6467A),
-              Color(0xFFC65482),
-              Color(0xFFD6688E),
-            ],
+  void openPlaylist(String name) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PlaylistDetailPage(playlistName: name),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: kSurface,
+
+      appBar: AppBar(
+        backgroundColor: kSurface.withOpacity(0.9),
+        elevation: 0,
+        title: const Text(
+          "Playlists",
+          style: TextStyle(
+            color: kPrimary,
+            fontWeight: FontWeight.w800,
           ),
         ),
+      ),
 
-         child: Container(
-          padding: const EdgeInsets.all(10),
-            child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              "Playlists",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.white
+      body: playlists.isEmpty
+          ? const Center(
+              child: Text(
+                "No Playlists",
+                style: TextStyle(
+                  color: kOnSurface,
+                  fontSize: 16,
+                ),
               ),
-            ),
-            
-            Expanded(
-              child: playlists.isEmpty
-                  ? const Center(
-                      child: Text(
-                        "No Playlists",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                        ),
-                      ),
-                    )
-                  : ListView.builder(
-                      padding: const EdgeInsets.only(top: 68),
-                      itemCount: playlists.length,
-                      itemBuilder: (context, index) {
+            )
+          : ListView.builder(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
+              itemCount: playlists.length,
+              itemBuilder: (context, index) {
 
-                        return Card(
-                          margin: const EdgeInsets.symmetric(
-                              horizontal: 20, vertical: 8),
+                return GestureDetector(
+                  onTap: () {
+                    openPlaylist(playlists[index]);
+                  },
+                  child: Container(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    padding: const EdgeInsets.all(12),
 
-                          child: ListTile(
-                            leading: const Icon(Icons.queue_music),
-                            title: Text(playlists[index]),
+                    decoration: BoxDecoration(
+                      color: kSurfaceContainerHighest,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
 
-                            onTap: (){
-                              openPlaylist(playlists[index]);
-                            },
+                    child: Row(
+                      children: [
 
-                            trailing: IconButton(
-                              icon: const Icon(Icons.delete),
-                              onPressed: (){
-                                deletePlaylist(index);
-                              },
-                            ),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.network(
+                            "https://picsum.photos/seed/${playlists[index]}/200",
+                            width: 55,
+                            height: 55,
+                            fit: BoxFit.cover,
                           ),
-                        );
-                      },
+                        ),
+
+                        const SizedBox(width: 12),
+
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                playlists[index],
+                                style: const TextStyle(
+                                  color: kOnSurface,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              const Text(
+                                "Playlist",
+                                style: TextStyle(
+                                  color: kOnSurfaceVariant,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        IconButton(
+                          icon: const Icon(Icons.more_vert, color: kOnSurfaceVariant),
+                          onPressed: () {
+                            showModalBottomSheet(
+                              context: context,
+                              backgroundColor: kSurface,
+                              shape: const RoundedRectangleBorder(
+                                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                              ),
+                              builder: (_) {
+                                return SafeArea(
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      ListTile(
+                                        leading: const Icon(Icons.delete, color: Colors.red),
+                                        title: const Text("Delete Playlist"),
+                                        onTap: () {
+                                          deletePlaylist(index);
+                                          Navigator.pop(context);
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              ),
+                );
+              },
             ),
-          ),
-        ),
-      Positioned(
-        right: 16,
-        bottom: 16,
-        child: FloatingActionButton(
-          onPressed: addPlaylist,
-          child: const Icon(Icons.add),
-        ),
+
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: kPrimary,
+        onPressed: addPlaylist,
+        child: const Icon(Icons.add, color: Colors.white),
       ),
-        ],
-      ),
-      );
-    }
- }
+    );
+  }
+}
