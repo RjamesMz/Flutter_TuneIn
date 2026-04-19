@@ -8,11 +8,9 @@ class PlaylistPage extends StatefulWidget {
   @override
   State<PlaylistPage> createState() => _PlaylistPageState();
 }
-
 class _PlaylistPageState extends State<PlaylistPage> {
 
   List<String> playlists = [];
-
   void addPlaylist() {
     TextEditingController controller = TextEditingController();
 
@@ -188,7 +186,6 @@ class _PlaylistPageState extends State<PlaylistPage> {
                 );
               },
             ),
-
       floatingActionButton: FloatingActionButton(
         backgroundColor: kPrimary,
         onPressed: addPlaylist,
