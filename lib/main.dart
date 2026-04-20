@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:tunely/mainpage.dart';
 import 'package:tunely/pages/home.dart';
 import 'package:tunely/pages/login.dart';
 import 'package:tunely/pages/profile.dart';
 import 'package:tunely/pages/search_screen.dart';
 import 'package:tunely/pages/playlist_page.dart';
+import 'package:tunely/pages/main_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -22,8 +22,8 @@ class MyApp extends StatelessWidget {
         '/': (context) => const LoginPage(),
         '/home': (context) => const HomeScreen(),
         '/search': (context) => const SearchScreen(),
-        '/profile': (context) => const ProfilePage(username: ''),
         '/playlist': (context) => const PlaylistPage(),
+        '/profile': (context) => const ProfilePage(username: ''), 
       },
       onGenerateRoute: (settings) {
         if (settings.name == '/main') {
@@ -31,7 +31,7 @@ class MyApp extends StatelessWidget {
               ? settings.arguments as String
               : '';
           return MaterialPageRoute(
-            builder: (context) => MainPage(username: username),
+            builder: (context) => MainScreen(),
             settings: settings,
           );
         }
