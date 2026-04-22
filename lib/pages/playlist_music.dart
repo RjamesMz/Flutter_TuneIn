@@ -1,151 +1,180 @@
-      import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import '../core/app_colors.dart';
 
-      class PlaylistDetailPage extends StatefulWidget {
-        final String playlistName;
+class PlaylistDetailPage extends StatefulWidget {
+  final String playlistName;
 
-        const PlaylistDetailPage({super.key, required this.playlistName});
+  const PlaylistDetailPage({super.key, required this.playlistName});
 
-        @override
-        State<PlaylistDetailPage> createState() => _PlaylistDetailPageState();
-      }
+  @override
+  State<PlaylistDetailPage> createState() => _PlaylistDetailPageState();
+}
 
-      class _PlaylistDetailPageState extends State<PlaylistDetailPage> {
+class _PlaylistDetailPageState extends State<PlaylistDetailPage> {
 
-        List<String> songs = [];
+  List<String> songs = [];
 
-        void addSong() {
+  void addSong() {
+    TextEditingController controller = TextEditingController();
 
-          TextEditingController controller = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: kSurface,
+          title: const Text("Add Song", style: TextStyle(color: kOnSurface)),
+          content: TextField(
+            controller: controller,
+            decoration: const InputDecoration(hintText: "Song title"),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Cancel"),
+            ),
+            TextButton(
+              onPressed: () {
+                if (controller.text.isNotEmpty) {
+                  setState(() {
+                    songs.add(controller.text);
+                  });
+                }
+                Navigator.pop(context);
+              },
+              child: const Text("Add"),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
-          showDialog(
-            context: context,
-            builder: (context) {
-              return AlertDialog(
+  void deleteSong(int index) {
+    setState(() {
+      songs.removeAt(index);
+    });
+  }
 
-                title: const Text("Add Song"),
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: kSurface,
 
-                content: TextField(
-                  controller: controller,
-                  decoration: const InputDecoration(
-                    hintText: "Song title",
+      appBar: AppBar(
+        backgroundColor: kSurface.withOpacity(0.9),
+        elevation: 0,
+        title: Text(
+          widget.playlistName,
+          style: const TextStyle(
+            color: kPrimary,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+      ),
+
+      body: songs.isEmpty
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+
+                 
+                  Image.asset(
+                    'assets/image/logs/nothing.png', 
+                    width: 180,
                   ),
-                ),
 
-                actions: [
+                  const SizedBox(height: 16),
 
-                  TextButton(
-                    onPressed: (){
-                      Navigator.pop(context);
-                    },
-                    child: const Text("Cancel"),
+                  const Text(
+                    "No Songs Yet",
+                    style: TextStyle(
+                      color: kOnSurface,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
 
-                  TextButton(
-                    onPressed: (){
-                      if(controller.text.isNotEmpty){
-                        setState(() {
-                          songs.add(controller.text);
-                        });
-                      }
-                      Navigator.pop(context);
-                    },
-                    child: const Text("Add"),
+                  const SizedBox(height: 6),
+
+                  const Text(
+                    "Tap + to add music",
+                    style: TextStyle(
+                      color: kOnSurfaceVariant,
+                      fontSize: 13,
+                    ),
                   ),
                 ],
-              );
-            },
-          );
-        }
-
-        void deleteSong(int index) {
-          setState(() {
-            songs.removeAt(index);
-          });
-        }
-
-        @override
-        Widget build(BuildContext context) {
-
-        return Scaffold(
-       
-        
-
-        floatingActionButton: FloatingActionButton(
-          onPressed: addSong,
-          child: const Icon(Icons.add),
-        ),
-
-        body:SafeArea(
-         child: Container(
-          width: double.infinity,
-          height: double.infinity,
-
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Color(0xFFB6467A),
-                Color(0xFFC65482),
-                Color(0xFFD6688E),
-              ],
-            ),
-          ),
-
-           child: Container(
-          padding: const EdgeInsets.all(10),
-            child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-             Text(
-              "Songs in ${widget.playlistName}",
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.white
               ),
-            ),
+            )
+          : ListView.builder(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
+              itemCount: songs.length,
+              itemBuilder: (context, index) {
 
-            Expanded(
-              child: songs.isEmpty
-                  ? const Center(
-                      child: Text(
-                        "No songs in playlist",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: kSurfaceContainerHighest,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    children: [
+
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Image.network(
+                          "https://picsum.photos/seed/${songs[index]}/200",
+                          width: 55,
+                          height: 55,
+                          fit: BoxFit.cover,
                         ),
                       ),
-                    )
-                 : ListView.builder(
-                  padding: const EdgeInsets.only(top: 100),
-                  itemCount: songs.length,
-                  itemBuilder: (context, index) {
 
-                    return Card(
-                      margin: const EdgeInsets.symmetric(
-                          horizontal: 20, vertical: 8),
+                      const SizedBox(width: 12),
 
-                      child: ListTile(
-                        leading: const Icon(Icons.music_note),
-                        title: Text(songs[index]),
-
-                        trailing: IconButton(
-                          icon: const Icon(Icons.delete),
-                          onPressed: (){
-                            deleteSong(index);
-                            },
+                      Expanded(
+                        child: Text(
+                          songs[index],
+                          style: const TextStyle(
+                            color: kOnSurface,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
-                      );
-                    },
+                      ),
+
+                      IconButton(
+                        icon: const Icon(Icons.more_vert, color: kOnSurfaceVariant),
+                        onPressed: () {
+                          showModalBottomSheet(
+                            context: context,
+                            backgroundColor: kSurface,
+                            builder: (_) {
+                              return ListTile(
+                                leading: const Icon(Icons.delete, color: Colors.red),
+                                title: const Text("Delete Song"),
+                                onTap: () {
+                                  deleteSong(index);
+                                  Navigator.pop(context);
+                                },
+                              );
+                            },
+                          );
+                        },
+                      ),
+                    ],
                   ),
-                 ),
-                ],
-              ),
+                );
+              },
             ),
-            ),
-         ),
-       );
-     }
-   }
+
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: kPrimary,
+        onPressed: addSong,
+        child: const Icon(Icons.add, color: Colors.white),
+      ),
+    );
+  }
+}

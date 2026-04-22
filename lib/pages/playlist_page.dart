@@ -8,9 +8,11 @@ class PlaylistPage extends StatefulWidget {
   @override
   State<PlaylistPage> createState() => _PlaylistPageState();
 }
+
 class _PlaylistPageState extends State<PlaylistPage> {
 
   List<String> playlists = [];
+
   void addPlaylist() {
     TextEditingController controller = TextEditingController();
 
@@ -19,16 +21,10 @@ class _PlaylistPageState extends State<PlaylistPage> {
       builder: (context) {
         return AlertDialog(
           backgroundColor: kSurface,
-          title: const Text(
-            "Create Playlist",
-            style: TextStyle(color: kOnSurface),
-          ),
+          title: const Text("Create Playlist", style: TextStyle(color: kOnSurface)),
           content: TextField(
             controller: controller,
-            style: const TextStyle(color: kOnSurface),
-            decoration: const InputDecoration(
-              hintText: "Playlist name",
-            ),
+            decoration: const InputDecoration(hintText: "Playlist name"),
           ),
           actions: [
             TextButton(
@@ -85,13 +81,38 @@ class _PlaylistPageState extends State<PlaylistPage> {
       ),
 
       body: playlists.isEmpty
-          ? const Center(
-              child: Text(
-                "No Playlists",
-                style: TextStyle(
-                  color: kOnSurface,
-                  fontSize: 16,
-                ),
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+
+                 
+              Image.asset(
+                    'assets/image/logs/nothing.png', 
+                    width: 180,
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  const Text(
+                    "No Playlists Yet",
+                    style: TextStyle(
+                      color: kOnSurface,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+
+                  const SizedBox(height: 6),
+
+                  const Text(
+                    "Tap + to create one",
+                    style: TextStyle(
+                      color: kOnSurfaceVariant,
+                      fontSize: 13,
+                    ),
+                  ),
+                ],
               ),
             )
           : ListView.builder(
@@ -100,18 +121,14 @@ class _PlaylistPageState extends State<PlaylistPage> {
               itemBuilder: (context, index) {
 
                 return GestureDetector(
-                  onTap: () {
-                    openPlaylist(playlists[index]);
-                  },
+                  onTap: () => openPlaylist(playlists[index]),
                   child: Container(
                     margin: const EdgeInsets.only(bottom: 12),
                     padding: const EdgeInsets.all(12),
-
                     decoration: BoxDecoration(
                       color: kSurfaceContainerHighest,
                       borderRadius: BorderRadius.circular(20),
                     ),
-
                     child: Row(
                       children: [
 
@@ -128,26 +145,13 @@ class _PlaylistPageState extends State<PlaylistPage> {
                         const SizedBox(width: 12),
 
                         Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                playlists[index],
-                                style: const TextStyle(
-                                  color: kOnSurface,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              const Text(
-                                "Playlist",
-                                style: TextStyle(
-                                  color: kOnSurfaceVariant,
-                                  fontSize: 12,
-                                ),
-                              ),
-                            ],
+                          child: Text(
+                            playlists[index],
+                            style: const TextStyle(
+                              color: kOnSurface,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
                         ),
 
@@ -161,20 +165,13 @@ class _PlaylistPageState extends State<PlaylistPage> {
                                 borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
                               ),
                               builder: (_) {
-                                return SafeArea(
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      ListTile(
-                                        leading: const Icon(Icons.delete, color: Colors.red),
-                                        title: const Text("Delete Playlist"),
-                                        onTap: () {
-                                          deletePlaylist(index);
-                                          Navigator.pop(context);
-                                        },
-                                      ),
-                                    ],
-                                  ),
+                                return ListTile(
+                                  leading: const Icon(Icons.delete, color: Colors.red),
+                                  title: const Text("Delete Playlist"),
+                                  onTap: () {
+                                    deletePlaylist(index);
+                                    Navigator.pop(context);
+                                  },
                                 );
                               },
                             );
@@ -186,6 +183,7 @@ class _PlaylistPageState extends State<PlaylistPage> {
                 );
               },
             ),
+
       floatingActionButton: FloatingActionButton(
         backgroundColor: kPrimary,
         onPressed: addPlaylist,
