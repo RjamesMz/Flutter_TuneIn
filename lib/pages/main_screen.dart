@@ -29,7 +29,7 @@ class _MainScreenState extends State<MainScreen> {
     HomeScreen(),
     SearchScreen(),
     PlaylistPage(), 
-    ProfilePage(username: '',),
+    ProfileScreen()
   ];
 
   @override
