@@ -6,8 +6,8 @@ import '../core/app_strings.dart';
 
 
 // PROFILE SCREEN
-class ProfileScreen extends StatelessWidget {
-  const ProfileScreen({super.key});
+class SettingsScreen extends StatelessWidget {
+  const SettingsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

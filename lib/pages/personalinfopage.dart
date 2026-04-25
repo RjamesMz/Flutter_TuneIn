@@ -4,15 +4,14 @@ import '../core/app_strings.dart';
 import '../widgets/primary_button.dart';
 class PersonalInfoPage extends StatelessWidget {
   const PersonalInfoPage({super.key});
-  static const _name      = 'Aria Velvet';
-  static const _username  = '@aria_velvet';
-  static const _email     = 'aria@tunein.app';
-  static const _phone     = '+1 234 567 8900';
-  static const _dob       = '15 March 2000';
-  static const _gender    = 'Female';
+  static const _name      = 'Renan James';
+  static const _username  = '@James';
+  static const _email     = 'renanjames@gmail.com';
+  static const _phone     = '+63 91234 5678';
+  static const _dob       = '10 March 2005';
+  static const _gender    = 'Male';
   static const _plan      = 'Premium'; // swap to 'Free' to test that state
-  static const _avatarUrl =
-      'https://lh3.googleusercontent.com/aida-public/AB6AXuDLQIKXOExnoKsmTGI9hX2tTvRmsoFlIN3Sr_kN6gQJOcYH5YJ7tsRjj7Qwc97fgrafvwEcXZDSmQkk_DorilQON2PfrMuLn5jGOaqAepLVE5s_CAAG6XjURvQQRx8WQtsGuDAmnmtVCE62_RNY5HG4MTjS3mePPCnk7DY0cxq8S4dxyMwByekQPNdOWSe278IcNeXjyikfdxY6Vj5j-u9Kk1eYHmTXAmRWvW6PwRfk2kyM3n4IwtCzjAA6BBuDshFbnIlRWQM9lFck';
+  static const _avatarUrl = 'assets/image/profilepic.jpg';
   bool get _isPremium => _plan.toLowerCase() == 'premium';
   @override
   Widget build(BuildContext context) {
@@ -31,7 +30,7 @@ class PersonalInfoPage extends StatelessWidget {
             ),
             title: const Text(
               AppStrings.personalInfo,
-              style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: kOnSurface),
+              style: TextStyle(fontSize: 17, fontWeight: FontWeight.w900, color: kOnSurface),
             ),
             flexibleSpace: FlexibleSpaceBar(
               collapseMode: CollapseMode.parallax,
@@ -68,7 +67,12 @@ class PersonalInfoPage extends StatelessWidget {
                             fit: BoxFit.cover,
                             errorBuilder: (_, __, ___) => Container(
                               color: kSurfaceContainerHighest,
-                              child: const Icon(Icons.person, color: kPrimary, size: 40),
+                              child: Image.asset(
+                              'assets/image/profilepic.jpg',
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => _avatarFallback(),
+                            ),
+
                             ),
                           ),
                         ),
@@ -298,3 +302,8 @@ class _BenefitRow extends StatelessWidget {
     );
   }
 }
+
+Widget _avatarFallback() => Container(
+  color: kSurfaceContainerHighest,
+  child: const Icon(Icons.person, color: kPrimary, size: 40),
+);

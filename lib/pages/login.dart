@@ -30,28 +30,13 @@ class _LoginPageState extends State<LoginPage> {
 
               // ── Logo ──────────────────────────────────────────────────────
               Center(
-                child: Container(
-                  width: 80,
-                  height: 80,
-                  decoration: BoxDecoration(
-                    gradient: kSoulGradient,
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: kPrimary.withOpacity(0.35),
-                        blurRadius: 24,
-                        offset: const Offset(0, 8),
-                      ),
-                    ],
+                child: Image.asset(
+                    'assets/image/logo/TuneIn_Logo.png',
+                    width: 100,   // adjust to taste
+                    height: 100,
                   ),
-                  child: const Icon(
-                    Icons.headphones,
-                    color: Colors.white,
-                    size: 40,
-                  ),
-                ),
               ),
-              const SizedBox(height: 28),
+  
 
               Center(
                 child: Text(

@@ -71,6 +71,7 @@ class _PlaylistPageState extends State<PlaylistPage> {
       appBar: AppBar(
         backgroundColor: kSurface.withOpacity(0.9),
         elevation: 0,
+        automaticallyImplyLeading: false,
         title: const Text(
           "Playlists",
           style: TextStyle(

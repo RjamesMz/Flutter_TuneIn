@@ -3,15 +3,11 @@ import 'package:flutter/material.dart';
 import '../core/app_colors.dart';
 import '../pages/home.dart';
 import '../pages/playlist_page.dart';
-import '../pages/profile.dart';
+import 'settings.dart';
 import '../pages/search_screen.dart';
 import '../widgets/mini_player.dart';
 import '../widgets/bottom_navigation_bar.dart';
 
-// ─── Main Shell ───────────────────────────────────────────────────────────────
-/// The root scaffold after login. Houses the bottom navigation bar
-/// and switches between Home, Search, Player, and Profile tabs.
-/// The [MiniPlayer] floats above the nav bar whenever a song is loaded.
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
 
@@ -21,48 +17,59 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
-
- 
-  final bool hasActiveSong = false;
-
+  final bool hasActiveSong = true;
 
   final List<Widget> _screens = const [
     HomeScreen(),
     SearchScreen(),
     PlaylistPage(),
-    ProfileScreen(),
+    SettingsScreen(),
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: kBackground,
-      body: IndexedStack(index: _currentIndex, children: _screens),
-      // ── Bottom Area: MiniPlayer + NavBar ──────────────────────────────
-      bottomNavigationBar: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Floating mini player (only shown when something is playing)
-          if (hasActiveSong && _currentIndex != 2)
-           MiniPlayer(
-                onTap: () => setState(() => _currentIndex = 2),
-                title: 'Song Title',       // pass your current song's title
-                artist: 'Artist Name',     // pass your current song's artist
-                coverUrl: 'https://...',   // pass your current song's coverUrl
-                isPlaying: true,           // pass your playing state
-                hasNext: true,             // pass whether next exists
-                onTogglePlay: () {},       // pass your toggle callback
-                onNext: () {},             // pass your next callback
-              ),
 
-          // Navigation bar (standalone widget)
-          BottomNavBar(
-            currentIndex: _currentIndex,
-            onTap: (i) => setState(() => _currentIndex = i), 
+      // ── Only the nav bar here ─────────────────────────────────────────
+      bottomNavigationBar: BottomNavBar(
+        currentIndex: _currentIndex,
+        onTap: (i) => setState(() => _currentIndex = i),
+      ),
+
+      // ── MiniPlayer floats above content using Stack ───────────────────
+      body: Stack(
+        children: [
+          // Screens fill the full area
+          Positioned.fill(
+            child: IndexedStack(index: _currentIndex, children: _screens),
           ),
+          // MiniPlayer floats above content, above the nav bar
+          if (hasActiveSong && _currentIndex != 2)
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: MiniPlayer(
+                title: 'Blinding Lights',
+                artist: 'The Weeknd',
+                coverUrl:
+                    'https://i.scdn.co/image/ab67616d0000b273a048415db06a5b6fa7ec4e1a',
+                isPlaying: true,
+                hasNext: true,
+                onTap: () {
+                  // TODO: navigate to full player
+                },
+                onTogglePlay: () {
+                  setState(() {}); // toggle play state
+                },
+                onNext: () {
+                  // TODO: skip to next
+                },
+              ),
+            ),
         ],
       ),
     );
   }
 }
-

@@ -61,6 +61,7 @@ flutter:
     - assets/image/logo/TuneIn_Logo.png
     - assets/image/bg/bg_pink.png
     - assets/image/logs/nothing.png
+    - assets/image/profilepic.jpg
 
   # To add assets to your application, add an assets section, like this:
   # assets:
