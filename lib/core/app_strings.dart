@@ -23,8 +23,15 @@ class AppStrings {
   static const String email         = 'Email';
   static const String password      = 'Password';
   static const String welcomeBack   = 'Welcome back 👋';
+  static const String signup           = 'Sign Up';
+  static const String createAccount   = 'Create Account';
   static const String signInToContinue = 'Sign in to continue listening.';
+  static const String personalInfo     = 'Personal Info';
+  static const String alreadyHaveAcc  = 'Already have an account?';
+  static const String dontHaveAcc     = "Don't have an account?";
+
 }
+
 
 // ─── Music Categories ────────────────────────────────────────────────────────
 class MusicCategories {

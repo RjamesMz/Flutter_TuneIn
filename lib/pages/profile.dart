@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:tunely/widgets/settings_button.dart';
+import 'package:tunely/widgets/primary_button.dart';
 import 'package:tunely/pages/login.dart';
 import '../core/app_colors.dart';
 import '../core/app_strings.dart';
-import '../main.dart';
-
 
 
 // PROFILE SCREEN
@@ -103,15 +103,20 @@ class ProfileScreen extends StatelessWidget {
           const SizedBox(height: 28),
 
           // ── Settings Tiles ──────────────────────────────────────────────────
-          _SettingsTile(icon: Icons.notifications_outlined, label: 'Notifications'),
-          _SettingsTile(icon: Icons.download_outlined,      label: 'Downloads'),
-          _SettingsTile(icon: Icons.privacy_tip_outlined,   label: 'Privacy'),
-          _SettingsTile(icon: Icons.headphones_outlined,    label: 'Audio Quality'),
-          _SettingsTile(icon: Icons.help_outline,           label: 'Help & Support'),
+           SettingsTile(
+            icon: Icons.badge_outlined,
+            label: AppStrings.personalInfo,
+            onTap: () => Navigator.pushNamed(context, '/personal_info'),
+          ),
+          SettingsTile(icon: Icons.notifications_outlined, label: 'Notifications'),
+          SettingsTile(icon: Icons.download_outlined,      label: 'Downloads'),
+          SettingsTile(icon: Icons.privacy_tip_outlined,   label: 'Privacy'),
+          SettingsTile(icon: Icons.headphones_outlined,    label: 'Audio Quality'),
+          SettingsTile(icon: Icons.help_outline,           label: 'Help & Support'),
           const SizedBox(height: 28),
 
           // ── Logout Button ───────────────────────────────────────────────────
-          _GradientButton(
+          PrimaryButton(
             label: 'Logout',
             icon: Icons.logout,
             onPressed: () {
@@ -187,49 +192,4 @@ class _SettingsTile extends StatelessWidget {
   }
 }
 
-class _GradientButton extends StatelessWidget {
-  final String label;
-  final IconData icon;
-  final VoidCallback? onPressed;
-  const _GradientButton({required this.label, required this.icon, this.onPressed});
 
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      height: 56,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          gradient: kSoulGradient,
-          borderRadius: BorderRadius.circular(28),
-          boxShadow: [
-            BoxShadow(
-              color: kPrimary.withOpacity(0.35),
-              blurRadius: 16,
-              offset: const Offset(0, 6),
-            ),
-          ],
-        ),
-        child: ElevatedButton.icon(
-          onPressed: onPressed,
-          icon: Icon(icon, size: 20, color: kOnPrimary),
-          label: Text(
-            label,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              color: kOnPrimary,
-            ),
-          ),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.transparent,
-            shadowColor: Colors.transparent,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(28),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
