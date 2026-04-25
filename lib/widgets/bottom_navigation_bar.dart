@@ -28,7 +28,7 @@ class BottomNavBar extends StatelessWidget {
             _NavItem(icon: Icons.home,             label: 'Home',       index: 0, currentIndex: currentIndex, onTap: onTap),
             _NavItem(icon: Icons.search,           label: 'Search',     index: 1, currentIndex: currentIndex, onTap: onTap),
             _NavItem(icon: Icons.headphones,       label: 'Playlist',   index: 2, currentIndex: currentIndex, onTap: onTap),
-            _NavItem(icon: Icons.person,           label: 'Profile',    index: 3, currentIndex: currentIndex, onTap: onTap),
+            _NavItem(icon: Icons.settings,           label: 'Settings',    index: 3, currentIndex: currentIndex, onTap: onTap),
           ],
         ),
       ),
