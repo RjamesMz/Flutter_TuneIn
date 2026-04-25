@@ -45,9 +45,11 @@ class _SearchScreenState extends State<SearchScreen> {
             style: TextStyle(
               fontSize: 28,
               fontWeight: FontWeight.w800,
-              color: kOnSurface,
+              color: kPrimary,
             ),
           ),
+
+          
           const SizedBox(height: 16),
           // ── Search Field ─────────────────────────────────────────────────
           TextField(

@@ -22,14 +22,15 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
 
-  // Hardcoded — flip to true if you want the MiniPlayer visible during design
+ 
   final bool hasActiveSong = false;
 
-  static const List<Widget> _screens = [
+
+  final List<Widget> _screens = const [
     HomeScreen(),
     SearchScreen(),
-    PlaylistPage(), 
-    ProfileScreen()
+    PlaylistPage(),
+    ProfileScreen(),
   ];
 
   @override

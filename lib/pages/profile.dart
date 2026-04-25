@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:tunely/pages/login.dart';
 import '../core/app_colors.dart';
 import '../core/app_strings.dart';
+import '../main.dart';
 
 
 
@@ -113,7 +115,12 @@ class ProfileScreen extends StatelessWidget {
             label: 'Logout',
             icon: Icons.logout,
             onPressed: () {
-              // TODO: wire up logout logic
+              Navigator.pushNamedAndRemoveUntil(
+              context, 
+              '/login',
+              (route)=> false,
+              
+              );
             },
           ),
         ],
