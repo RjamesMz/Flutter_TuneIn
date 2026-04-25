@@ -10,9 +10,10 @@ class PersonalInfoPage extends StatelessWidget {
   static const _phone     = '+63 91234 5678';
   static const _dob       = '10 March 2005';
   static const _gender    = 'Male';
-  static const _plan      = 'Premium'; // swap to 'Free' to test that state
+  static const _plan      = 'Free'; // swap to 'Free' to test that state
   static const _avatarUrl = 'assets/image/profilepic.jpg';
   bool get _isPremium => _plan.toLowerCase() == 'premium';
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

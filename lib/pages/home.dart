@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tunely/pages/personalinfopage.dart';
 import '../core/app_colors.dart';
 import '../widgets/category_chip.dart';
 import '../widgets/song_tile.dart';
@@ -37,6 +38,7 @@ class _HomeScreenState extends State<HomeScreen> {
           floating: true,
           snap: true,
           pinned: false,
+          automaticallyImplyLeading: false,
           expandedHeight: 0,
           backgroundColor: kSurface.withOpacity(0.9),
           title: const Text(
@@ -50,11 +52,19 @@ class _HomeScreenState extends State<HomeScreen> {
           actions: [
             Padding(
               padding: const EdgeInsets.only(right: 12),
+                child: GestureDetector(
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const PersonalInfoPage(),
+                  ),
+              ),
               child: CircleAvatar(
                 radius: 17,
                 backgroundColor: kSurfaceContainerHighest,
                 child: const Icon(Icons.person, color: kPrimary, size: 18),
-              ),
+                ),
+             ),
             ),
           ],
         ),

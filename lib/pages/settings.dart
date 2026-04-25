@@ -57,30 +57,9 @@ class SettingsScreen extends StatelessWidget {
               color: kOnSurface,
             ),
           ),
-          const Text(
-            'renanjames@gmail.com',
-            style: TextStyle(fontSize: 13, color: kOnSurfaceVariant),
-          ),
           const SizedBox(height: 8),
 
-          // ── Plan Badge ──────────────────────────────────────────────────────
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-            decoration: BoxDecoration(
-              gradient: kSoulGradient,
-              borderRadius: BorderRadius.circular(50),
-            ),
-            child: const Text(
-              'Premium',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-          const SizedBox(height: 32),
-
+    
           // ── Stats Row ───────────────────────────────────────────────────────
           Container(
             padding: const EdgeInsets.all(20),
