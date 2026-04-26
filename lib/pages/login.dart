@@ -150,6 +150,34 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
               ),
+
+                 Center(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        AppStrings.dontHaveAcc,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: kOnSurfaceVariant,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      GestureDetector(
+                        onTap: () => Navigator.pushReplacementNamed(
+                          context, '/signup'),
+                        child: const Text(
+                          'Sign up',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: kPrimary,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               const SizedBox(height: 32),
             ],
           ),
