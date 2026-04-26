@@ -49,7 +49,7 @@ class _MainScreenState extends State<MainScreen> {
           ),
 
           // MiniPlayer
-          if (hasActiveSong && _currentIndex != 2)
+          if (hasActiveSong && _currentIndex != 3)
             Positioned(
               left: 0,
               right: 0,
