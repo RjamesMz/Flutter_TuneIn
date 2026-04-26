@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:tunely/pages/checkout_screen.dart';
 
 import '../core/app_colors.dart';
+import '../models/subscription_plan.dart';
+import '../services/auth.dart';
+
 
 // ─── Subscription Screen ──────────────────────────────────────────────────────
 /// Displays available subscription plans: Free, Plus, and Premium.
@@ -16,7 +19,7 @@ class SubscriptionScreen extends StatefulWidget {
 class _SubscriptionScreenState extends State<SubscriptionScreen> {
   int _selectedPlan = 2;
 
-  static const _plans = [_Plan.free, _Plan.monthly, _Plan.annual];
+  static final _plans = SubscriptionPlan.availablePlans;
 
   void _selectPlan(int index) {
     if (index == _selectedPlan) return;
@@ -130,7 +133,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                     height: 54,
                     child: DecoratedBox(
                       decoration: BoxDecoration(
-                        gradient: plan == _Plan.free
+                        gradient: plan.id == 'free'
                             ? LinearGradient(
                                 colors: [kOutline, kOnSurfaceVariant],
                               )
@@ -140,7 +143,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                                 end: Alignment.bottomRight,
                               ),
                         borderRadius: BorderRadius.circular(16),
-                        boxShadow: plan != _Plan.free
+                        boxShadow: plan.id != 'free'
                             ? [
                                 BoxShadow(
                                   color: kPrimary.withOpacity(0.35),
@@ -160,7 +163,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                           ),
                         ),
                         child: Text(
-                          plan == _Plan.free
+                          plan.id == 'free'
                               ? 'Continue with Free'
                               : 'Get ${plan.name} — ${plan.price}',
                           style: const TextStyle(
@@ -175,9 +178,9 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                   const SizedBox(height: 16),
                   // Fine print
                   Text(
-                    plan == _Plan.free
+                    plan.id == 'free'
                         ? 'No payment required. Upgrade anytime.'
-                        : 'Cancel anytime. Billed ${plan == _Plan.monthly ? "monthly" : "annually — save 30%"}.',
+                        : 'Cancel anytime. Billed ${plan.id == 'premium' ? 'monthly' : 'annualy - save 30%' }.',
                     style: const TextStyle(
                       fontSize: 12,
                       color: kOnSurfaceVariant,
@@ -208,8 +211,9 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     );
   }
 
-  void _onTap(BuildContext context, _Plan plan) {
-    if (plan == _Plan.free) {
+  void _onTap(BuildContext context, SubscriptionPlan plan) {
+    if (plan.id == 'free') {
+      AuthService.instance.updateCurrentUserPlan(plan.id);
       // Free plan → go to the main screen, clearing the back stack
       Navigator.pushNamedAndRemoveUntil(context, '/main', (_) => false);
     } else {
@@ -218,6 +222,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
         context,
         MaterialPageRoute(
           builder: (_) => CheckoutScreen(
+            planId: plan.id,
             planName: plan.name,
             planPrice: plan.price,
             planPeriod: plan.period,
@@ -230,7 +235,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
 
 // ─── Plan Card ────────────────────────────────────────────────────────────────
 class _PlanCard extends StatelessWidget {
-  final _Plan plan;
+  final SubscriptionPlan plan;
   final bool isSelected;
   final VoidCallback onTap;
 
@@ -242,7 +247,7 @@ class _PlanCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bool isHighlighted = plan == _Plan.annual;
+    final bool isHighlighted = plan.id == 'premium_annual';
 
     return GestureDetector(
       onTap: onTap,
@@ -324,11 +329,11 @@ class _PlanCard extends StatelessWidget {
                                 ),
                               ),
                             ),
-                            if (plan == _Plan.monthly) ...[
+                            if (plan.id == 'monthly') ...[
                               const SizedBox(width: 8),
                               _Badge(label: 'Most Popular', primary: true),
                             ],
-                            if (plan == _Plan.annual) ...[
+                            if (plan.id == 'premium_annual') ...[
                               const SizedBox(width: 8),
                               _Badge(label: 'Best Value', primary: false),
                             ],
@@ -392,7 +397,7 @@ class _PlanCard extends StatelessWidget {
 
 // ─── Feature Row ──────────────────────────────────────────────────────────────
 class _FeatureRow extends StatelessWidget {
-  final _Feature feature;
+  final PlanFeature feature;
   final bool included;
   const _FeatureRow({required this.feature, required this.included});
 
@@ -507,78 +512,3 @@ class _TextLink extends StatelessWidget {
   }
 }
 
-// ─── Data Models ──────────────────────────────────────────────────────────────
-class _Feature {
-  final String label;
-  final bool included;
-  final String? badge;
-  const _Feature(this.label, {this.included = true, this.badge});
-}
-
-class _Plan {
-  final String name;
-  final String tagline;
-  final String price;
-  final String period;
-  final IconData icon;
-  final List<_Feature> features;
-
-  const _Plan._({
-    required this.name,
-    required this.tagline,
-    required this.price,
-    required this.period,
-    required this.icon,
-    required this.features,
-  });
-
-  static const free = _Plan._(
-    name: 'Free',
-    tagline: 'Start listening today',
-    price: '\$0',
-    period: 'forever',
-    icon: Icons.music_note_rounded,
-    features: [
-      _Feature('Stream music online'),
-      _Feature('Basic audio quality (128 kbps)'),
-      _Feature('Create up to 3 playlists'),
-      _Feature('Ad-free listening', included: false),
-      _Feature('Offline downloads', included: false),
-      _Feature('High-res audio (320 kbps)', included: false),
-      _Feature('Lyrics view', included: false),
-    ],
-  );
-
-  static const monthly = _Plan._(
-    name: '1 Month Premium',
-    tagline: 'Full access, no commitment',
-    price: '\$7.99',
-    period: '/ month',
-    icon: Icons.star_rounded,
-    features: [
-      _Feature('Everything in Free'),
-      _Feature('Ad-free listening'),
-      _Feature('Unlimited playlists'),
-      _Feature('High-quality audio (320 kbps)', badge: 'HD'),
-      _Feature('Lyrics view'),
-      _Feature('Offline downloads'),
-      _Feature('Lossless / HiFi audio', included: false),
-    ],
-  );
-
-  static const annual = _Plan._(
-    name: '12 Months Premium',
-    tagline: 'Best deal — save 30% vs monthly',
-    price: '\$49.99',
-    period: '/ year',
-    icon: Icons.workspace_premium_rounded,
-    features: [
-      _Feature('Everything in 1 Month Premium'),
-      _Feature('Lossless / HiFi audio', badge: 'LOSSLESS'),
-      _Feature('Early access to new features'),
-      _Feature('Priority customer support'),
-      _Feature('Share with 1 family member'),
-      _Feature('30% cheaper than monthly'),
-    ],
-  );
-}

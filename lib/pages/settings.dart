@@ -3,6 +3,8 @@ import 'package:tunely/widgets/settings_button.dart';
 import 'package:tunely/widgets/primary_button.dart';
 import '../core/app_colors.dart';
 import '../core/app_strings.dart';
+import '../pages/personalinfopage.dart';
+import '../services/auth.dart';
 
 
 // PROFILE SCREEN
@@ -11,6 +13,8 @@ class SettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final user = AuthService.instance.currentUser;
+
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(24, 24, 24, 100),
       child: Column(
@@ -29,10 +33,19 @@ class SettingsScreen extends StatelessWidget {
                   border: Border.all(color: kPrimaryContainer, width: 3),
                 ),
                 child: ClipOval(
-                  child: Container(
-                    color: kSurfaceContainerHighest,
-                    child: const Icon(Icons.person, color: kPrimary, size: 48),
-                  ),
+                  child: (user?.avatarUrl != null)
+                      ? (user!.avatarUrl.startsWith('http')
+                          ? Image.network(
+                              user.avatarUrl,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => _avatarPlaceholder(),
+                            )
+                          : Image.asset(
+                              user.avatarUrl,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => _avatarPlaceholder(),
+                            ))
+                      : _avatarPlaceholder(),
                 ),
               ),
               Container(
@@ -49,9 +62,9 @@ class SettingsScreen extends StatelessWidget {
           const SizedBox(height: 14),
 
           // ── Name ────────────────────────────────────────────────────────────
-          const Text(
-            'Renan James',
-            style: TextStyle(
+          Text(
+            user?.name ?? 'Guest User',
+            style: const TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.w800,
               color: kOnSurface,
@@ -81,10 +94,17 @@ class SettingsScreen extends StatelessWidget {
           const SizedBox(height: 28),
 
           // ── Settings Tiles ──────────────────────────────────────────────────
-           SettingsTile(
+          SettingsTile(
             icon: Icons.badge_outlined,
             label: AppStrings.personalInfo,
-            onTap: () => Navigator.pushNamed(context, '/personal_info'),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => PersonalInfoPage(user: user),
+                ),
+              );
+            },
           ),
           SettingsTile(icon: Icons.notifications_outlined, label: 'Notifications'),
           SettingsTile(icon: Icons.download_outlined,      label: 'Downloads'),
@@ -98,12 +118,8 @@ class SettingsScreen extends StatelessWidget {
             label: 'Logout',
             icon: Icons.logout,
             onPressed: () {
-              Navigator.pushNamedAndRemoveUntil(
-              context, 
-              '/login',
-              (route)=> false,
-              
-              );
+              AuthService.instance.logout();
+              Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
             },
           ),
         ],
@@ -111,6 +127,11 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 }
+
+Widget _avatarPlaceholder() => Container(
+      color: kSurfaceContainerHighest,
+      child: const Icon(Icons.person, color: kPrimary, size: 48),
+    );
 
 // HELPER WIDGETS
 

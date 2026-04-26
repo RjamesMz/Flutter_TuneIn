@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 import '../core/app_colors.dart';
 import '../core/app_strings.dart';
+import '../services/auth.dart';
 import '../widgets/primary_button.dart';
 
 class SignupScreen extends StatefulWidget {
@@ -24,6 +25,7 @@ class _SignupScreenState extends State<SignupScreen>
 
   bool      _obscurePass    = true;
   bool      _obscureConfirm = true;
+  bool      _isLoading      = false;
   String?   _selectedGender;
   DateTime? _selectedDob;
 
@@ -80,7 +82,7 @@ class _SignupScreenState extends State<SignupScreen>
     if (picked != null) setState(() => _selectedDob = picked);
   }
 
-  void _handleSignup() {
+  Future<void> _handleSignup() async {
     if (!_formKey.currentState!.validate()) return;
     if (_selectedDob == null) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -91,7 +93,31 @@ class _SignupScreenState extends State<SignupScreen>
       ));
       return;
     }
-    // TODO: connect to provider/backend
+
+    if (_isLoading) return;
+    setState(() => _isLoading = true);
+
+    try {
+      await AuthService.instance.signup(
+        name: _nameCtrl.text,
+        email: _emailCtrl.text,
+        username: _usernameCtrl.text,
+        password: _passCtrl.text,
+        phone: _phoneCtrl.text,
+        dateOfBirth: _selectedDob!.toIso8601String().split('T').first,
+        gender: _selectedGender,
+      );
+
+      if (!mounted) return;
+      Navigator.pushNamedAndRemoveUntil(context, '/main', (route) => false);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   @override
@@ -276,8 +302,8 @@ class _SignupScreenState extends State<SignupScreen>
 
                   // Create Account button
                   PrimaryButton(
-                    label: AppStrings.createAccount,
-                    onPressed: _handleSignup,
+                    label: _isLoading ? 'Creating account...' : AppStrings.createAccount,
+                    onPressed: _isLoading ? null : _handleSignup,
                     icon: Icons.person_add_outlined,
                   ),
                   const SizedBox(height: 20),
