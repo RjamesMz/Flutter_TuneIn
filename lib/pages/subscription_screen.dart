@@ -151,7 +151,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                             : null,
                       ),
                       child: ElevatedButton(
-                        onPressed: () => _onCtaTap(context, plan),
+                        onPressed: () => _onTap(context, plan),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.transparent,
                           shadowColor: Colors.transparent,
@@ -208,7 +208,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     );
   }
 
-  void _onCtaTap(BuildContext context, _Plan plan) {
+  void _onTap(BuildContext context, _Plan plan) {
     if (plan == _Plan.free) {
       // Free plan → go to the main screen, clearing the back stack
       Navigator.pushNamedAndRemoveUntil(context, '/main', (_) => false);
