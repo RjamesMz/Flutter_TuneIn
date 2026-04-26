@@ -7,6 +7,7 @@ import 'package:tunely/pages/search_screen.dart';
 import 'package:tunely/pages/playlist_page.dart';
 import 'package:tunely/pages/main_screen.dart';
 import 'package:tunely/pages/signup_page.dart';
+import 'package:tunely/pages/subscription_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -29,8 +30,8 @@ class MyApp extends StatelessWidget {
         '/playlist': (context) => const PlaylistPage(),
         '/settings': (context) => const SettingsScreen(),
         '/personal_info': (context) => const PersonalInfoPage(),
+        '/subscription': (context) => const SubscriptionScreen(),
       },
-      
     );
   }
 }

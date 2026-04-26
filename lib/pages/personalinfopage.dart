@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../core/app_colors.dart';
 import '../core/app_strings.dart';
 import '../widgets/primary_button.dart';
+
+
 class PersonalInfoPage extends StatelessWidget {
   const PersonalInfoPage({super.key});
   static const _name      = 'Renan James';
@@ -189,7 +191,13 @@ class PersonalInfoPage extends StatelessWidget {
                     const SizedBox(height: 20),
                     PrimaryButton(
                       label: 'Upgrade to Premium',
-                      onPressed: () {},
+                      onPressed: () {
+                         Navigator.pushNamedAndRemoveUntil(
+                          context, 
+                          '/subscription',
+                          (route)=> false,
+                         );
+                      },
                       icon: Icons.workspace_premium,
                     ),
                   ],
