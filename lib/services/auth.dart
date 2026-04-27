@@ -1,9 +1,10 @@
+import 'package:flutter/foundation.dart';
 import '../models/user.dart';
 
 // ─── Auth Service ─────────────────────────────────────────────────────────────
 /// Mock authentication service. No real backend — simulates network delay.
 /// In a real app this would call Firebase Auth, REST API, etc.
-class AuthService {
+class AuthService extends ChangeNotifier {
   AuthService._();
   static final AuthService instance = AuthService._();
   User? _currentUser;
@@ -12,15 +13,15 @@ class AuthService {
 
   // Simulated user database
   static const _mockUser = User(
-id :  'usr_123456',
-name      : 'Renan James',
-username  : 'James',
-email     : 'renanjames@gmail.com',
-phone     : '+63 91234 5678',
-dateOfBirth : '2005-03-10',
-gender     : 'Male',
-plan      : 'Premium',
-avatarUrl : 'assets/image/profilepic.jpg',
+    id: 'usr_123456',
+    name: 'Renan James',
+    username: 'James',
+    email: 'renanjames@gmail.com',
+    phone: '+63 91234 5678',
+    dateOfBirth: '2005-03-10',
+    gender: 'Male',
+    plan: 'Free',
+    avatarUrl: 'assets/image/profilepic.jpg',
   );
 
   /// Simulates a login call. Any non-empty credentials succeed after 1.5 s.
@@ -81,5 +82,6 @@ avatarUrl : 'assets/image/profilepic.jpg',
   void updateCurrentUserPlan(String planId) {
     if (_currentUser == null) return;
     _currentUser = _currentUser!.copyWith(plan: planId);
+    notifyListeners();
   }
 }

@@ -5,6 +5,8 @@ import '../models/subscription_plan.dart';
 import '../models/user.dart';
 import '../services/auth.dart';
 import '../widgets/primary_button.dart';
+import 'package:provider/provider.dart';
+import '../providers/auth_provider.dart';
 
 
 class PersonalInfoPage extends StatelessWidget {
@@ -14,20 +16,22 @@ class PersonalInfoPage extends StatelessWidget {
   
   @override
   Widget build(BuildContext context) {
-    final currentUser = user ?? AuthService.instance.currentUser;
-    final userPlanStr = currentUser?.plan ?? 'free';
-    final userPlan = SubscriptionPlan.getPlanById(userPlanStr);
-    final isPremium = userPlan.id != 'free';
+    return Consumer<AuthProvider>(
+      builder: (context, authProvider, child) {
+        final currentUser = user ?? authProvider.currentUser;
+        final userPlanStr = currentUser?.plan ?? 'free';
+        final userPlan = SubscriptionPlan.getPlanById(userPlanStr);
+        final isPremium = userPlan.id != 'free';
 
-    return Scaffold(
-      backgroundColor: kBackground,
-      body: CustomScrollView(
+        return Scaffold(
+          backgroundColor: kBackground,
+          body: CustomScrollView(
         slivers: [
-          SliverAppBar(
-            expandedHeight: 200,
-            pinned: true,
-            backgroundColor: kBackground,
-            elevation: 0,
+              SliverAppBar(
+                expandedHeight: 200,
+                pinned: true,
+                backgroundColor: kBackground,
+                elevation: 0,
             leading: IconButton(
               icon: const Icon(Icons.arrow_back_ios_new, color: kOnSurface),
               onPressed: () => Navigator.pop(context),
@@ -240,6 +244,8 @@ class PersonalInfoPage extends StatelessWidget {
           ),
         ],
       ),
+    );
+    },
     );
   }
   

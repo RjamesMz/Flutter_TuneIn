@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:tunely/widgets/settings_button.dart';
 import 'package:tunely/widgets/primary_button.dart';
 import '../core/app_colors.dart';
 import '../core/app_strings.dart';
 import '../pages/personalinfopage.dart';
-import '../services/auth.dart';
+import '../providers/auth_provider.dart';
 
 
 // PROFILE SCREEN
@@ -13,9 +14,11 @@ class SettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final user = AuthService.instance.currentUser;
+    return Consumer<AuthProvider>(
+      builder: (context, authProvider, _) {
+        final user = authProvider.currentUser;
 
-    return SingleChildScrollView(
+        return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(24, 24, 24, 100),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -101,7 +104,7 @@ class SettingsScreen extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => PersonalInfoPage(user: user),
+                  builder: (_) => const PersonalInfoPage(),
                 ),
               );
             },
@@ -118,12 +121,14 @@ class SettingsScreen extends StatelessWidget {
             label: 'Logout',
             icon: Icons.logout,
             onPressed: () {
-              AuthService.instance.logout();
+              authProvider.logout();
               Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
             },
           ),
         ],
       ),
+    );
+      },
     );
   }
 }
