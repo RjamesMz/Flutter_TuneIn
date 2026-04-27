@@ -8,7 +8,6 @@ import '../widgets/category_chip.dart';
 import '../widgets/song_tile.dart';
 import '../providers/music_provider.dart';
 import '../providers/player_provider.dart';
-import '../services/music_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});

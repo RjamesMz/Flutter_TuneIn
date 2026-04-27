@@ -3,7 +3,6 @@ import '../core/app_colors.dart';
 import '../core/app_strings.dart';
 import '../models/subscription_plan.dart';
 import '../models/user.dart';
-import '../services/auth.dart';
 import '../widgets/primary_button.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
