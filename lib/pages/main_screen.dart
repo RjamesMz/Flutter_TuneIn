@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import '../core/app_colors.dart';
 import '../pages/home.dart';
 import '../pages/playlist_page.dart';
