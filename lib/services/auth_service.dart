@@ -15,6 +15,29 @@ class AuthService extends ChangeNotifier {
 
   User? get currentUser => _currentUser;
 
+  String _authErrorMessage(auth.FirebaseAuthException e) {
+    switch (e.code) {
+      case 'invalid-email':
+        return 'Please enter a valid email address.';
+      case 'user-not-found':
+        return 'No account found for this email.';
+      case 'wrong-password':
+        return 'Wrong email or password. Try again.';
+      case 'invalid-credential':
+        return 'Wrong email or password. Try again.';
+      case 'user-disabled':
+        return 'This account has been disabled.';
+      case 'too-many-requests':
+        return 'Too many attempts. Please try again later.';
+      case 'network-request-failed':
+        return 'Network error. Check your connection and try again.';
+      case 'email-already-in-use':
+        return 'This email is already in use.';
+      default:
+        return e.message ?? 'Authentication failed.';
+    }
+  }
+
 
   /// Simulates a login call. Any non-empty credentials succeed after 1.5 s.
   /// Throws [Exception] for empty credentials.
@@ -45,7 +68,7 @@ class AuthService extends ChangeNotifier {
       notifyListeners();
       return user;
     } on auth.FirebaseAuthException catch (e) {
-      throw Exception(e.message ?? 'Login failed.');
+      throw Exception(_authErrorMessage(e));
     }
   }
 
@@ -102,7 +125,7 @@ class AuthService extends ChangeNotifier {
       notifyListeners();
       return createdUser;
     } on auth.FirebaseAuthException catch (e) {
-      throw Exception(e.message ?? 'Signup failed.');
+      throw Exception(_authErrorMessage(e));
     }
   }
 
