@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../widgets/primary_button.dart';
 import '../core/app_colors.dart';
 import '../core/app_strings.dart';
+import '../services/auth.dart';
 
 // ─── Login Prototype ──────────────────────────────────────────────────────────
 /// Design-only version of the Login page.
@@ -15,6 +16,38 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   bool _obscure = true;
+  bool _isLoading = false;
+  final _emailCtrl = TextEditingController();
+  final _passwordCtrl = TextEditingController();
+
+  @override
+  void dispose() {
+    _emailCtrl.dispose();
+    _passwordCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _handleLogin() async {
+    if (_isLoading) return;
+    setState(() => _isLoading = true);
+
+    try {
+      await AuthService.instance.login(
+        _emailCtrl.text,
+        _passwordCtrl.text,
+      );
+
+      if (!mounted) return;
+      Navigator.pushNamedAndRemoveUntil(context, '/main', (route) => false);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -77,6 +110,7 @@ class _LoginPageState extends State<LoginPage> {
 
               // ── Email Field ───────────────────────────────────────────────
               TextFormField(
+                controller: _emailCtrl,
                 keyboardType: TextInputType.emailAddress,
                 decoration: const InputDecoration(
                   labelText: AppStrings.email,
@@ -90,6 +124,7 @@ class _LoginPageState extends State<LoginPage> {
 
               // ── Password Field ────────────────────────────────────────────
               TextFormField(
+                controller: _passwordCtrl,
                 obscureText: _obscure,
                 decoration: InputDecoration(
                   labelText: AppStrings.password,
@@ -112,14 +147,8 @@ class _LoginPageState extends State<LoginPage> {
 
               // ── Login Button ──────────────────────────────────────────────
               PrimaryButton(
-                label: AppStrings.login,
-                onPressed: () {
-                  Navigator.pushNamed(
-                    context,
-                    '/main',
-                    arguments: 'DemoUser',
-                  );
-                },
+                label: _isLoading ? 'Signing in...' : AppStrings.login,
+                onPressed: _isLoading ? null : _handleLogin,
                 icon: Icons.login,
               ),
               const SizedBox(height: 24),

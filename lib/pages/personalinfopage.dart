@@ -1,23 +1,24 @@
 import 'package:flutter/material.dart';
 import '../core/app_colors.dart';
 import '../core/app_strings.dart';
+import '../models/subscription_plan.dart';
+import '../models/user.dart';
+import '../services/auth.dart';
 import '../widgets/primary_button.dart';
 
 
 class PersonalInfoPage extends StatelessWidget {
-  const PersonalInfoPage({super.key});
-  static const _name      = 'Renan James';
-  static const _username  = '@James';
-  static const _email     = 'renanjames@gmail.com';
-  static const _phone     = '+63 91234 5678';
-  static const _dob       = '10 March 2005';
-  static const _gender    = 'Male';
-  static const _plan      = 'Free'; // swap to 'Free' to test that state
-  static const _avatarUrl = 'assets/image/profilepic.jpg';
-  bool get _isPremium => _plan.toLowerCase() == 'premium';
-
+  final User? user;
+  const PersonalInfoPage({super.key, this.user});
+  
+  
   @override
   Widget build(BuildContext context) {
+    final currentUser = user ?? AuthService.instance.currentUser;
+    final userPlanStr = currentUser?.plan ?? 'free';
+    final userPlan = SubscriptionPlan.getPlanById(userPlanStr);
+    final isPremium = userPlan.id != 'free';
+
     return Scaffold(
       backgroundColor: kBackground,
       body: CustomScrollView(
@@ -65,28 +66,28 @@ class PersonalInfoPage extends StatelessWidget {
                           ],
                         ),
                         child: ClipOval(
-                          child: Image.network(
-                            _avatarUrl,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => Container(
-                              color: kSurfaceContainerHighest,
-                              child: Image.asset(
-                              'assets/image/profilepic.jpg',
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) => _avatarFallback(),
-                            ),
-
-                            ),
-                          ),
+                          child: currentUser?.avatarUrl != null
+                              ? (currentUser!.avatarUrl.startsWith('http')
+                                  ? Image.network(
+                                      currentUser.avatarUrl,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (_, __, ___) => _avatarFallback(),
+                                    )
+                                  : Image.asset(
+                                      currentUser.avatarUrl,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (_, __, ___) => _avatarFallback(),
+                                    ))
+                              : _avatarFallback(),
                         ),
                       ),
                       const SizedBox(height: 10),
-                      const Text(
-                        _name,
+                       Text(
+                        currentUser?.name ?? 'Guest',
                         style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: Colors.white),
                       ),
                       Text(
-                        _email,
+                          currentUser?.email ?? '',
                         style: TextStyle(fontSize: 13, color: Colors.white.withOpacity(0.8)),
                       ),
                     ],
@@ -104,22 +105,50 @@ class PersonalInfoPage extends StatelessWidget {
                   // Personal Information
                   const _SectionHeader(title: 'Personal Information'),
                   const SizedBox(height: 12),
-                  const _InfoCard(
+                   _InfoCard(
                     children: [
-                      _InfoRow(icon: Icons.person_outline,    label: 'Full Name', value: _name),
-                      _InfoRow(icon: Icons.alternate_email,   label: 'Username',  value: _username),
-                      _InfoRow(icon: Icons.email_outlined,    label: 'Email',     value: _email),
-                      _InfoRow(icon: Icons.phone_outlined,    label: 'Phone',     value: _phone, isLast: true),
+                       _InfoRow(
+                        icon: Icons.person_outline,
+                        label: 'Full Name',
+                        value: currentUser?.name ?? '—',
+                      ),
+                      _InfoRow(
+                        icon: Icons.alternate_email,
+                        label: 'Username',
+                        value: currentUser?.username != null
+                            ? '@${currentUser!.username}'
+                            : '—',
+                      ),
+                      _InfoRow(
+                        icon: Icons.email_outlined,
+                        label: 'Email',
+                        value: currentUser?.email ?? '—',
+                      ),
+                      _InfoRow(
+                        icon: Icons.phone_outlined,
+                        label: 'Phone',
+                        value: currentUser?.phone ?? '—',
+                        isLast: true,
+                      ),
                     ],
                   ),
                   const SizedBox(height: 20),
                   // Profile Details
                   const _SectionHeader(title: 'Profile Details'),
                   const SizedBox(height: 12),
-                  const _InfoCard(
+                   _InfoCard(
                     children: [
-                      _InfoRow(icon: Icons.calendar_month_outlined, label: 'Date of Birth', value: _dob),
-                      _InfoRow(icon: Icons.wc_outlined,             label: 'Gender',        value: _gender, isLast: true),
+                      _InfoRow(
+                        icon: Icons.calendar_month_outlined,
+                        label: 'Date of Birth',
+                        value: _formatDob(currentUser?.dateOfBirth),
+                      ),
+                      _InfoRow(
+                        icon: Icons.wc_outlined,
+                        label: 'Gender',
+                        value: currentUser?.gender ?? '—',
+                        isLast: true,
+                      ),
                     ],
                   ),
                   const SizedBox(height: 28),
@@ -130,13 +159,13 @@ class PersonalInfoPage extends StatelessWidget {
                     width: double.infinity,
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      gradient: _isPremium
+                      gradient: isPremium
                           ? kSoulGradient
                           : const LinearGradient(colors: [Color(0xFFE0E0E0), Color(0xFFBDBDBD)]),
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
-                          color: (_isPremium ? kPrimary : Colors.grey).withOpacity(0.25),
+                          color: (isPremium ? kPrimary : Colors.grey).withOpacity(0.25),
                           blurRadius: 16,
                           offset: const Offset(0, 4),
                         ),
@@ -151,7 +180,7 @@ class PersonalInfoPage extends StatelessWidget {
                             borderRadius: BorderRadius.circular(14),
                           ),
                           child: Icon(
-                            _isPremium ? Icons.workspace_premium : Icons.music_note,
+                            isPremium ? Icons.workspace_premium : Icons.music_note,
                             color: Colors.white,
                             size: 28,
                           ),
@@ -162,12 +191,16 @@ class PersonalInfoPage extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                _isPremium ? 'Premium Plan' : 'Free Plan',
-                                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: Colors.white),
+                                '${userPlan.name} Plan',
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w800,
+                                  color: Colors.white,
+                                ),
                               ),
                               const SizedBox(height: 2),
                               Text(
-                                _isPremium
+                                isPremium
                                     ? 'Enjoy unlimited music, offline playback & more'
                                     : 'Upgrade to unlock all features',
                                 style: TextStyle(fontSize: 12, color: Colors.white.withOpacity(0.85)),
@@ -181,13 +214,13 @@ class PersonalInfoPage extends StatelessWidget {
                   const SizedBox(height: 16),
                   _InfoCard(
                     children: [
-                      _BenefitRow(icon: Icons.offline_pin_outlined,  label: 'Offline Playback',    enabled: _isPremium),
-                      _BenefitRow(icon: Icons.all_inclusive,          label: 'Unlimited Skips',     enabled: _isPremium),
-                      _BenefitRow(icon: Icons.high_quality_outlined,  label: 'High Quality Audio',  enabled: _isPremium),
-                      _BenefitRow(icon: Icons.block_outlined,         label: 'Ad-Free Experience',  enabled: _isPremium, isLast: true),
+                      _BenefitRow(icon: Icons.offline_pin_outlined,  label: 'Offline Playback',    enabled: isPremium),
+                      _BenefitRow(icon: Icons.all_inclusive,          label: 'Unlimited Skips',     enabled: isPremium),
+                      _BenefitRow(icon: Icons.high_quality_outlined,  label: 'High Quality Audio',  enabled: isPremium),
+                      _BenefitRow(icon: Icons.block_outlined,         label: 'Ad-Free Experience',  enabled: isPremium, isLast: true),
                     ],
                   ),
-                  if (!_isPremium) ...[
+                  if (!isPremium) ...[
                     const SizedBox(height: 20),
                     PrimaryButton(
                       label: 'Upgrade to Premium',
@@ -209,7 +242,34 @@ class PersonalInfoPage extends StatelessWidget {
       ),
     );
   }
+  
+  String _formatDob(String? iso) {
+    if (iso == null) return '—';
+    try {
+      final parts = iso.split('-');
+      if (parts.length != 3) return iso;
+      final months = [
+        '',
+        'January',
+        'February',
+        'March',
+        'April',
+        'May',
+        'June',
+        'July',
+        'August',
+        'September',
+        'October',
+        'November',
+        'December',
+      ];
+      return '${parts[2]} ${months[int.parse(parts[1])]} ${parts[0]}';
+    } catch (_) {
+      return iso;
+    }
+  }
 }
+
 // ─── Section Header ───────────────────────────────────────────────────────────
 class _SectionHeader extends StatelessWidget {
   final String title;
@@ -316,3 +376,4 @@ Widget _avatarFallback() => Container(
   color: kSurfaceContainerHighest,
   child: const Icon(Icons.person, color: kPrimary, size: 40),
 );
+

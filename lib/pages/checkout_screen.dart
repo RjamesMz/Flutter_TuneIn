@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
 import '../core/app_colors.dart';
+import '../services/auth.dart';
 
 // ─── Checkout Screen ───────────────────────────────────────────────────────────
 /// Shown when the user selects a paid subscription plan.
 /// Replace the body content here with your real payment flow.
 
 class CheckoutScreen extends StatelessWidget {
+  final String planId;
   final String planName;
   final String planPrice;
   final String planPeriod;
 
   const CheckoutScreen({
     super.key,
+    required this.planId,
     required this.planName,
     required this.planPrice,
     required this.planPeriod,
@@ -191,6 +194,7 @@ class CheckoutScreen extends StatelessWidget {
                   ),
                   child: ElevatedButton(
                     onPressed: () {
+                      AuthService.instance.updateCurrentUserPlan(planId);
                       // TODO: process payment, then navigate
                       Navigator.pushNamedAndRemoveUntil(
                         context,
