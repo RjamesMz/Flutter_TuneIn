@@ -5,6 +5,7 @@ import 'package:tunely/pages/checkout_screen.dart';
 import '../core/app_colors.dart';
 import '../models/subscription_plan.dart';
 import '../providers/auth_provider.dart';
+import 'personalinfopage.dart';
 
 // ─── Subscription Screen ──────────────────────────────────────────────────────
 /// Displays available subscription plans: Free, Plus, and Premium.
@@ -38,13 +39,17 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
           SliverAppBar(
             pinned: true,
             backgroundColor: kBackground,
+             automaticallyImplyLeading: false,
             elevation: 0,
             leading: IconButton(
               icon: const Icon(
                 Icons.arrow_back_ios_new_rounded,
                 color: kOnSurface,
               ),
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const PersonalInfoPage()),
+              ),
             ),
             title: const Text(
               'Choose Your Plan',
