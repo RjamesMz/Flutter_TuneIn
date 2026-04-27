@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import '../core/app_colors.dart';
 import '../pages/home.dart';
 import '../pages/playlist_page.dart';
@@ -7,6 +6,7 @@ import 'settings.dart';
 import '../pages/search_screen.dart';
 import '../widgets/mini_player.dart';
 import '../widgets/bottom_navigation_bar.dart';
+import '../pages/now_playing_page.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -31,20 +31,24 @@ class _MainScreenState extends State<MainScreen> {
     return Scaffold(
       backgroundColor: kBackground,
 
-      // ── Only the nav bar here ─────────────────────────────────────────
+      // ── Bottom Navigation ─────────────────────────
       bottomNavigationBar: BottomNavBar(
         currentIndex: _currentIndex,
         onTap: (i) => setState(() => _currentIndex = i),
       ),
 
-      // ── MiniPlayer floats above content using Stack ───────────────────
+      // ── Body with MiniPlayer ──────────────────────
       body: Stack(
         children: [
-          // Screens fill the full area
+          // Screens
           Positioned.fill(
-            child: IndexedStack(index: _currentIndex, children: _screens),
+            child: IndexedStack(
+              index: _currentIndex,
+              children: _screens,
+            ),
           ),
-          // MiniPlayer floats above content, above the nav bar
+
+          // MiniPlayer
           if (hasActiveSong && _currentIndex != 2)
             Positioned(
               left: 0,
@@ -57,14 +61,21 @@ class _MainScreenState extends State<MainScreen> {
                     'https://i.scdn.co/image/ab67616d0000b273a048415db06a5b6fa7ec4e1a',
                 isPlaying: true,
                 hasNext: true,
+
                 onTap: () {
-                  // TODO: navigate to full player
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const NowPlayingPage(),
+                    ),
+                  );
                 },
+
                 onTogglePlay: () {
-                  setState(() {}); // toggle play state
+                  setState(() {});
                 },
+
                 onNext: () {
-                  // TODO: skip to next
                 },
               ),
             ),
