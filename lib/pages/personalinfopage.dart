@@ -69,7 +69,7 @@ class PersonalInfoPage extends StatelessWidget {
                           ],
                         ),
                         child: ClipOval(
-                          child: currentUser?.avatarUrl != null
+                          child: (currentUser?.avatarUrl ?? '').isNotEmpty
                               ? (currentUser!.avatarUrl.startsWith('http')
                                   ? Image.network(
                                       currentUser.avatarUrl,
