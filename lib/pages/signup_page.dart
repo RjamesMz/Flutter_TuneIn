@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 
 import '../core/app_colors.dart';
 import '../core/app_strings.dart';
-import '../services/auth.dart';
+import '../services/auth_service.dart';
 import '../widgets/primary_button.dart';
 
 class SignupScreen extends StatefulWidget {

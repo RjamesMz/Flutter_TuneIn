@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "606873051540",
+    "project_id": "tunein-921b4",
+    "storage_bucket": "tunein-921b4.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:606873051540:android:0d305160b7275abb33af81",
+        "android_client_info": {
+          "package_name": "com.example.tunely"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC19PkTmQbR0KXxNNUDa03dV4dIa7Nn3FQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

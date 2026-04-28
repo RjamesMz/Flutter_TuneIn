@@ -107,6 +107,7 @@ class _LoginPageState extends State<LoginPage> {
               TextFormField(
                 controller: _emailCtrl,
                 keyboardType: TextInputType.emailAddress,
+                onChanged: (_) => context.read<AuthProvider>().clearError(),
                 decoration: const InputDecoration(
                   labelText: AppStrings.email,
                   prefixIcon: Icon(
@@ -121,6 +122,7 @@ class _LoginPageState extends State<LoginPage> {
               TextFormField(
                 controller: _passwordCtrl,
                 obscureText: _obscure,
+                onChanged: (_) => context.read<AuthProvider>().clearError(),
                 decoration: InputDecoration(
                   labelText: AppStrings.password,
                   prefixIcon: const Icon(
@@ -139,6 +141,29 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
               const SizedBox(height: 28),
+
+              if (auth.errorMessage != null) ...[
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.red.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: Colors.red.withOpacity(0.35),
+                    ),
+                  ),
+                  child: Text(
+                    auth.errorMessage!,
+                    style: const TextStyle(
+                      color: Colors.red,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
 
               // ── Login Button ──────────────────────────────────────────────
               PrimaryButton(

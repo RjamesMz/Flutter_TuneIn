@@ -1,3 +1,4 @@
+
 import 'package:flutter/foundation.dart';
 import '../models/song.dart';
 import '../services/music_service.dart';
@@ -12,25 +13,27 @@ import '../core/app_strings.dart';
 ///   context.watch<MusicProvider>().displayedSongs
 class MusicProvider extends ChangeNotifier {
   // ── State ──────────────────────────────────────────────────────────────────
-  List<Song> _allSongs = [];
-  List<Song> _searchResults = [];
-  String _selectedCategory = MusicCategories.all;
-  bool _isLoading = false;
-  bool _isSearching = false;
-  String _searchQuery = '';
-  String? _errorMessage;
+  List<Song>  _allSongs          = [];
+  List<Song>  _searchResults     = [];
+  String      _selectedCategory  = MusicCategories.all;
+  bool        _isLoading         = false;
+  bool        _isSearching       = false;
+  String      _searchQuery       = '';
+  String?     _errorMessage;
 
   // ── Getters ────────────────────────────────────────────────────────────────
-  bool get isLoading => _isLoading;
-  bool get isSearching => _isSearching;
-  String get selectedCategory => _selectedCategory;
-  String get searchQuery => _searchQuery;
-  String? get errorMessage => _errorMessage;
+  bool    get isLoading        => _isLoading;
+  bool    get isSearching      => _isSearching;
+  String  get selectedCategory => _selectedCategory;
+  String  get searchQuery      => _searchQuery;
+  String? get errorMessage     => _errorMessage;
 
   /// Songs filtered by the active category (used by HomeScreen).
   List<Song> get filteredSongs {
     if (_selectedCategory == MusicCategories.all) return _allSongs;
-    return _allSongs.where((s) => s.category == _selectedCategory).toList();
+    return _allSongs
+        .where((s) => s.category == _selectedCategory)
+        .toList();
   }
 
   /// Results returned by search (used by SearchScreen).
@@ -45,12 +48,12 @@ class MusicProvider extends ChangeNotifier {
   Future<void> fetchSongs() async {
     if (_allSongs.isNotEmpty) return; // already loaded
 
-    _isLoading = true;
+    _isLoading    = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      _allSongs = await MusicService.instance.fetchSongs();
+      _allSongs  = await MusicService.instance.fetchSongs();
     } catch (e) {
       _errorMessage = 'Could not load songs. Please try again.';
     } finally {
@@ -68,8 +71,8 @@ class MusicProvider extends ChangeNotifier {
 
   /// Searches catalog by [query], updating [searchResults].
   Future<void> search(String query) async {
-    _searchQuery = query;
-    _isSearching = true;
+    _searchQuery  = query;
+    _isSearching  = true;
     notifyListeners();
 
     try {
@@ -84,7 +87,7 @@ class MusicProvider extends ChangeNotifier {
 
   /// Clears the search state.
   void clearSearch() {
-    _searchQuery = '';
+    _searchQuery   = '';
     _searchResults = [];
     notifyListeners();
   }

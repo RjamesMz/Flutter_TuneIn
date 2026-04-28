@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:tunely/widgets/settings_button.dart';
 import 'package:tunely/widgets/primary_button.dart';
 import '../core/app_colors.dart';
 import '../core/app_strings.dart';
 import '../pages/personalinfopage.dart';
-import '../providers/auth_provider.dart';
+import '../services/auth_service.dart';
 
 
 // PROFILE SCREEN
@@ -14,11 +13,9 @@ class SettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<AuthProvider>(
-      builder: (context, authProvider, _) {
-        final user = authProvider.currentUser;
+    final user = AuthService.instance.currentUser;
 
-        return SingleChildScrollView(
+    return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(24, 24, 24, 100),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -36,7 +33,7 @@ class SettingsScreen extends StatelessWidget {
                   border: Border.all(color: kPrimaryContainer, width: 3),
                 ),
                 child: ClipOval(
-                  child: (user?.avatarUrl != null)
+                  child: (user?.avatarUrl ?? '').isNotEmpty
                       ? (user!.avatarUrl.startsWith('http')
                           ? Image.network(
                               user.avatarUrl,
@@ -104,7 +101,7 @@ class SettingsScreen extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => const PersonalInfoPage(),
+                  builder: (_) => PersonalInfoPage(user: user),
                 ),
               );
             },
@@ -121,22 +118,21 @@ class SettingsScreen extends StatelessWidget {
             label: 'Logout',
             icon: Icons.logout,
             onPressed: () {
-              authProvider.logout();
+              AuthService.instance.logout();
               Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
             },
           ),
         ],
       ),
     );
-      },
-    );
   }
 }
 
 Widget _avatarPlaceholder() => Container(
-      color: kSurfaceContainerHighest,
-      child: const Icon(Icons.person, color: kPrimary, size: 48),
-    );
+  color: kSurfaceContainerHighest,
+  child: const Icon(Icons.person, color: kPrimary, size: 40),
+);
+
 
 // HELPER WIDGETS
 

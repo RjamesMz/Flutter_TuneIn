@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import '../models/user.dart';
-import '../services/auth.dart';
+import '../services/auth_service.dart';
 
 // ─── Auth Provider ────────────────────────────────────────────────────────────
 /// Manages authentication state: current user, loading status, and errors.
