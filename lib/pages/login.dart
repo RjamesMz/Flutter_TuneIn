@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../widgets/primary_button.dart';
 import '../core/app_colors.dart';
 import '../core/app_strings.dart';
-import '../services/auth.dart';
+import '../providers/auth_provider.dart';
 
 // ─── Login Prototype ──────────────────────────────────────────────────────────
 /// Design-only version of the Login page.
@@ -15,10 +16,11 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  bool _obscure = true;
-  bool _isLoading = false;
-  final _emailCtrl = TextEditingController();
-  final _passwordCtrl = TextEditingController();
+  final _formKey    = GlobalKey<FormState>();
+  final _emailCtrl  = TextEditingController();
+  final _passwordCtrl   = TextEditingController();
+  bool  _obscure    = true;
+
 
   @override
   void dispose() {
@@ -28,34 +30,27 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> _handleLogin() async {
-    if (_isLoading) return;
-    setState(() => _isLoading = true);
+    if (!_formKey.currentState!.validate()) return;
 
-    try {
-      await AuthService.instance.login(
-        _emailCtrl.text,
-        _passwordCtrl.text,
-      );
+    final auth    = context.read<AuthProvider>();
+    final success = await auth.login(_emailCtrl.text.trim(), _passwordCtrl.text.trim());
 
-      if (!mounted) return;
-      Navigator.pushNamedAndRemoveUntil(context, '/main', (route) => false);
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
-      );
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
+    if (!mounted) return;
+    if (success) {
+      Navigator.pushReplacementNamed(context, '/main');
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final auth = context.watch<AuthProvider>();
     return Scaffold(
       backgroundColor: kBackground,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 28),
+          child: Form(
+            key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -147,8 +142,8 @@ class _LoginPageState extends State<LoginPage> {
 
               // ── Login Button ──────────────────────────────────────────────
               PrimaryButton(
-                label: _isLoading ? 'Signing in...' : AppStrings.login,
-                onPressed: _isLoading ? null : _handleLogin,
+                label: auth.isLoading ? 'Signing in...' : AppStrings.login,
+                onPressed: auth.isLoading ? null : _handleLogin,
                 icon: Icons.login,
               ),
               const SizedBox(height: 24),
@@ -193,10 +188,12 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
               const SizedBox(height: 32),
-            ],
+             ],
+            ),
           ),
         ),
       ),
     );
   }
 }
+

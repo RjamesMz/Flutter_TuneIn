@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:tunely/pages/checkout_screen.dart';
 
 import '../core/app_colors.dart';
 import '../models/subscription_plan.dart';
-import '../services/auth.dart';
-
+import '../providers/auth_provider.dart';
 
 // ─── Subscription Screen ──────────────────────────────────────────────────────
 /// Displays available subscription plans: Free, Plus, and Premium.
@@ -180,7 +180,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                   Text(
                     plan.id == 'free'
                         ? 'No payment required. Upgrade anytime.'
-                        : 'Cancel anytime. Billed ${plan.id == 'premium' ? 'monthly' : 'annualy - save 30%' }.',
+                        : 'Cancel anytime. Billed ${plan.id == 'premium' ? 'monthly' : 'annualy - save 30%'}.',
                     style: const TextStyle(
                       fontSize: 12,
                       color: kOnSurfaceVariant,
@@ -212,8 +212,9 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
   }
 
   void _onTap(BuildContext context, SubscriptionPlan plan) {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
     if (plan.id == 'free') {
-      AuthService.instance.updateCurrentUserPlan(plan.id);
+      authProvider.updatePlan(plan.id);
       // Free plan → go to the main screen, clearing the back stack
       Navigator.pushNamedAndRemoveUntil(context, '/main', (_) => false);
     } else {
@@ -511,4 +512,3 @@ class _TextLink extends StatelessWidget {
     );
   }
 }
-

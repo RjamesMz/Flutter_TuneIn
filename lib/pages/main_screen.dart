@@ -2,11 +2,15 @@ import 'package:flutter/material.dart';
 import '../core/app_colors.dart';
 import '../pages/home.dart';
 import '../pages/playlist_page.dart';
-import 'settings.dart';
 import '../pages/search_screen.dart';
+import '../pages/now_playing_page.dart';
+import 'settings.dart';
+import 'package:provider/provider.dart';
 import '../widgets/mini_player.dart';
 import '../widgets/bottom_navigation_bar.dart';
-import '../pages/now_playing_page.dart';
+import '../providers/player_provider.dart';
+
+
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -17,7 +21,6 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
-  final bool hasActiveSong = true;
 
   final List<Widget> _screens = const [
     HomeScreen(),
@@ -28,6 +31,10 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final player = context.watch<PlayerProvider>();
+    final currentSong = player.currentSong;
+    final hasActiveSong = currentSong != null;
+
     return Scaffold(
       backgroundColor: kBackground,
 
@@ -55,12 +62,11 @@ class _MainScreenState extends State<MainScreen> {
               right: 0,
               bottom: 0,
               child: MiniPlayer(
-                title: 'Blinding Lights',
-                artist: 'The Weeknd',
-                coverUrl:
-                    'https://i.scdn.co/image/ab67616d0000b273a048415db06a5b6fa7ec4e1a',
-                isPlaying: true,
-                hasNext: true,
+                title: currentSong.title,
+                artist: currentSong.artist,
+                coverUrl: currentSong.coverUrl,
+                isPlaying: player.isPlaying,
+                hasNext: player.hasNext,
 
                 onTap: () {
                   Navigator.push(
@@ -72,10 +78,11 @@ class _MainScreenState extends State<MainScreen> {
                 },
 
                 onTogglePlay: () {
-                  setState(() {});
+                  player.togglePlayPause();
                 },
 
                 onNext: () {
+                  player.next();
                 },
               ),
             ),
