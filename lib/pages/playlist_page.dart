@@ -2,6 +2,20 @@ import 'package:flutter/material.dart';
 import '../core/app_colors.dart';
 import 'playlist_music.dart';
 
+// 🔥 CUSTOM FAB POSITION
+class TopRightFabLocation extends FloatingActionButtonLocation {
+  @override
+  Offset getOffset(ScaffoldPrelayoutGeometry scaffoldGeometry) {
+    final double fabX = scaffoldGeometry.scaffoldSize.width
+        - scaffoldGeometry.floatingActionButtonSize.width
+        - 16;
+
+    final double fabY = scaffoldGeometry.minInsets.top + 16;
+
+    return Offset(fabX, fabY);
+  }
+}
+
 class PlaylistPage extends StatefulWidget {
   const PlaylistPage({super.key});
 
@@ -10,7 +24,6 @@ class PlaylistPage extends StatefulWidget {
 }
 
 class _PlaylistPageState extends State<PlaylistPage> {
-
   List<String> playlists = [];
 
   void addPlaylist() {
@@ -86,15 +99,11 @@ class _PlaylistPageState extends State<PlaylistPage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-
-                 
-              Image.asset(
-                    'assets/image/logs/nothing.png', 
+                  Image.asset(
+                    'assets/image/logs/nothing.png',
                     width: 180,
                   ),
-
                   const SizedBox(height: 16),
-
                   const Text(
                     "No Playlists Yet",
                     style: TextStyle(
@@ -103,9 +112,7 @@ class _PlaylistPageState extends State<PlaylistPage> {
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-
                   const SizedBox(height: 6),
-
                   const Text(
                     "Tap + to create one",
                     style: TextStyle(
@@ -120,7 +127,6 @@ class _PlaylistPageState extends State<PlaylistPage> {
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
               itemCount: playlists.length,
               itemBuilder: (context, index) {
-
                 return GestureDetector(
                   onTap: () => openPlaylist(playlists[index]),
                   child: Container(
@@ -132,7 +138,6 @@ class _PlaylistPageState extends State<PlaylistPage> {
                     ),
                     child: Row(
                       children: [
-
                         ClipRRect(
                           borderRadius: BorderRadius.circular(12),
                           child: Image.network(
@@ -142,9 +147,7 @@ class _PlaylistPageState extends State<PlaylistPage> {
                             fit: BoxFit.cover,
                           ),
                         ),
-
                         const SizedBox(width: 12),
-
                         Expanded(
                           child: Text(
                             playlists[index],
@@ -155,7 +158,6 @@ class _PlaylistPageState extends State<PlaylistPage> {
                             ),
                           ),
                         ),
-
                         IconButton(
                           icon: const Icon(Icons.more_vert, color: kOnSurfaceVariant),
                           onPressed: () {
@@ -185,6 +187,8 @@ class _PlaylistPageState extends State<PlaylistPage> {
               },
             ),
 
+      // 🔥 TOP RIGHT FAB
+      floatingActionButtonLocation: TopRightFabLocation(),
       floatingActionButton: FloatingActionButton(
         backgroundColor: kPrimary,
         onPressed: addPlaylist,

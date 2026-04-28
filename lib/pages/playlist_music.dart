@@ -1,6 +1,20 @@
 import 'package:flutter/material.dart';
 import '../core/app_colors.dart';
 
+// 🔥 SAME FAB POSITION CLASS (or import it if you separate files)
+class TopRightFabLocation extends FloatingActionButtonLocation {
+  @override
+  Offset getOffset(ScaffoldPrelayoutGeometry scaffoldGeometry) {
+    final double fabX = scaffoldGeometry.scaffoldSize.width
+        - scaffoldGeometry.floatingActionButtonSize.width
+        - 16;
+
+    final double fabY = scaffoldGeometry.minInsets.top + 16;
+
+    return Offset(fabX, fabY);
+  }
+}
+
 class PlaylistDetailPage extends StatefulWidget {
   final String playlistName;
 
@@ -11,7 +25,6 @@ class PlaylistDetailPage extends StatefulWidget {
 }
 
 class _PlaylistDetailPageState extends State<PlaylistDetailPage> {
-
   List<String> songs = [];
 
   void addSong() {
@@ -77,15 +90,11 @@ class _PlaylistDetailPageState extends State<PlaylistDetailPage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-
-                 
                   Image.asset(
-                    'assets/image/logs/nothing.png', 
+                    'assets/image/logs/nothing.png',
                     width: 180,
                   ),
-
                   const SizedBox(height: 16),
-
                   const Text(
                     "No Songs Yet",
                     style: TextStyle(
@@ -94,9 +103,7 @@ class _PlaylistDetailPageState extends State<PlaylistDetailPage> {
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-
                   const SizedBox(height: 6),
-
                   const Text(
                     "Tap + to add music",
                     style: TextStyle(
@@ -111,7 +118,6 @@ class _PlaylistDetailPageState extends State<PlaylistDetailPage> {
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
               itemCount: songs.length,
               itemBuilder: (context, index) {
-
                 return Container(
                   margin: const EdgeInsets.only(bottom: 12),
                   padding: const EdgeInsets.all(12),
@@ -121,7 +127,6 @@ class _PlaylistDetailPageState extends State<PlaylistDetailPage> {
                   ),
                   child: Row(
                     children: [
-
                       ClipRRect(
                         borderRadius: BorderRadius.circular(12),
                         child: Image.network(
@@ -131,9 +136,7 @@ class _PlaylistDetailPageState extends State<PlaylistDetailPage> {
                           fit: BoxFit.cover,
                         ),
                       ),
-
                       const SizedBox(width: 12),
-
                       Expanded(
                         child: Text(
                           songs[index],
@@ -144,7 +147,6 @@ class _PlaylistDetailPageState extends State<PlaylistDetailPage> {
                           ),
                         ),
                       ),
-
                       IconButton(
                         icon: const Icon(Icons.more_vert, color: kOnSurfaceVariant),
                         onPressed: () {
@@ -170,6 +172,8 @@ class _PlaylistDetailPageState extends State<PlaylistDetailPage> {
               },
             ),
 
+      // 🔥 TOP RIGHT FAB
+      floatingActionButtonLocation: TopRightFabLocation(),
       floatingActionButton: FloatingActionButton(
         backgroundColor: kPrimary,
         onPressed: addSong,
