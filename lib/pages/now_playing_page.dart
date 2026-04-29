@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart'; // bagong ADDED
 import '../core/app_colors.dart';
+import '../providers/player_provider.dart'; // to yung bagong ADDED
 
 class NowPlayingPage extends StatelessWidget {
   const NowPlayingPage({super.key});
@@ -11,7 +13,6 @@ class NowPlayingPage extends StatelessWidget {
     {"title": "Peaches", "artist": "Justin Bieber"},
   ];
 
- 
   void _openRecommendations(BuildContext context) {
     showModalBottomSheet(
       context: context,
@@ -31,7 +32,6 @@ class NowPlayingPage extends StatelessWidget {
               children: [
                 const SizedBox(height: 10),
 
-                // Handle
                 Center(
                   child: Container(
                     width: 40,
@@ -79,11 +79,14 @@ class NowPlayingPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    //  to yung ga connect sa PROVIDER
+    final player = context.watch<PlayerProvider>();
+    final song = player.currentSong;
+
     return Scaffold(
       backgroundColor: kBackground,
       body: Stack(
         children: [
-         
           SafeArea(
             child: Column(
               children: [
@@ -106,10 +109,12 @@ class NowPlayingPage extends StatelessWidget {
 
                 const SizedBox(height: 10),
 
+                //  the dynamic COVER
                 ClipRRect(
                   borderRadius: BorderRadius.circular(24),
                   child: Image.network(
-                    'https://i.scdn.co/image/ab67616d0000b273a048415db06a5b6fa7ec4e1a',
+                    song?.coverUrl ??
+                        'https://via.placeholder.com/150',
                     height: 260,
                     width: 260,
                     fit: BoxFit.cover,
@@ -122,25 +127,27 @@ class NowPlayingPage extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: const [
+                    children: [
+                      //  the dynamic TITLE + ARTIST
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            "Blinding Lights",
-                            style: TextStyle(
+                            song?.title ?? "No song",
+                            style: const TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.w800,
                               color: kOnSurface,
                             ),
                           ),
                           Text(
-                            "The Weeknd",
-                            style: TextStyle(color: kOnSurfaceVariant),
+                            song?.artist ?? "Unknown artist",
+                            style: const TextStyle(
+                                color: kOnSurfaceVariant),
                           ),
                         ],
                       ),
-                      Icon(Icons.favorite, color: kPrimary),
+                      const Icon(Icons.favorite, color: kPrimary),
                     ],
                   ),
                 ),
@@ -156,7 +163,8 @@ class NowPlayingPage extends StatelessWidget {
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 20),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    mainAxisAlignment:
+                        MainAxisAlignment.spaceBetween,
                     children: [
                       Text("1:05"),
                       Text("3:20"),
@@ -167,17 +175,37 @@ class NowPlayingPage extends StatelessWidget {
                 const SizedBox(height: 10),
 
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: const [
-                    Icon(Icons.shuffle),
-                    Icon(Icons.skip_previous),
+                  mainAxisAlignment:
+                      MainAxisAlignment.spaceEvenly,
+                  children: [
+                    const Icon(Icons.shuffle),
+                    const Icon(Icons.skip_previous),
+
+                    //  for the SYNC PLAY/PAUSE
                     CircleAvatar(
                       radius: 30,
                       backgroundColor: kPrimary,
-                      child: Icon(Icons.pause, color: Colors.white),
+                      child: IconButton(
+                        icon: Icon(
+                          player.isPlaying
+                              ? Icons.pause
+                              : Icons.play_arrow,
+                          color: Colors.white,
+                        ),
+                        onPressed: () {
+                          player.togglePlayPause();
+                        },
+                      ),
                     ),
-                    Icon(Icons.skip_next),
-                    Icon(Icons.repeat),
+
+                    IconButton(
+                      icon: const Icon(Icons.skip_next),
+                      onPressed: () {
+                        player.next();
+                      },
+                    ),
+
+                    const Icon(Icons.repeat),
                   ],
                 ),
 
@@ -194,7 +222,8 @@ class NowPlayingPage extends StatelessWidget {
             child: GestureDetector(
               onTap: () => _openRecommendations(context),
               child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 16),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 16),
                 decoration: const BoxDecoration(
                   color: kBackground,
                   borderRadius: BorderRadius.vertical(
@@ -215,13 +244,15 @@ class NowPlayingPage extends StatelessWidget {
                       height: 4,
                       decoration: BoxDecoration(
                         color: kOnSurfaceVariant,
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius:
+                            BorderRadius.circular(10),
                       ),
                     ),
                     const SizedBox(height: 8),
                     const Text(
                       "Recommended Songs",
-                      style: TextStyle(fontWeight: FontWeight.w600),
+                      style:
+                          TextStyle(fontWeight: FontWeight.w600),
                     ),
                   ],
                 ),
@@ -233,10 +264,10 @@ class NowPlayingPage extends StatelessWidget {
     );
   }
 
-
   static Widget _songTile(String title, String artist) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12, left: 16, right: 16),
+      margin:
+          const EdgeInsets.only(bottom: 12, left: 16, right: 16),
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         color: kSurfaceContainerHighest,
