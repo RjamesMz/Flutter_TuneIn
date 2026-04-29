@@ -5,6 +5,8 @@ import '../models/subscription_plan.dart';
 import '../models/user.dart';
 import '../widgets/primary_button.dart';
 import 'package:provider/provider.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 import '../providers/auth_provider.dart';
 
 
@@ -17,7 +19,7 @@ class PersonalInfoPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<AuthProvider>(
       builder: (context, authProvider, child) {
-        final currentUser = user ?? authProvider.currentUser;
+        final currentUser = authProvider.currentUser ?? user;
         final userPlanStr = currentUser?.plan ?? 'free';
         final userPlan = SubscriptionPlan.getPlanById(userPlanStr);
         final isPremium = userPlan.id != 'free';
@@ -54,34 +56,63 @@ class PersonalInfoPage extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       const SizedBox(height: 16),
-                      Container(
-                        width: 80,
-                        height: 80,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white.withOpacity(0.6), width: 3),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.15),
-                              blurRadius: 16,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: ClipOval(
-                          child: (currentUser?.avatarUrl ?? '').isNotEmpty
-                              ? (currentUser!.avatarUrl.startsWith('http')
-                                  ? Image.network(
-                                      currentUser.avatarUrl,
-                                      fit: BoxFit.cover,
-                                      errorBuilder: (_, __, ___) => _avatarFallback(),
-                                    )
-                                  : Image.asset(
-                                      currentUser.avatarUrl,
-                                      fit: BoxFit.cover,
-                                      errorBuilder: (_, __, ___) => _avatarFallback(),
-                                    ))
-                              : _avatarFallback(),
+                      GestureDetector(
+                        onTap: () async {
+                          final picker = ImagePicker();
+                          final picked = await picker.pickImage(
+                            source: ImageSource.gallery,
+                            maxWidth: 1200,
+                            maxHeight: 1200,
+                            imageQuality: 85,
+                          );
+                          if (picked == null) return;
+                          final file = File(picked.path);
+                          final success = await authProvider.updateAvatar(file);
+                          ScaffoldMessenger.of(context).clearSnackBars();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(success ? 'Profile picture updated' : 'Failed to update picture')),
+                          );
+                        },
+                        child: SizedBox(
+                          width: 80,
+                          height: 80,
+                          child: Stack(
+                            clipBehavior: Clip.none,
+                            children: [
+                              Container(
+                                width: 80,
+                                height: 80,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(color: Colors.white.withOpacity(0.6), width: 3),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.15),
+                                      blurRadius: 16,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ],
+                                ),
+                                child: ClipOval(
+                                  child: _buildAvatarImage(currentUser?.avatarUrl),
+                                ),
+                              ),
+                              Positioned(
+                                right: -2,
+                                bottom: -2,
+                                child: Container(
+                                  width: 22,
+                                  height: 22,
+                                  decoration: BoxDecoration(
+                                    color: kPrimary,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(color: Colors.white, width: 1.5),
+                                  ),
+                                  child: const Icon(Icons.edit, color: Colors.white, size: 14),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                       const SizedBox(height: 10),
@@ -94,6 +125,7 @@ class PersonalInfoPage extends StatelessWidget {
                         style: TextStyle(fontSize: 13, color: Colors.white.withOpacity(0.8)),
                       ),
                     ],
+  
                   ),
                 ),
               ),
@@ -381,4 +413,31 @@ Widget _avatarFallback() => Container(
   color: kSurfaceContainerHighest,
   child: const Icon(Icons.person, color: kPrimary, size: 40),
 );
+
+Widget _buildAvatarImage(String? avatarUrl) {
+  if (avatarUrl == null || avatarUrl.isEmpty) return _avatarFallback();
+
+  if (avatarUrl.startsWith('http')) {
+    return Image.network(
+      avatarUrl,
+      fit: BoxFit.cover,
+      errorBuilder: (_, __, ___) => _avatarFallback(),
+    );
+  }
+
+  final file = File(avatarUrl);
+  if (file.existsSync()) {
+    return Image.file(
+      file,
+      fit: BoxFit.cover,
+      errorBuilder: (_, __, ___) => _avatarFallback(),
+    );
+  }
+
+  return Image.asset(
+    avatarUrl,
+    fit: BoxFit.cover,
+    errorBuilder: (_, __, ___) => _avatarFallback(),
+  );
+}
 
