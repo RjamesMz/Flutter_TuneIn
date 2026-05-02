@@ -42,51 +42,20 @@ class AuthService extends ChangeNotifier {
     }
   }
 
-  /// Saves [imageFile] to local device storage.
-  /// Returns the local file path on success.
-  Future<String> updateAvatar(File imageFile) async {
-    if (_currentUser == null) throw Exception('Not authenticated');
-    if (!await imageFile.exists()) throw Exception('Image file does not exist');
-
-    final uid = _currentUser!.id;
-
-    try {
-      // Get local documents directory
-      final appDir = await getApplicationDocumentsDirectory();
-      final avatarDir = Directory('${appDir.path}/avatars');
-      
-      // Create avatars directory if it does not exist
-      if (!await avatarDir.exists()) {
-        await avatarDir.create(recursive: true);
-      }
-
-      // Save avatar locally
-      final localPath = '${avatarDir.path}/$uid.jpg';
-      await imageFile.copy(localPath);
-      await FileImage(File(localPath)).evict();
-
-      // Persist the avatar path to shared preferences
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('avatar_$uid', localPath);
-
-      // Update local state
-      _currentUser = _currentUser!.copyWith(avatarUrl: localPath);
-      notifyListeners();
-      return localPath;
-    } catch (e) {
-      throw Exception('Avatar save failed: $e');
-    }
-  }
-
-
+  
   /// Simulates a login call. Any non-empty credentials succeed after 1.5 s.
   /// Throws [Exception] for empty credentials.
   Future<User> login(String email, String password) async {
+    // Validate email and password are not null or empty
+    if (email.trim().isEmpty || password.trim().isEmpty) {
+      throw Exception('Email and password are required.');
+    }
+
     try {
       // Authenticate with Firebase
       final credential = await _auth.signInWithEmailAndPassword(
-        email: email,
-        password: password,
+        email: email.trim(),
+        password: password.trim(),
       );
       final firebaseUser = credential.user!;
       // Fetch the extra user data from Firestore
@@ -114,6 +83,8 @@ class AuthService extends ChangeNotifier {
       return user;
     } on auth.FirebaseAuthException catch (e) {
       throw Exception(_authErrorMessage(e));
+    } catch (e) {
+      throw Exception('Login failed: ${e.toString()}');
     }
   }
 
@@ -194,6 +165,45 @@ class AuthService extends ChangeNotifier {
     );
     notifyListeners();
   }
+
+
+  
+  /// Saves [imageFile] to local device storage.
+  /// Returns the local file path on success.
+  Future<String> updateAvatar(File imageFile) async {
+    if (_currentUser == null) throw Exception('Not authenticated');
+    if (!await imageFile.exists()) throw Exception('Image file does not exist');
+
+    final uid = _currentUser!.id;
+
+    try {
+      // Get local documents directory
+      final appDir = await getApplicationDocumentsDirectory();
+      final avatarDir = Directory('${appDir.path}/avatars');
+      
+      // Create avatars directory if it does not exist
+      if (!await avatarDir.exists()) {
+        await avatarDir.create(recursive: true);
+      }
+
+      // Save avatar locally
+      final localPath = '${avatarDir.path}/$uid.jpg';
+      await imageFile.copy(localPath);
+      await FileImage(File(localPath)).evict();
+
+      // Persist the avatar path to shared preferences
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('avatar_$uid', localPath);
+
+      // Update local state
+      _currentUser = _currentUser!.copyWith(avatarUrl: localPath);
+      notifyListeners();
+      return localPath;
+    } catch (e) {
+      throw Exception('Avatar save failed: $e');
+    }
+  }
+
   
 }
 

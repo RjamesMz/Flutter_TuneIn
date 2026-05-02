@@ -172,18 +172,7 @@ class _LoginPageState extends State<LoginPage> {
                 icon: Icons.login,
               ),
               const SizedBox(height: 24),
-
-              // ── Demo Hint ─────────────────────────────────────────────────
-              Center(
-                child: Text(
-                  'Demo: any email & password will work',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: kOnSurfaceVariant.withOpacity(0.7),
-                    fontStyle: FontStyle.italic,
-                  ),
-                ),
-              ),
+              
 
                  Center(
                   child: Row(

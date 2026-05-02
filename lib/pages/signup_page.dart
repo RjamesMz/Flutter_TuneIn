@@ -143,16 +143,14 @@ class _SignupScreenState extends State<SignupScreen>
                         Container(
                           width: 72,
                           height: 72,
-                          decoration: BoxDecoration(
-                            gradient: kSoulGradient,
-                            shape: BoxShape.circle,
-                            boxShadow: [BoxShadow(
-                              color: kPrimary.withOpacity(0.35),
-                              blurRadius: 20,
-                              offset: const Offset(0, 6),
-                            )],
-                          ),
-                          child: const Icon(Icons.headphones, color: Colors.white, size: 36),
+                          
+                          child: Center(
+                                child: Image.asset(
+                                    'assets/image/logo/TuneIn_Logo.png',
+                                    width: 500,   // adjust to taste
+                                    height: 500,
+                                  ),
+                              ),
                         ),
                         const SizedBox(height: 16),
                         Text(AppStrings.appName,
