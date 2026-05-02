@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'dart:io';
 import '../models/user.dart';
 import '../services/auth_service.dart';
 
@@ -114,5 +115,24 @@ class AuthProvider extends ChangeNotifier {
   void updatePlan(String planId) {
     AuthService.instance.updateCurrentUserPlan(planId);
     // _onAuthServiceChanged will be called automatically by AuthService.notifyListeners()
+  }
+
+  /// Upload a new avatar image file and update the current user.
+  Future<bool> updateAvatar(File imageFile) async {
+    if (_currentUser == null) return false;
+    _isLoading = true;
+    notifyListeners();
+    try {
+      final url = await AuthService.instance.updateAvatar(imageFile);
+      _currentUser = _currentUser!.copyWith(avatarUrl: url);
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _errorMessage = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
   }
 }
