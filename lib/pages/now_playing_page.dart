@@ -4,296 +4,233 @@ import '../core/app_colors.dart';
 import '../providers/player_provider.dart';
 import '../models/song.dart';
 
-class NowPlayingPage extends StatelessWidget {
+class NowPlayingPage extends StatefulWidget {
   const NowPlayingPage({super.key});
 
-  void _openRecommendations(BuildContext context) {
-    final player = context.read<PlayerProvider>();
-    final List<Song> queue = player.queue; // making the exact match
+  @override
+  State<NowPlayingPage> createState() => _NowPlayingPageState();
+}
 
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: const Color.fromARGB(255, 255, 167, 183),
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
-      ),
-      builder: (context) {
-        return DraggableScrollableSheet(
-          expand: false,
-          initialChildSize: 0.8,
-          minChildSize: 0.5,
-          maxChildSize: 0.95,
-          builder: (context, controller) {
-            return Column(
-              children: [
-                const SizedBox(height: 10),
+class _NowPlayingPageState extends State<NowPlayingPage> {
+  final ScrollController _controller = ScrollController();
+  double _scrollOffset = 0;
 
-                Center(
-                  child: Container(
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: kOnSurfaceVariant,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 10),
-
-                const Text(
-                  "Recommended Songs",
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-
-                const SizedBox(height: 10),
-
-                Expanded(
-                  child: ListView.builder(
-                    controller: controller,
-                    itemCount: queue.length,
-                    itemBuilder: (context, index) {
-                      final song = queue[index];
-
-                      return GestureDetector(
-                        onTap: () {
-                          // showig the  exact method signature
-                          player.play(song, queue: queue);
-                          Navigator.pop(context);
-                        },
-                        child: _songTile(song),
-                      );
-                    },
-                  ),
-                ),
-              ],
-            );
-          },
-        );
-      },
-    );
+  @override
+  void initState() {
+    super.initState();
+    _controller.addListener(() {
+      setState(() {
+        _scrollOffset = _controller.offset;
+      });
+    });
   }
+
+  double get _fade => (1 - (_scrollOffset / 250)).clamp(0.0, 1.0);
 
   @override
   Widget build(BuildContext context) {
     final player = context.watch<PlayerProvider>();
     final song = player.currentSong;
+    final queue = player.queue;
 
     return Scaffold(
       backgroundColor: kBackground,
-      body: Stack(
-        children: [
-          SafeArea(
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child: Row(
+      body: CustomScrollView(
+        controller: _controller,
+        slivers: [
+      
+          SliverFillRemaining(
+            hasScrollBody: true,
+            child: Center(
+              child: Opacity(
+                opacity: _fade,
+                child: Transform.translate(
+                  offset: Offset(0, -20 * (1 - _fade)),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      IconButton(
-                        icon: const Icon(Icons.keyboard_arrow_down),
-                        onPressed: () => Navigator.pop(context),
+                    
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(24),
+                        child: Image.network(
+                          song?.coverUrl ??
+                              'https://via.placeholder.com/150',
+                          height: 260,
+                          width: 260,
+                          fit: BoxFit.cover,
+                        ),
                       ),
-                      const Spacer(),
-                      IconButton(
-                        icon: const Icon(Icons.more_vert),
-                        onPressed: () {},
+
+                      const SizedBox(height: 20),
+
+                      /// Song title
+                      Text(
+                        song?.title ?? "No song",
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w800,
+                          color: kOnSurface,
+                        ),
                       ),
-                    ],
-                  ),
-                ),
 
-                const SizedBox(height: 10),
+                      /// Artist
+                      Text(
+                        song?.artist ?? "Unknown artist",
+                        style: const TextStyle(
+                          color: kOnSurfaceVariant,
+                        ),
+                      ),
 
-                // showing the uses currentSong
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(24),
-                  child: Image.network(
-                    song?.coverUrl ?? 'https://via.placeholder.com/150',
-                    height: 260,
-                    width: 260,
-                    fit: BoxFit.cover,
-                  ),
-                ),
+                      const SizedBox(height: 20),
 
-                const SizedBox(height: 20),
+                      /// Progress bar
+                      SliderTheme(
+                        data: SliderTheme.of(context).copyWith(
+                          trackHeight: 2,
+                          thumbShape: const RoundSliderThumbShape(
+                            enabledThumbRadius: 6,
+                          ),
+                        ),
+                        child: Slider(
+                          value: 0.3,
+                          onChanged: (v) {},
+                          activeColor: kPrimary,
+                          inactiveColor:
+                              kOnSurface.withOpacity(0.2),
+                        ),
+                      ),
 
-                // for the uses currentSong
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      /// Time labels
+                      const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 20),
+                        child: Row(
+                          mainAxisAlignment:
+                              MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text("00:11",
+                                style: TextStyle(
+                                    color: kOnSurfaceVariant)),
+                            Text("03:43",
+                                style: TextStyle(
+                                    color: kOnSurfaceVariant)),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 20),
+
+                    
+                      Row(
+                        mainAxisAlignment:
+                            MainAxisAlignment.spaceEvenly,
                         children: [
-                          Text(
-                            song?.title ?? "No song",
-                            style: const TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w800,
-                              color: kOnSurface,
+                          IconButton(
+                            icon: const Icon(Icons.shuffle),
+                            color: kOnSurfaceVariant,
+                            onPressed: player.toggleShuffle,
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.skip_previous),
+                            color: kOnSurface,
+                            onPressed: player.hasPrevious
+                                ? player.previous
+                                : null,
+                          ),
+
+                          /// Play button
+                          CircleAvatar(
+                            radius: 30,
+                            backgroundColor: kPrimary,
+                            child: IconButton(
+                              icon: Icon(
+                                player.isPlaying
+                                    ? Icons.pause
+                                    : Icons.play_arrow,
+                                color: Colors.white,
+                              ),
+                              onPressed:
+                                  player.togglePlayPause,
                             ),
                           ),
-                          Text(
-                            song?.artist ?? "Unknown artist",
-                            style: const TextStyle(color: kOnSurfaceVariant),
+
+                          IconButton(
+                            icon: const Icon(Icons.skip_next),
+                            color: kOnSurface,
+                            onPressed: player.hasNext
+                                ? player.next
+                                : null,
+                          ),
+                          IconButton(
+                            icon:
+                                const Icon(Icons.favorite_border),
+                            color: kPrimary,
+                            onPressed: () {},
                           ),
                         ],
                       ),
-                      const Icon(Icons.favorite, color: kPrimary),
                     ],
                   ),
                 ),
+              ),
+            ),
+          ),
 
-                const SizedBox(height: 20),
+          /// spacing before recommendations
+          const SliverToBoxAdapter(
+            child: SizedBox(height: 40),
+          ),
 
-                Slider(
-                  value: 0.3,
-                  onChanged: (v) {},
-                  activeColor: kPrimary,
-                ),
+         /// now scrool not drawer
+          SliverOpacity(
+            opacity: (_scrollOffset > 120) ? 1 : 0,
+            sliver: SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  final s = queue[index];
 
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text("1:05"),
-                      Text("3:20"),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 10),
-
-                //  to all the controls mapped to provider
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.shuffle),
-                      onPressed: player.toggleShuffle,
+                  return Container(
+                    margin: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 8),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: kSurfaceContainerHighest,
+                      borderRadius:
+                          BorderRadius.circular(16),
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.skip_previous),
-                      onPressed: player.hasPrevious ? player.previous : null,
-                    ),
-                    CircleAvatar(
-                      radius: 30,
-                      backgroundColor: kPrimary,
-                      child: IconButton(
-                        icon: Icon(
-                          player.isPlaying
-                              ? Icons.pause
-                              : Icons.play_arrow,
-                          color: Colors.white,
+                    child: ListTile(
+                      leading: ClipRRect(
+                        borderRadius:
+                            BorderRadius.circular(10),
+                        child: Image.network(
+                          s.coverUrl,
+                          width: 50,
+                          height: 50,
+                          fit: BoxFit.cover,
                         ),
-                        onPressed: player.togglePlayPause,
                       ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.skip_next),
-                      onPressed: player.hasNext ? player.next : null,
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.repeat),
-                      onPressed: player.toggleRepeat,
-                    ),
-                  ],
-                ),
-
-                const Spacer(),
-              ],
-            ),
-          ),
-
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: GestureDetector(
-              onTap: () => _openRecommendations(context),
-              child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                decoration: const BoxDecoration(
-                  color: kBackground,
-                  borderRadius: BorderRadius.vertical(
-                    top: Radius.circular(25),
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      blurRadius: 10,
-                      color: Colors.black12,
-                    )
-                  ],
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: 40,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: kOnSurfaceVariant,
-                        borderRadius: BorderRadius.circular(10),
+                      title: Text(
+                        s.title,
+                        style: const TextStyle(
+                            color: kOnSurface),
                       ),
+                      subtitle: Text(
+                        s.artist,
+                        style: const TextStyle(
+                            color: kOnSurfaceVariant),
+                      ),
+                      onTap: () {
+                        player.play(s, queue: queue);
+                      },
                     ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      "Recommended Songs",
-                      style: TextStyle(fontWeight: FontWeight.w600),
-                    ),
-                  ],
-                ),
+                  );
+                },
+                childCount: queue.length,
               ),
             ),
           ),
-        ],
-      ),
-    );
-  }
 
-  // this accepts Song directly (matches your model)
-  static Widget _songTile(Song song) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12, left: 16, right: 16),
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: kSurfaceContainerHighest,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Row(
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(10),
-            child: Image.network(
-              song.coverUrl,
-              width: 50,
-              height: 50,
-              fit: BoxFit.cover,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              song.title,
-              style: const TextStyle(
-                color: kOnSurface,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-          Text(
-            song.artist,
-            style: const TextStyle(
-              color: kOnSurfaceVariant,
-              fontSize: 12,
-            ),
+          const SliverToBoxAdapter(
+            child: SizedBox(height: 40),
           ),
         ],
       ),
