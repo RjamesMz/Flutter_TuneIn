@@ -38,7 +38,20 @@ class _NowPlayingPageState extends State<NowPlayingPage> {
       body: CustomScrollView(
         controller: _controller,
         slivers: [
-      
+
+          SliverAppBar(
+            backgroundColor: kBackground,
+            elevation: 0,
+            pinned: true,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back),
+              color: kOnSurface,
+              onPressed: () {
+                Navigator.pop(context);
+              },
+            ),
+          ),
+
           SliverFillRemaining(
             hasScrollBody: true,
             child: Center(
@@ -49,7 +62,8 @@ class _NowPlayingPageState extends State<NowPlayingPage> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                    
+
+                      /// Album cover
                       ClipRRect(
                         borderRadius: BorderRadius.circular(24),
                         child: Image.network(
@@ -95,8 +109,7 @@ class _NowPlayingPageState extends State<NowPlayingPage> {
                           value: 0.3,
                           onChanged: (v) {},
                           activeColor: kPrimary,
-                          inactiveColor:
-                              kOnSurface.withOpacity(0.2),
+                          inactiveColor: kOnSurface.withOpacity(0.2),
                         ),
                       ),
 
@@ -108,21 +121,18 @@ class _NowPlayingPageState extends State<NowPlayingPage> {
                               MainAxisAlignment.spaceBetween,
                           children: [
                             Text("00:11",
-                                style: TextStyle(
-                                    color: kOnSurfaceVariant)),
+                                style: TextStyle(color: kOnSurfaceVariant)),
                             Text("03:43",
-                                style: TextStyle(
-                                    color: kOnSurfaceVariant)),
+                                style: TextStyle(color: kOnSurfaceVariant)),
                           ],
                         ),
                       ),
 
                       const SizedBox(height: 20),
 
-                    
+                      /// Controls
                       Row(
-                        mainAxisAlignment:
-                            MainAxisAlignment.spaceEvenly,
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           IconButton(
                             icon: const Icon(Icons.shuffle),
@@ -132,12 +142,10 @@ class _NowPlayingPageState extends State<NowPlayingPage> {
                           IconButton(
                             icon: const Icon(Icons.skip_previous),
                             color: kOnSurface,
-                            onPressed: player.hasPrevious
-                                ? player.previous
-                                : null,
+                            onPressed:
+                                player.hasPrevious ? player.previous : null,
                           ),
 
-                          /// Play button
                           CircleAvatar(
                             radius: 30,
                             backgroundColor: kPrimary,
@@ -148,21 +156,17 @@ class _NowPlayingPageState extends State<NowPlayingPage> {
                                     : Icons.play_arrow,
                                 color: Colors.white,
                               ),
-                              onPressed:
-                                  player.togglePlayPause,
+                              onPressed: player.togglePlayPause,
                             ),
                           ),
 
                           IconButton(
                             icon: const Icon(Icons.skip_next),
                             color: kOnSurface,
-                            onPressed: player.hasNext
-                                ? player.next
-                                : null,
+                            onPressed: player.hasNext ? player.next : null,
                           ),
                           IconButton(
-                            icon:
-                                const Icon(Icons.favorite_border),
+                            icon: const Icon(Icons.favorite_border),
                             color: kPrimary,
                             onPressed: () {},
                           ),
@@ -175,12 +179,11 @@ class _NowPlayingPageState extends State<NowPlayingPage> {
             ),
           ),
 
-          /// spacing before recommendations
           const SliverToBoxAdapter(
             child: SizedBox(height: 40),
           ),
 
-         /// now scrool not drawer
+          /// Queue list
           SliverOpacity(
             opacity: (_scrollOffset > 120) ? 1 : 0,
             sliver: SliverList(
@@ -194,13 +197,11 @@ class _NowPlayingPageState extends State<NowPlayingPage> {
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
                       color: kSurfaceContainerHighest,
-                      borderRadius:
-                          BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(16),
                     ),
                     child: ListTile(
                       leading: ClipRRect(
-                        borderRadius:
-                            BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(10),
                         child: Image.network(
                           s.coverUrl,
                           width: 50,
@@ -210,13 +211,11 @@ class _NowPlayingPageState extends State<NowPlayingPage> {
                       ),
                       title: Text(
                         s.title,
-                        style: const TextStyle(
-                            color: kOnSurface),
+                        style: const TextStyle(color: kOnSurface),
                       ),
                       subtitle: Text(
                         s.artist,
-                        style: const TextStyle(
-                            color: kOnSurfaceVariant),
+                        style: const TextStyle(color: kOnSurfaceVariant),
                       ),
                       onTap: () {
                         player.play(s, queue: queue);
