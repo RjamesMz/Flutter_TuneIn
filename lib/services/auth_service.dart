@@ -213,6 +213,35 @@ class AuthService extends ChangeNotifier {
     }
   }
 
-  
+  /// Updates user profile details in Firestore and local state.
+  Future<void> updateUserProfile({
+    String? name,
+    String? username,
+    String? phone,
+    String? dateOfBirth,
+    String? gender,
+  }) async {
+    if (_currentUser == null) return;
+    
+    final updates = <String, dynamic>{};
+    if (name != null) updates['name'] = name;
+    if (username != null) updates['username'] = username;
+    if (phone != null) updates['phone'] = phone;
+    if (dateOfBirth != null) updates['dateOfBirth'] = dateOfBirth;
+    if (gender != null) updates['gender'] = gender;
+
+    if (updates.isEmpty) return;
+
+    await _firestore.collection('users').doc(_currentUser!.id).update(updates);
+    
+    _currentUser = _currentUser!.copyWith(
+      name: name ?? _currentUser!.name,
+      username: username ?? _currentUser!.username,
+      phone: phone ?? _currentUser!.phone,
+      dateOfBirth: dateOfBirth ?? _currentUser!.dateOfBirth,
+      gender: gender ?? _currentUser!.gender,
+    );
+    notifyListeners();
+  }
 }
 

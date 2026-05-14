@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../core/app_colors.dart';
 import '../core/responsive_helper.dart';
 import '../providers/player_provider.dart';
+import '../providers/music_provider.dart';
 
 class NowPlayingPage extends StatefulWidget {
   const NowPlayingPage({super.key});
@@ -36,8 +37,10 @@ class _NowPlayingPageState extends State<NowPlayingPage> {
   @override
   Widget build(BuildContext context) {
     final player = context.watch<PlayerProvider>();
+    final music = context.watch<MusicProvider>();
     final song = player.currentSong;
     final queue = player.queue;
+    final isLiked = song != null ? music.isLiked(song.id) : false;
 
     // Auto-close page if music completely stops (e.g. playlist finishes)
     if (song == null) {
@@ -199,9 +202,11 @@ class _NowPlayingPageState extends State<NowPlayingPage> {
                             onPressed: player.hasNext ? player.next : null,
                           ),
                           IconButton(
-                            icon: const Icon(Icons.favorite_border),
+                            icon: Icon(isLiked ? Icons.favorite : Icons.favorite_border),
                             color: kPrimary,
-                            onPressed: () {},
+                            onPressed: song != null ? () {
+                              music.toggleLike(song.id);
+                            } : null,
                           ),
                         ],
                       ),

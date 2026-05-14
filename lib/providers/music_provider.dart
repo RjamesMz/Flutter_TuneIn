@@ -184,8 +184,18 @@ class MusicProvider extends ChangeNotifier {
   void toggleLike(String songId) {
     if (_likedSongIds.contains(songId)) {
       _likedSongIds.remove(songId);
+      removeSongFromPlaylist('Liked Songs', songId);
+      
+      // If no likes left, you can optionally remove the playlist
+      if (_likedSongIds.isEmpty) {
+        deletePlaylist('Liked Songs');
+      }
     } else {
       _likedSongIds.add(songId);
+      if (!_playlists.containsKey('Liked Songs')) {
+        createPlaylist('Liked Songs');
+      }
+      addSongToPlaylist('Liked Songs', songId);
     }
     _saveLikes();
     notifyListeners();

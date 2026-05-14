@@ -146,4 +146,33 @@ class AuthProvider extends ChangeNotifier {
       return false;
     }
   }
+
+  /// Updates user profile details
+  Future<bool> updateUserProfile({
+    String? name,
+    String? username,
+    String? phone,
+    String? dateOfBirth,
+    String? gender,
+  }) async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      await AuthService.instance.updateUserProfile(
+        name: name,
+        username: username,
+        phone: phone,
+        dateOfBirth: dateOfBirth,
+        gender: gender,
+      );
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _errorMessage = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
 }
