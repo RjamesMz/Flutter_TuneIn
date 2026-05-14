@@ -124,8 +124,8 @@ class SettingsScreen extends StatelessWidget {
               PrimaryButton(
                 label: 'Logout',
                 icon: Icons.logout,
-                onPressed: () {
-                  AuthService.instance.logout();
+                onPressed: () async {
+                  await context.read<AuthProvider>().logout();
                   Navigator.pushNamedAndRemoveUntil(
                     context,
                     '/login',

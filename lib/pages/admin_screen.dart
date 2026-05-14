@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:tunely/pages/upload_song_screen.dart';
 import 'package:tunely/pages/manage_songs_screen.dart';
-import '../services/auth_service.dart';
 import '../core/app_colors.dart';
+import 'package:provider/provider.dart';
+import '../providers/auth_provider.dart';
 
 class AdminScreen extends StatelessWidget {
   const AdminScreen({super.key});
@@ -94,8 +95,8 @@ class AdminScreen extends StatelessWidget {
                         title: 'Logout',
                         subtitle: 'Sign out of your admin account.',
                         color: kTertiary,
-                        onTap: () {
-                          AuthService.instance.logout();
+                        onTap: () async {
+                          await context.read<AuthProvider>().logout();
                           Navigator.pushNamedAndRemoveUntil(
                             context,
                             '/login',

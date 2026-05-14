@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'dart:io';
 import '../models/user.dart';
 import '../services/auth_service.dart';
+import '../providers/player_provider.dart';
 
 // ─── Auth Provider ────────────────────────────────────────────────────────────
 /// Manages authentication state: current user, loading status, and errors.
@@ -11,9 +12,10 @@ class AuthProvider extends ChangeNotifier {
   User?   _currentUser;
   bool    _isLoading   = false;
   String? _errorMessage;
+  final PlayerProvider? _playerProvider;
 
  
-  AuthProvider() {
+  AuthProvider({PlayerProvider? playerProvider}) : _playerProvider = playerProvider {
     // Listen to AuthService changes (plan updates, etc)
     AuthService.instance.addListener(_onAuthServiceChanged);
   }
@@ -109,6 +111,7 @@ class AuthProvider extends ChangeNotifier {
     _isLoading = true;
     notifyListeners();
 
+    await _playerProvider?.stop();
     await AuthService.instance.logout();
 
     _currentUser  = null;
