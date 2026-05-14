@@ -117,9 +117,7 @@ class SupabaseService {
       'category': category,
       'duration_seconds': durationSeconds,
       'audio_url': audioUrl,
-      'audio_path': audioPath,
       'cover_url': coverUrl,
-      'cover_path': finalCoverPath,
     });
   }
 
@@ -133,37 +131,33 @@ class SupabaseService {
 
   /// Delete a song by its id (primary key in `songs` table).
   Future<void> deleteSong(dynamic id) async {
-    // 1) Read the stored object paths for audio and cover (if available)
-    String? audioPath;
-    String? coverPath;
+    // 1) Read the stored object URLs for audio and cover
+    String? audioUrl;
+    String? coverUrl;
     try {
       final row = await _supabase
           .from('songs')
-          .select('audio_path, cover_path')
+          .select('audio_url, cover_url')
           .eq('id', id)
           .maybeSingle();
       if (row != null) {
-        audioPath = row['audio_path'] as String?;
-        coverPath = row['cover_path'] as String?;
+        audioUrl = row['audio_url'] as String?;
+        coverUrl = row['cover_url'] as String?;
       }
     } catch (_) {}
 
-    // 2) Remove storage objects if we have their paths
+    // 2) Remove storage objects by extracting the path from the URL
     try {
-      if (audioPath != null && audioPath.isNotEmpty) {
-        await _supabase.storage.from('songs').remove([audioPath]);
+      if (audioUrl != null && audioUrl.contains('/public/songs/')) {
+        final path = audioUrl.split('/public/songs/').last;
+        await _supabase.storage.from('songs').remove([path]);
       }
     } catch (e) {
-      // Log but continue with DB deletion
       print('Failed to remove audio object: $e');
     }
     try {
-      if (coverPath != null && coverPath.isNotEmpty) {
-        // If it starts with 'avatars/', it was saved with the old bug. Real path is 'covers/...'
-        String path = coverPath;
-        if (path.startsWith('avatars/')) {
-          path = 'covers/' + path.substring('avatars/'.length);
-        }
+      if (coverUrl != null && coverUrl.contains('/public/avatars/')) {
+        final path = coverUrl.split('/public/avatars/').last;
         await _supabase.storage.from('avatars').remove([path]);
       }
     } catch (e) {
