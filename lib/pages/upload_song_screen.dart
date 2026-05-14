@@ -146,9 +146,12 @@ class _UploadSongScreenState extends State<UploadSongScreen> {
       ),
       body: _isUploading
           ? const Center(child: CircularProgressIndicator(color: kPrimary))
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
-              child: Form(
+          : Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 560),
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(24),
+                  child: Form(
                 key: _formKey,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -254,10 +257,12 @@ class _UploadSongScreenState extends State<UploadSongScreen> {
                         ),
                       ),
                     ),
-                  ],
+                    ],
                 ),
               ),
             ),
+          ),
+        ),
     );
   }
 
