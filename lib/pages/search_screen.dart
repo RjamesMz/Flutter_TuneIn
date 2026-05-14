@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../core/app_colors.dart';
 import '../core/app_strings.dart';
+import '../core/responsive_helper.dart';
 import '../providers/music_provider.dart';
 import '../widgets/song_tile.dart';
 
@@ -145,11 +146,12 @@ class _SearchScreenState extends State<SearchScreen> {
         ),
       ),
 
-      body: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+      body: ResponsiveWrapper(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
             const SizedBox(height: 8),
 
             // ── Search Field ───────────────────────────────────────────────
@@ -271,6 +273,7 @@ class _SearchScreenState extends State<SearchScreen> {
             ],
           ],
         ),
+      ),
       ),
     );
   }

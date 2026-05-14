@@ -6,6 +6,7 @@ import '../pages/search_screen.dart';
 import '../pages/now_playing_page.dart';
 import 'settings.dart';
 import 'package:provider/provider.dart';
+import '../core/responsive_helper.dart';
 import '../widgets/mini_player.dart';
 import '../widgets/bottom_navigation_bar.dart';
 import '../providers/player_provider.dart';
@@ -45,15 +46,16 @@ class _MainScreenState extends State<MainScreen> {
       ),
 
       // ── Body with MiniPlayer ──────────────────────
-      body: Stack(
-        children: [
-          // Screens
-          Positioned.fill(
-            child: IndexedStack(
-              index: _currentIndex,
-              children: _screens,
+      body: ResponsiveWrapper(
+        child: Stack(
+          children: [
+            // Screens
+            Positioned.fill(
+              child: IndexedStack(
+                index: _currentIndex,
+                children: _screens,
+              ),
             ),
-          ),
 
           // MiniPlayer
           if (hasActiveSong && _currentIndex != 3)
@@ -87,6 +89,7 @@ class _MainScreenState extends State<MainScreen> {
               ),
             ),
         ],
+      ),
       ),
     );
   }

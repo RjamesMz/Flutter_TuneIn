@@ -4,10 +4,12 @@ import 'package:tunely/models/song.dart';
 import 'package:tunely/pages/personalinfopage.dart';
 import '../core/app_colors.dart';
 import '../core/app_strings.dart';
+import '../core/responsive_helper.dart';
 import '../widgets/category_chip.dart';
 import '../widgets/song_tile.dart';
 import '../providers/music_provider.dart';
 import '../providers/player_provider.dart';
+import '../providers/auth_provider.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -31,8 +33,9 @@ class _HomeScreenState extends State<HomeScreen> {
     final categories = MusicCategories.all_categories;
     final selectedCategory = music.selectedCategory;
 
-    return CustomScrollView(
-      slivers: [
+    return ResponsiveWrapper(
+      child: CustomScrollView(
+        slivers: [
         SliverAppBar(
           floating: true,
           snap: true,
@@ -51,16 +54,24 @@ class _HomeScreenState extends State<HomeScreen> {
           actions: [
             Padding(
               padding: const EdgeInsets.only(right: 12),
-              child: GestureDetector(
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const PersonalInfoPage()),
-                ),
-                child: CircleAvatar(
-                  radius: 17,
-                  backgroundColor: kSurfaceContainerHighest,
-                  child: const Icon(Icons.person, color: kPrimary, size: 18),
-                ),
+              child: Consumer<AuthProvider>(
+                builder: (context, auth, _) {
+                  final user = auth.currentUser;
+                  final hasAvatar = user != null && user.avatarUrl.isNotEmpty;
+                  
+                  return GestureDetector(
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const PersonalInfoPage()),
+                    ),
+                    child: CircleAvatar(
+                      radius: 17,
+                      backgroundColor: kSurfaceContainerHighest,
+                      backgroundImage: hasAvatar ? NetworkImage(user.avatarUrl) : null,
+                      child: hasAvatar ? null : const Icon(Icons.person, color: kPrimary, size: 18),
+                    ),
+                  );
+                },
               ),
             ),
           ],
@@ -150,6 +161,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
       ],
+    ),
     );
   }
 }
@@ -228,6 +240,8 @@ class _FeaturedBanner extends StatelessWidget {
                       const SizedBox(height: 4),
                       Text(
                         s.title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 20,
@@ -236,6 +250,8 @@ class _FeaturedBanner extends StatelessWidget {
                       ),
                       Text(
                         s.artist,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           color: Colors.white.withOpacity(0.75),
                           fontSize: 13,

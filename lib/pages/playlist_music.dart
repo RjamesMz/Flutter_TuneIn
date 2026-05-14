@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../core/app_colors.dart';
+import '../core/responsive_helper.dart';
 import '../providers/music_provider.dart';
+import '../providers/player_provider.dart';
 import '../widgets/song_tile.dart';
+import '../widgets/mini_player.dart';
+import '../pages/now_playing_page.dart';
+import '../pages/search_screen.dart';
 
 class PlaylistDetailPage extends StatelessWidget {
   final String playlistName;
@@ -12,7 +17,10 @@ class PlaylistDetailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final music = context.watch<MusicProvider>();
+    final player = context.watch<PlayerProvider>();
     final songs = music.getSongsInPlaylist(playlistName);
+    final currentSong = player.currentSong;
+    final hasActiveSong = currentSong != null;
 
     return Scaffold(
       backgroundColor: kSurface,
@@ -27,70 +35,119 @@ class PlaylistDetailPage extends StatelessWidget {
             fontWeight: FontWeight.w800,
           ),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add, color: kPrimary),
+            tooltip: 'Add Music',
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const SearchScreen()),
+            ),
+          ),
+        ],
       ),
 
-      body: songs.isEmpty
-          ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Image.asset(
-                    'assets/image/logs/nothing.png',
-                    width: 180,
-                  ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    "No Songs Yet",
-                    style: TextStyle(
-                      color: kOnSurface,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  const Text(
-                    "Add songs from the search or home screen",
-                    style: TextStyle(
-                      color: kOnSurfaceVariant,
-                      fontSize: 13,
-                    ),
-                  ),
-                ],
-              ),
-            )
-          : ListView.builder(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
-              itemCount: songs.length,
-              itemBuilder: (context, index) {
-                final song = songs[index];
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const SearchScreen()),
+        ),
+        backgroundColor: kPrimary,
+        foregroundColor: kOnPrimary,
+        icon: const Icon(Icons.add),
+        label: const Text('Add Music', style: TextStyle(fontWeight: FontWeight.w700)),
+      ),
 
-                return Dismissible(
-                  key: ValueKey(song.id),
-                  direction: DismissDirection.endToStart,
-                  background: Container(
-                    alignment: Alignment.centerRight,
-                    padding: const EdgeInsets.only(right: 20),
-                    margin: const EdgeInsets.symmetric(vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.red.withOpacity(0.15),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: const Icon(Icons.delete, color: Colors.red),
-                  ),
-                  onDismissed: (_) {
-                    music.removeSongFromPlaylist(playlistName, song.id);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Removed "${song.title}" from $playlistName'),
-                        duration: const Duration(seconds: 2),
-                        behavior: SnackBarBehavior.floating,
+      body: Stack(
+        children: [
+          // ── Song List ────────────────────────────────────────────────────
+          ResponsiveWrapper(
+            child: songs.isEmpty
+                ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Image.asset(
+                        'assets/image/logs/nothing.png',
+                        width: 180,
                       ),
+                      const SizedBox(height: 16),
+                      const Text(
+                        "No Songs Yet",
+                        style: TextStyle(
+                          color: kOnSurface,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      const Text(
+                        "Add songs from the search or home screen",
+                        style: TextStyle(
+                          color: kOnSurfaceVariant,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              : ListView.builder(
+                  padding: EdgeInsets.fromLTRB(16, 12, 16, hasActiveSong ? 100 : 16),
+                  itemCount: songs.length,
+                  itemBuilder: (context, index) {
+                    final song = songs[index];
+
+                    return Dismissible(
+                      key: ValueKey(song.id),
+                      direction: DismissDirection.endToStart,
+                      background: Container(
+                        alignment: Alignment.centerRight,
+                        padding: const EdgeInsets.only(right: 20),
+                        margin: const EdgeInsets.symmetric(vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.red.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: const Icon(Icons.delete, color: Colors.red),
+                      ),
+                      onDismissed: (_) {
+                        music.removeSongFromPlaylist(playlistName, song.id);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Removed "${song.title}" from $playlistName'),
+                            duration: const Duration(seconds: 2),
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                      },
+                      child: SongTile(song: song, queue: songs),
                     );
                   },
-                  child: SongTile(song: song, queue: songs),
-                );
-              },
+                ),
             ),
+
+          // ── Mini Player ──────────────────────────────────────────────────
+          if (hasActiveSong)
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: MiniPlayer(
+                title: currentSong.title,
+                artist: currentSong.artist,
+                coverUrl: currentSong.coverUrl,
+                isPlaying: player.isPlaying,
+                hasNext: player.hasNext,
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const NowPlayingPage()),
+                ),
+                onTogglePlay: () => player.togglePlayPause(),
+                onNext: () => player.next(),
+              ),
+            ),
+        ],
+      ),
     );
   }
 }

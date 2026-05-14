@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:tunely/pages/upload_song_screen.dart';
+import 'package:tunely/pages/manage_songs_screen.dart';
 import '../services/auth_service.dart';
 import '../core/app_colors.dart';
 
@@ -74,6 +75,17 @@ class AdminScreen extends StatelessWidget {
                         onTap: () => Navigator.push(
                           context,
                           MaterialPageRoute(builder: (_) => const UploadSongScreen()),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      _AdminCard(
+                        icon: Icons.library_music_rounded,
+                        title: 'Manage Songs',
+                        subtitle: 'View and remove songs from the library.',
+                        color: Colors.pinkAccent,
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const ManageSongsScreen()),
                         ),
                       ),
                       const SizedBox(height: 16),

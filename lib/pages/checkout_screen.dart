@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../core/app_colors.dart';
+import '../core/responsive_helper.dart';
 import '../providers/auth_provider.dart';
 
 // ─── Checkout Screen ───────────────────────────────────────────────────────────
@@ -43,11 +44,12 @@ class CheckoutScreen extends StatelessWidget {
         centerTitle: true,
       ),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
+        child: ResponsiveWrapper(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
               // ── Order Summary ──────────────────────────────────────────────
               Container(
                 padding: const EdgeInsets.all(24),
@@ -231,6 +233,7 @@ class CheckoutScreen extends StatelessWidget {
               ),
               const SizedBox(height: 8),
             ],
+            ),
           ),
         ),
       ),

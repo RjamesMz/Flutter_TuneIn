@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../core/app_colors.dart';
+import '../core/responsive_helper.dart';
 import '../providers/player_provider.dart';
-import '../models/song.dart';
 
 class NowPlayingPage extends StatefulWidget {
   const NowPlayingPage({super.key});
@@ -27,6 +27,12 @@ class _NowPlayingPageState extends State<NowPlayingPage> {
 
   double get _fade => (1 - (_scrollOffset / 250)).clamp(0.0, 1.0);
 
+  String _formatDuration(Duration d) {
+    final minutes = d.inMinutes.remainder(60).toString().padLeft(2, '0');
+    final seconds = d.inSeconds.remainder(60).toString().padLeft(2, '0');
+    return '$minutes:$seconds';
+  }
+
   @override
   Widget build(BuildContext context) {
     final player = context.watch<PlayerProvider>();
@@ -35,9 +41,10 @@ class _NowPlayingPageState extends State<NowPlayingPage> {
 
     return Scaffold(
       backgroundColor: kBackground,
-      body: CustomScrollView(
-        controller: _controller,
-        slivers: [
+      body: ResponsiveWrapper(
+        child: CustomScrollView(
+          controller: _controller,
+          slivers: [
 
           SliverAppBar(
             backgroundColor: kBackground,
@@ -98,32 +105,48 @@ class _NowPlayingPageState extends State<NowPlayingPage> {
                       const SizedBox(height: 20),
 
                       /// Progress bar
-                      SliderTheme(
-                        data: SliderTheme.of(context).copyWith(
-                          trackHeight: 2,
-                          thumbShape: const RoundSliderThumbShape(
-                            enabledThumbRadius: 6,
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        child: SliderTheme(
+                          data: SliderTheme.of(context).copyWith(
+                            trackHeight: 3,
+                            thumbShape: const RoundSliderThumbShape(
+                              enabledThumbRadius: 6,
+                            ),
                           ),
-                        ),
-                        child: Slider(
-                          value: 0.3,
-                          onChanged: (v) {},
-                          activeColor: kPrimary,
-                          inactiveColor: kOnSurface.withOpacity(0.2),
+                          child: Slider(
+                            value: player.duration.inMilliseconds > 0
+                                ? (player.position.inMilliseconds /
+                                        player.duration.inMilliseconds)
+                                    .clamp(0.0, 1.0)
+                                : 0.0,
+                            onChanged: (v) {
+                              final seekTo = Duration(
+                                milliseconds:
+                                    (v * player.duration.inMilliseconds).toInt(),
+                              );
+                              player.seek(seekTo);
+                            },
+                            activeColor: kPrimary,
+                            inactiveColor: kOnSurface.withOpacity(0.2),
+                          ),
                         ),
                       ),
 
                       /// Time labels
-                      const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 20),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
                         child: Row(
-                          mainAxisAlignment:
-                              MainAxisAlignment.spaceBetween,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text("00:11",
-                                style: TextStyle(color: kOnSurfaceVariant)),
-                            Text("03:43",
-                                style: TextStyle(color: kOnSurfaceVariant)),
+                            Text(
+                              _formatDuration(player.position),
+                              style: const TextStyle(color: kOnSurfaceVariant, fontSize: 12),
+                            ),
+                            Text(
+                              _formatDuration(player.duration),
+                              style: const TextStyle(color: kOnSurfaceVariant, fontSize: 12),
+                            ),
                           ],
                         ),
                       ),
@@ -232,6 +255,7 @@ class _NowPlayingPageState extends State<NowPlayingPage> {
             child: SizedBox(height: 40),
           ),
         ],
+      ),
       ),
     );
   }
