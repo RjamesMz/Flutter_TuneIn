@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tunely/services/supabase_service.dart';
+import 'package:provider/provider.dart';
+import '../providers/music_provider.dart';
 import '../core/app_colors.dart';
 
 class ManageSongsScreen extends StatefulWidget {
@@ -51,6 +53,10 @@ class _ManageSongsScreenState extends State<ManageSongsScreen> {
       await SupabaseService.instance.deleteSong(id);
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Song deleted')));
       await _loadSongs();
+      // Refresh the global music provider so UI reflects deletion (and prunes likes)
+      try {
+        await Provider.of<MusicProvider>(context, listen: false).fetchSongs();
+      } catch (_) {}
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Delete failed: $e')));
     }

@@ -19,7 +19,12 @@ class ResponsiveWrapper extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    // Wrap content in a pink border container for visual styling.
+    // On mobile, don't apply the pink border — return the raw child for full-width.
+    if (screenWidth < 800) {
+      return child;
+    }
+
+    // Wrap content in a pink border container for visual styling on larger screens.
     final bordered = Container(
       padding: const EdgeInsets.all(6),
       decoration: BoxDecoration(
@@ -28,11 +33,6 @@ class ResponsiveWrapper extends StatelessWidget {
       ),
       child: child,
     );
-
-    // On mobile, show the bordered child full-width
-    if (screenWidth < 800) {
-      return bordered;
-    }
 
     // On larger screens, constrain and center the bordered content
     return Center(

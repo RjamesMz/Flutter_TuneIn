@@ -37,6 +37,10 @@ class MusicProvider extends ChangeNotifier {
     final likesList = prefs.getStringList(_likesKey) ?? [];
     _likedSongIds.addAll(likesList);
 
+    if (likesList.isNotEmpty) {
+      await fetchSongs();
+    }
+
     // Load playlists
     final playlistsJson = prefs.getString(_playlistsKey);
     if (playlistsJson != null) {
@@ -93,10 +97,24 @@ class MusicProvider extends ChangeNotifier {
 
     try {
       _allSongs  = await MusicService.instance.fetchSongs();
+      // After fetching songs, remove any liked IDs that no longer exist
+      _pruneInvalidLikes();
     } catch (e) {
       _errorMessage = 'Could not load songs. Please try again.';
     } finally {
       _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  void _pruneInvalidLikes() {
+    final validIds = _allSongs.map((s) => s.id).toSet();
+    final invalid = _likedSongIds.where((id) => !validIds.contains(id)).toList();
+    if (invalid.isNotEmpty) {
+      for (final id in invalid) {
+        _likedSongIds.remove(id);
+      }
+      _saveLikes();
       notifyListeners();
     }
   }
