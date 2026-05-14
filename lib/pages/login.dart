@@ -37,7 +37,11 @@ class _LoginPageState extends State<LoginPage> {
 
     if (!mounted) return;
     if (success) {
-      Navigator.pushReplacementNamed(context, '/main');
+      if (auth.currentUser?.isAdmin == true) {
+        Navigator.pushReplacementNamed(context, '/admin');
+      } else {
+        Navigator.pushReplacementNamed(context, '/main');
+      }
     }
   }
 

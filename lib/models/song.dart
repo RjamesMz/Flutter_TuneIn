@@ -21,6 +21,19 @@ class Song {
     this.audioUrl = '',
   });
 
+  factory Song.fromJson(Map<String, dynamic> json) {
+    return Song(
+      id: json['id']?.toString() ?? '',
+      title: json['title'] ?? 'Unknown Title',
+      artist: json['artist'] ?? 'Unknown Artist',
+      album: json['album'] ?? 'Unknown Album',
+      category: json['category'] ?? 'Trending',
+      duration: Duration(seconds: json['duration_seconds'] ?? 0),
+      coverUrl: json['cover_url'] ?? '',
+      audioUrl: json['audio_url'] ?? '',
+    );
+  }
+
   // ── Helpers ────────────────────────────────────────────────────────────────
   /// Returns duration formatted as "m:ss"
   String get formattedDuration {

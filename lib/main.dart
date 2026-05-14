@@ -7,22 +7,26 @@ import 'package:tunely/pages/settings.dart';
 import 'package:tunely/pages/search_screen.dart';
 import 'package:tunely/pages/playlist_page.dart';
 import 'package:tunely/pages/main_screen.dart';
+import 'package:tunely/pages/admin_screen.dart';
 import 'package:tunely/pages/signup_page.dart';
 import 'package:tunely/pages/subscription_screen.dart';
 import 'package:tunely/providers/auth_provider.dart';
 import 'package:tunely/providers/music_provider.dart';
 import 'package:tunely/providers/player_provider.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'firebase_options.dart';
 
-void main() async{
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
 
- WidgetsFlutterBinding.ensureInitialized();
-  
-  // 2. Initialize Firebase
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  await Supabase.initialize(
+    url: 'https://rboolpverhezwondeezy.supabase.co',
+    anonKey: 'sb_publishable_ICdCFa8qdB_4v5bPO5zrHQ_hSazvMD5',
   );
+
   runApp(const MyApp());
 }
 
@@ -43,6 +47,7 @@ class MyApp extends StatelessWidget {
         initialRoute: '/',
         routes: {
           '/': (context) => const AuthWrapper(),
+          '/admin': (context) => const AdminScreen(),
           '/login': (context) => LoginPage(),
           '/signup': (context) => SignupScreen(),
           '/main': (context) => const MainScreen(),
@@ -78,7 +83,11 @@ class _AuthWrapperState extends State<AuthWrapper> {
     if (!mounted) return;
 
     if (auth.isLoggedIn) {
-      Navigator.pushReplacementNamed(context, '/main');
+      if (auth.currentUser?.isAdmin == true) {
+        Navigator.pushReplacementNamed(context, '/admin');
+      } else {
+        Navigator.pushReplacementNamed(context, '/main');
+      }
     } else {
       Navigator.pushReplacementNamed(context, '/login');
     }
@@ -89,7 +98,9 @@ class _AuthWrapperState extends State<AuthWrapper> {
     return const Scaffold(
       backgroundColor: Color(0xFF141218), // kSurface color
       body: Center(
-        child: CircularProgressIndicator(color: Color(0xFFE28C9D)), // kPrimary color
+        child: CircularProgressIndicator(
+          color: Color(0xFFE28C9D),
+        ), // kPrimary color
       ),
     );
   }
