@@ -1,6 +1,6 @@
-import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
 import '../services/supabase_service.dart';
@@ -33,9 +33,8 @@ class _UploadSongScreenState extends State<UploadSongScreen> {
       final result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['mp3', 'wav', 'm4a', 'aac', 'flac'],
-        withData: true, // Force loading bytes — works on all platforms
+        withData: true,
       );
-
       if (result != null) {
         final file = result.files.single;
         if (file.bytes != null) {
@@ -46,19 +45,15 @@ class _UploadSongScreenState extends State<UploadSongScreen> {
         } else {
           if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                'Error: Could not read the file. Try a different file.',
-              ),
-            ),
+            const SnackBar(content: Text('Error: Could not read the file.')),
           );
         }
       }
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error picking file: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error picking file: $e')),
+      );
     }
   }
 
@@ -99,14 +94,8 @@ class _UploadSongScreenState extends State<UploadSongScreen> {
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Song uploaded successfully! Restart the app to see it.',
-          ),
-        ),
+        const SnackBar(content: Text('Song uploaded successfully!')),
       );
-
-      // Clear form
       _titleController.clear();
       _artistController.clear();
       _albumController.clear();
@@ -118,9 +107,9 @@ class _UploadSongScreenState extends State<UploadSongScreen> {
       });
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Upload failed: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Upload failed: $e')),
+      );
     } finally {
       if (mounted) setState(() => _isUploading = false);
     }
@@ -138,131 +127,193 @@ class _UploadSongScreenState extends State<UploadSongScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: kBackground,
-      appBar: AppBar(
-        title: const Text('Upload New Song'),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: kPrimary),
-      ),
       body: _isUploading
           ? const Center(child: CircularProgressIndicator(color: kPrimary))
-          : Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 560),
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(24),
-                  child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    // Cover Picker
-                    GestureDetector(
-                      onTap: _pickCover,
-                      child: Container(
-                        height: 200,
-                        decoration: BoxDecoration(
-                          color: kSurface,
-                          borderRadius: BorderRadius.circular(16),
-                          image: _coverBytes != null
-                              ? DecorationImage(
-                                  image: MemoryImage(_coverBytes!),
-                                  fit: BoxFit.cover,
-                                )
-                              : null,
-                        ),
-                        child: _coverBytes == null
-                            ? const Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.add_photo_alternate,
-                                    color: kOnSurfaceVariant,
-                                    size: 48,
-                                  ),
-                                  SizedBox(height: 8),
-                                  Text(
-                                    'Tap to add Cover Image',
-                                    style: TextStyle(color: kOnSurfaceVariant),
-                                  ),
-                                ],
-                              )
-                            : null,
-                      ),
+          : Column(
+              children: [
+                // ── Gradient Header ───────────────────────────────────────────
+                Container(
+                  width: double.infinity,
+                  decoration: const BoxDecoration(
+                    gradient: kSoulGradient,
+                    borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(28),
+                      bottomRight: Radius.circular(28),
                     ),
-                    const SizedBox(height: 24),
-
-                    // Audio Picker
-                    ElevatedButton.icon(
-                      onPressed: _pickAudio,
-                      icon: Icon(
-                        Icons.audiotrack,
-                        color: _audioBytes != null
-                            ? Colors.black
-                            : Colors.white,
-                      ),
-                      label: Text(
-                        _audioBytes != null
-                            ? _audioFileName ?? 'Audio Selected'
-                            : 'Select MP3 File',
-                        style: const TextStyle(color: Colors.black),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: _audioBytes != null
-                            ? Colors.green
-                            : kSurfaceContainerHighest,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                  ),
+                  padding: const EdgeInsets.fromLTRB(16, 44, 16, 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      // Back button row
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: IconButton(
+                          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: kOnPrimary),
+                          onPressed: () => Navigator.pop(context),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 24),
-
-                    // Text Fields
-                    _buildTextField(
-                      'Title',
-                      _titleController,
-                      Icons.music_note,
-                    ),
-                    const SizedBox(height: 16),
-                    _buildTextField('Artist', _artistController, Icons.person),
-                    const SizedBox(height: 16),
-                    _buildTextField(
-                      'Album (Optional)',
-                      _albumController,
-                      Icons.album,
-                      required: false,
-                    ),
-                    const SizedBox(height: 16),
-                    _buildCategoryDropdown(),
-                    const SizedBox(height: 32),
-
-                    // Submit
-                    ElevatedButton(
-                      onPressed: _uploadSong,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: kPrimary,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                      Image.asset(
+                        'assets/image/logo/TuneIn_Logo.png',
+                        height: 60,
+                        fit: BoxFit.contain,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'TuneIn',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: kOnPrimary.withValues(alpha: 0.7),
+                          letterSpacing: 3,
                         ),
                       ),
-                      child: const Text(
+                      const SizedBox(height: 2),
+                      Text(
                         'Upload Song',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w800,
+                          color: kOnPrimary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // ── Form ─────────────────────────────────────────────────────
+                Expanded(
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 560),
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.all(20),
+                        child: Form(
+                          key: _formKey,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: kSurface,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: kOutlineVariant, width: 1.5),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: kPrimary.withValues(alpha: 0.07),
+                                  blurRadius: 16,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            padding: const EdgeInsets.all(20),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                // Cover Picker
+                                GestureDetector(
+                                  onTap: _pickCover,
+                                  child: Container(
+                                    height: 180,
+                                    decoration: BoxDecoration(
+                                      color: kSurfaceContainerLow,
+                                      borderRadius: BorderRadius.circular(14),
+                                      border: Border.all(color: kOutlineVariant),
+                                      image: _coverBytes != null
+                                          ? DecorationImage(
+                                              image: MemoryImage(_coverBytes!),
+                                              fit: BoxFit.cover,
+                                            )
+                                          : null,
+                                    ),
+                                    child: _coverBytes == null
+                                        ? Column(
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                              Icon(Icons.add_photo_alternate_rounded,
+                                                  color: kPrimary.withValues(alpha: 0.6), size: 44),
+                                              const SizedBox(height: 8),
+                                              Text(
+                                                'Tap to add Cover Image',
+                                                style: GoogleFonts.beVietnamPro(
+                                                  color: kOnSurfaceVariant,
+                                                  fontSize: 13,
+                                                ),
+                                              ),
+                                            ],
+                                          )
+                                        : null,
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+
+                                // Audio Picker
+                                ElevatedButton.icon(
+                                  onPressed: _pickAudio,
+                                  icon: Icon(
+                                    Icons.audiotrack_rounded,
+                                    color: _audioBytes != null ? Colors.white : kOnSurfaceVariant,
+                                  ),
+                                  label: Text(
+                                    _audioBytes != null
+                                        ? _audioFileName ?? 'Audio Selected'
+                                        : 'Select Audio File',
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      color: _audioBytes != null ? Colors.white : kOnSurface,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: _audioBytes != null
+                                        ? const Color(0xFF2E7D32)
+                                        : kSurfaceContainerHighest,
+                                    padding: const EdgeInsets.symmetric(vertical: 14),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      side: BorderSide(color: kOutlineVariant),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+
+                                // Text Fields
+                                _buildTextField('Title', _titleController, Icons.music_note_rounded),
+                                const SizedBox(height: 12),
+                                _buildTextField('Artist', _artistController, Icons.person_rounded),
+                                const SizedBox(height: 12),
+                                _buildTextField('Album (Optional)', _albumController, Icons.album_rounded, required: false),
+                                const SizedBox(height: 12),
+                                _buildCategoryDropdown(),
+                                const SizedBox(height: 20),
+
+                                // Submit
+                                ElevatedButton(
+                                  onPressed: _uploadSong,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: kPrimary,
+                                    foregroundColor: kOnPrimary,
+                                    padding: const EdgeInsets.symmetric(vertical: 16),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(14),
+                                    ),
+                                  ),
+                                  child: Text(
+                                    'Upload Song',
+                                    style: GoogleFonts.plusJakartaSans(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w700,
+                                      color: kOnPrimary,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
                       ),
                     ),
-                    ],
+                  ),
                 ),
-              ),
+              ],
             ),
-          ),
-        ),
     );
   }
 
@@ -274,23 +325,29 @@ class _UploadSongScreenState extends State<UploadSongScreen> {
   }) {
     return TextFormField(
       controller: controller,
-      style: const TextStyle(color: Colors.black),
+      style: TextStyle(color: kOnSurface, fontFamily: GoogleFonts.beVietnamPro().fontFamily),
       decoration: InputDecoration(
         labelText: label,
         labelStyle: const TextStyle(color: kOnSurfaceVariant),
-        prefixIcon: Icon(icon, color: kOnSurfaceVariant),
+        prefixIcon: Icon(icon, color: kPrimary, size: 20),
         filled: true,
         fillColor: kSurfaceContainerLow,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
+          borderSide: BorderSide(color: kOutlineVariant),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: kOutlineVariant),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: kPrimary, width: 1.5),
         ),
       ),
       validator: required
           ? (value) {
-              if (value == null || value.trim().isEmpty) {
-                return '$label is required';
-              }
+              if (value == null || value.trim().isEmpty) return '$label is required';
               return null;
             }
           : null,
@@ -298,35 +355,38 @@ class _UploadSongScreenState extends State<UploadSongScreen> {
   }
 
   Widget _buildCategoryDropdown() {
-    // Filter out 'All' since you can't upload a song to 'All' category
     final categories = MusicCategories.all_categories
         .where((c) => c != MusicCategories.all)
         .toList();
 
     return DropdownButtonFormField<String>(
       value: _selectedCategory,
-      dropdownColor: kSurfaceContainerHighest,
-      style: const TextStyle(color: Colors.black),
+      dropdownColor: kSurface,
+      style: TextStyle(color: kOnSurface, fontFamily: GoogleFonts.beVietnamPro().fontFamily),
       decoration: InputDecoration(
         labelText: 'Category',
         labelStyle: const TextStyle(color: kOnSurfaceVariant),
-        prefixIcon: const Icon(Icons.category, color: kOnSurfaceVariant),
+        prefixIcon: const Icon(Icons.category_rounded, color: kPrimary, size: 20),
         filled: true,
         fillColor: kSurfaceContainerLow,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
+          borderSide: BorderSide(color: kOutlineVariant),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: kOutlineVariant),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: kPrimary, width: 1.5),
         ),
       ),
       items: categories.map((String category) {
         return DropdownMenuItem(value: category, child: Text(category));
       }).toList(),
       onChanged: (String? newValue) {
-        if (newValue != null) {
-          setState(() {
-            _selectedCategory = newValue;
-          });
-        }
+        if (newValue != null) setState(() => _selectedCategory = newValue);
       },
     );
   }
