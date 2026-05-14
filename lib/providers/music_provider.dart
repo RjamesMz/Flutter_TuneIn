@@ -85,6 +85,30 @@ class MusicProvider extends ChangeNotifier {
     }
   }
 
+  /// Filters by one or more [categories] and optionally narrows by [query] text.
+  /// Used by SearchScreen when category pills are active.
+  void searchWithCategories(Set<String> categories, [String query = '']) {
+    _searchQuery  = query;
+    _isSearching  = false;
+
+    // Start from songs in any of the chosen categories.
+    Iterable<Song> pool = _allSongs.where(
+      (s) => categories.contains(s.category),
+    );
+
+    // If there's also a text query, narrow further.
+    if (query.trim().isNotEmpty) {
+      final q = query.toLowerCase();
+      pool = pool.where((s) =>
+          s.title.toLowerCase().contains(q) ||
+          s.artist.toLowerCase().contains(q) ||
+          s.album.toLowerCase().contains(q));
+    }
+
+    _searchResults = pool.toList();
+    notifyListeners();
+  }
+
   /// Clears the search state.
   void clearSearch() {
     _searchQuery   = '';

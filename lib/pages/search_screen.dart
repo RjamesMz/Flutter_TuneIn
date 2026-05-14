@@ -1,5 +1,49 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../core/app_colors.dart';
+import '../core/app_strings.dart';
+import '../providers/music_provider.dart';
+import '../widgets/song_tile.dart';
+
+// ─── All available category tiles (shared by grid + pills) ────────────────────
+const List<_CategoryTile> _allCategoryTiles = [
+  _CategoryTile(
+    label: 'Trending',
+    categoryKey: MusicCategories.trending,
+    color: Color(0xFF9D3756),
+    icon: Icons.trending_up,
+  ),
+  _CategoryTile(
+    label: 'Pop',
+    categoryKey: MusicCategories.pop,
+    color: Color(0xFF7C3F8A),
+    icon: Icons.favorite,
+  ),
+  _CategoryTile(
+    label: 'Lo-Fi',
+    categoryKey: MusicCategories.loFi,
+    color: Color(0xFF3B6B8A),
+    icon: Icons.cloud,
+  ),
+  _CategoryTile(
+    label: 'Indie',
+    categoryKey: MusicCategories.indie,
+    color: Color(0xFF4A6741),
+    icon: Icons.forest,
+  ),
+  _CategoryTile(
+    label: 'R&B',
+    categoryKey: MusicCategories.rnb,
+    color: Color(0xFF8A4A3B),
+    icon: Icons.music_note,
+  ),
+  _CategoryTile(
+    label: 'Jazz',
+    categoryKey: MusicCategories.jazz,
+    color: Color(0xFF5C4A8A),
+    icon: Icons.piano,
+  ),
+];
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -11,20 +55,16 @@ class _SearchScreenState extends State<SearchScreen> {
   final _searchCtrl = TextEditingController();
   String _query = '';
 
-  final List<Map<String, String>> _allSongs = [
-    {'title': 'Blinding Lights',   'artist': 'The Weeknd',     'duration': '3:20'},
-    {'title': 'Levitating',        'artist': 'Dua Lipa',       'duration': '3:23'},
-    {'title': 'Stay',              'artist': 'Kid LAROI',       'duration': '2:21'},
-    {'title': 'Good 4 U',          'artist': 'Olivia Rodrigo',  'duration': '2:58'},
-    {'title': 'Peaches',           'artist': 'Justin Bieber',   'duration': '3:18'},
-    {'title': 'Montero',           'artist': 'Lil Nas X',       'duration': '2:17'},
-  ];
+  /// Keys of all currently selected categories.
+  final Set<String> _activeKeys = {};
 
-  List<Map<String, String>> get _results => _allSongs
-      .where((s) =>
-          s['title']!.toLowerCase().contains(_query.toLowerCase()) ||
-          s['artist']!.toLowerCase().contains(_query.toLowerCase()))
-      .toList();
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<MusicProvider>().fetchSongs();
+    });
+  }
 
   @override
   void dispose() {
@@ -32,14 +72,64 @@ class _SearchScreenState extends State<SearchScreen> {
     super.dispose();
   }
 
+  void _applyFilter() {
+    final music = context.read<MusicProvider>();
+    final q = _query.trim();
+
+    if (_activeKeys.isNotEmpty) {
+      music.searchWithCategories(_activeKeys, q);
+    } else if (q.isNotEmpty) {
+      music.search(q);
+    } else {
+      music.clearSearch();
+    }
+  }
+
+  void _onSearchChanged(String value) {
+    setState(() => _query = value);
+    _applyFilter();
+  }
+
+  void _clearSearch() {
+    _searchCtrl.clear();
+    setState(() => _query = '');
+    _applyFilter();
+  }
+
+  void _toggleCategory(String key) {
+    setState(() {
+      if (_activeKeys.contains(key)) {
+        _activeKeys.remove(key);
+      } else {
+        _activeKeys.add(key);
+      }
+    });
+    _applyFilter();
+  }
+
+  void _removeCategory(String key) {
+    setState(() => _activeKeys.remove(key));
+    _applyFilter();
+  }
+
+  bool get _hasActiveFilter => _query.isNotEmpty || _activeKeys.isNotEmpty;
+
+  List<_CategoryTile> get _selectedTiles => _allCategoryTiles
+      .where((t) => _activeKeys.contains(t.categoryKey))
+      .toList();
+
+  List<_CategoryTile> get _unselectedTiles => _allCategoryTiles
+      .where((t) => !_activeKeys.contains(t.categoryKey))
+      .toList();
+
   @override
   Widget build(BuildContext context) {
-    final bool hasQuery = _query.isNotEmpty;
+    final music = context.watch<MusicProvider>();
+    final results = music.searchResults;
 
     return Scaffold(
       backgroundColor: kSurface,
 
-      // ── App Bar ──────────────────────────────────────────────────────────
       appBar: AppBar(
         backgroundColor: kSurface,
         elevation: 0,
@@ -53,13 +143,6 @@ class _SearchScreenState extends State<SearchScreen> {
             color: kPrimary,
           ),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.tune, color: kOnSurfaceVariant),
-            onPressed: () {},
-          ),
-          const SizedBox(width: 4),
-        ],
       ),
 
       body: Padding(
@@ -72,25 +155,58 @@ class _SearchScreenState extends State<SearchScreen> {
             // ── Search Field ───────────────────────────────────────────────
             TextField(
               controller: _searchCtrl,
-              onChanged: (value) => setState(() => _query = value),
+              onChanged: _onSearchChanged,
               decoration: InputDecoration(
                 hintText: 'Songs, artists, albums…',
                 prefixIcon: const Icon(Icons.search, color: kOnSurfaceVariant),
-                suffixIcon: hasQuery
+                suffixIcon: _query.isNotEmpty
                     ? IconButton(
                         icon: const Icon(Icons.close, color: kOnSurfaceVariant),
-                        onPressed: () {
-                          _searchCtrl.clear();
-                          setState(() => _query = '');
-                        },
+                        onPressed: _clearSearch,
                       )
                     : null,
               ),
             ),
+
+            // ── Category Pills Row ─────────────────────────────────────────
+            // Show when at least one category is selected.
+            if (_activeKeys.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    // Selected categories (dismissible pills)
+                    ..._selectedTiles.map(
+                      (t) => Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: _CategoryPill(
+                          tile: t,
+                          isSelected: true,
+                          onTap: () => _removeCategory(t.categoryKey),
+                        ),
+                      ),
+                    ),
+                    // Unselected categories (tappable outlines)
+                    ..._unselectedTiles.map(
+                      (t) => Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: _CategoryPill(
+                          tile: t,
+                          isSelected: false,
+                          onTap: () => _toggleCategory(t.categoryKey),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+
             const SizedBox(height: 20),
 
-            // ── No query → category grid ───────────────────────────────────
-            if (!hasQuery) ...[
+            // ── No active filter → category grid ───────────────────────────
+            if (!_hasActiveFilter) ...[
               const Text(
                 'Popular categories',
                 style: TextStyle(
@@ -100,43 +216,56 @@ class _SearchScreenState extends State<SearchScreen> {
                 ),
               ),
               const SizedBox(height: 12),
-              const _CategoryGrid(),
+              _CategoryGrid(onCategoryTap: _toggleCategory),
 
-            // ── No results ─────────────────────────────────────────────────
-            ] else if (_results.isEmpty) ...[
+              // ── Searching indicator ────────────────────────────────────────
+            ] else if (music.isSearching) ...[
+              const Expanded(
+                child: Center(
+                  child: CircularProgressIndicator(color: kPrimary),
+                ),
+              ),
+
+              // ── No results ─────────────────────────────────────────────────
+            ] else if (results.isEmpty) ...[
               Expanded(
                 child: Center(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.search_off, size: 56,
-                          color: kOnSurfaceVariant.withOpacity(0.3)),
+                      Icon(
+                        Icons.search_off,
+                        size: 56,
+                        color: kOnSurfaceVariant.withOpacity(0.3),
+                      ),
                       const SizedBox(height: 16),
                       Text(
-                        'No results for "$_query"',
-                        style: const TextStyle(fontSize: 15, color: kOnSurfaceVariant),
+                        _activeKeys.isNotEmpty && _query.isEmpty
+                            ? 'No songs in selected categories'
+                            : 'No results for "$_query"',
+                        style: const TextStyle(
+                          fontSize: 15,
+                          color: kOnSurfaceVariant,
+                        ),
                       ),
                     ],
                   ),
                 ),
               ),
 
-            // ── Results list ───────────────────────────────────────────────
+              // ── Results list ───────────────────────────────────────────────
             ] else ...[
               Text(
-                '${_results.length} result${_results.length == 1 ? '' : 's'}',
+                '${results.length} result${results.length == 1 ? '' : 's'}',
                 style: const TextStyle(fontSize: 13, color: kOnSurfaceVariant),
               ),
               const SizedBox(height: 8),
               Expanded(
                 child: ListView.builder(
                   padding: const EdgeInsets.only(bottom: 120),
-                  itemCount: _results.length,
-                  itemBuilder: (ctx, i) => _SongTile(
-                    title:    _results[i]['title']!,
-                    artist:   _results[i]['artist']!,
-                    duration: _results[i]['duration']!,
-                  ),
+                  itemCount: results.length,
+                  itemBuilder: (ctx, i) =>
+                      SongTile(song: results[i], queue: results),
                 ),
               ),
             ],
@@ -147,18 +276,75 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 }
 
-// ─── Category Grid ────────────────────────────────────────────────────────────
-class _CategoryGrid extends StatelessWidget {
-  const _CategoryGrid();
+// ─── Category Pill ────────────────────────────────────────────────────────────
+/// When [isSelected] is true  → solid fill with ✕ icon (remove on tap).
+/// When [isSelected] is false → outlined style (add on tap).
+class _CategoryPill extends StatelessWidget {
+  final _CategoryTile tile;
+  final bool isSelected;
+  final VoidCallback onTap;
 
-  static const List<_CategoryTile> _tiles = [
-    _CategoryTile(label: 'Trending', color: Color(0xFF9D3756), icon: Icons.trending_up),
-    _CategoryTile(label: 'For You',  color: Color(0xFF7C3F8A), icon: Icons.favorite),
-    _CategoryTile(label: 'Lo-Fi',    color: Color(0xFF3B6B8A), icon: Icons.cloud),
-    _CategoryTile(label: 'Indie',    color: Color(0xFF4A6741), icon: Icons.forest),
-    _CategoryTile(label: 'R&B',      color: Color(0xFF8A4A3B), icon: Icons.music_note),
-    _CategoryTile(label: 'Jazz',     color: Color(0xFF5C4A8A), icon: Icons.piano),
-  ];
+  const _CategoryPill({
+    required this.tile,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+        decoration: BoxDecoration(
+          color: isSelected ? tile.color : Colors.transparent,
+          border: Border.all(
+            color: isSelected ? tile.color : kOnSurfaceVariant.withOpacity(0.3),
+            width: 1.5,
+          ),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              tile.icon,
+              color: isSelected ? Colors.white : kOnSurfaceVariant,
+              size: 15,
+            ),
+            const SizedBox(width: 5),
+            Text(
+              tile.label,
+              style: TextStyle(
+                color: isSelected ? Colors.white : kOnSurfaceVariant,
+                fontWeight: FontWeight.w700,
+                fontSize: 12,
+              ),
+            ),
+            if (isSelected) ...[
+              const SizedBox(width: 5),
+              Container(
+                padding: const EdgeInsets.all(2),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.25),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.close, color: Colors.white, size: 12),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Category Grid (initial view) ─────────────────────────────────────────────
+class _CategoryGrid extends StatelessWidget {
+  final ValueChanged<String> onCategoryTap;
+
+  const _CategoryGrid({required this.onCategoryTap});
 
   @override
   Widget build(BuildContext context) {
@@ -171,11 +357,11 @@ class _CategoryGrid extends StatelessWidget {
         crossAxisSpacing: 10,
         childAspectRatio: 2.5,
       ),
-      itemCount: _tiles.length,
+      itemCount: _allCategoryTiles.length,
       itemBuilder: (_, i) {
-        final t = _tiles[i];
+        final t = _allCategoryTiles[i];
         return GestureDetector(
-          onTap: () {},
+          onTap: () => onCategoryTap(t.categoryKey),
           child: Container(
             decoration: BoxDecoration(
               color: t.color,
@@ -186,11 +372,14 @@ class _CategoryGrid extends StatelessWidget {
                 const SizedBox(width: 14),
                 Icon(t.icon, color: Colors.white.withOpacity(0.85), size: 22),
                 const SizedBox(width: 10),
-                Text(t.label,
-                    style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 14)),
+                Text(
+                  t.label,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
+                  ),
+                ),
               ],
             ),
           ),
@@ -200,72 +389,16 @@ class _CategoryGrid extends StatelessWidget {
   }
 }
 
-// ─── Song Tile ────────────────────────────────────────────────────────────────
-class _SongTile extends StatelessWidget {
-  final String title;
-  final String artist;
-  final String duration;
-  const _SongTile({required this.title, required this.artist, required this.duration});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 4),
-      decoration: BoxDecoration(
-        color: kSurfaceContainerLow,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: () {},
-        child: Padding(
-          padding: const EdgeInsets.all(10),
-          child: Row(
-            children: [
-              Container(
-                width: 56, height: 56,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFFE0EC),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Icon(Icons.music_note, color: kPrimary),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                            fontWeight: FontWeight.w700, fontSize: 14, color: kOnSurface)),
-                    const SizedBox(height: 2),
-                    Text(artist,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontSize: 12, color: kOnSurfaceVariant)),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: Text(duration,
-                    style: const TextStyle(fontSize: 11, color: kOnSurfaceVariant)),
-              ),
-              const Icon(Icons.more_vert, color: kOnSurfaceVariant, size: 20),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 // ─── Data class ───────────────────────────────────────────────────────────────
 class _CategoryTile {
   final String label;
+  final String categoryKey;
   final Color color;
   final IconData icon;
-  const _CategoryTile({required this.label, required this.color, required this.icon});
+  const _CategoryTile({
+    required this.label,
+    required this.categoryKey,
+    required this.color,
+    required this.icon,
+  });
 }
