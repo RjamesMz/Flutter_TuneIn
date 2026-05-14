@@ -22,6 +22,7 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
+  late final PageController _pageController = PageController(initialPage: _currentIndex);
 
   final List<Widget> _screens = const [
     HomeScreen(),
@@ -29,6 +30,12 @@ class _MainScreenState extends State<MainScreen> {
     PlaylistPage(),
     SettingsScreen(),
   ];
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +49,14 @@ class _MainScreenState extends State<MainScreen> {
       // ── Bottom Navigation ─────────────────────────
       bottomNavigationBar: BottomNavBar(
         currentIndex: _currentIndex,
-        onTap: (i) => setState(() => _currentIndex = i),
+        onTap: (i) {
+          setState(() => _currentIndex = i);
+          _pageController.animateToPage(
+            i,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+          );
+        },
       ),
 
       // ── Body with MiniPlayer ──────────────────────
@@ -51,8 +65,11 @@ class _MainScreenState extends State<MainScreen> {
           children: [
             // Screens
             Positioned.fill(
-              child: IndexedStack(
-                index: _currentIndex,
+              child: PageView(
+                controller: _pageController,
+                onPageChanged: (index) {
+                  setState(() => _currentIndex = index);
+                },
                 children: _screens,
               ),
             ),
