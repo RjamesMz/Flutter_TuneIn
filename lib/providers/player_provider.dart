@@ -51,9 +51,7 @@ class PlayerProvider extends ChangeNotifier {
       } else if (hasNext) {
         next();
       } else {
-        _isPlaying = false;
-        _position = Duration.zero;
-        notifyListeners();
+        stop();
       }
     });
 

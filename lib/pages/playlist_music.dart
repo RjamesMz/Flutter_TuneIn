@@ -47,16 +47,6 @@ class PlaylistDetailPage extends StatelessWidget {
         ],
       ),
 
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const SearchScreen()),
-        ),
-        backgroundColor: kPrimary,
-        foregroundColor: kOnPrimary,
-        icon: const Icon(Icons.add),
-        label: const Text('Add Music', style: TextStyle(fontWeight: FontWeight.w700)),
-      ),
 
       body: Stack(
         children: [

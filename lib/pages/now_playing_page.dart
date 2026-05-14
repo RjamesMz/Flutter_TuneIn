@@ -39,6 +39,16 @@ class _NowPlayingPageState extends State<NowPlayingPage> {
     final song = player.currentSong;
     final queue = player.queue;
 
+    // Auto-close page if music completely stops (e.g. playlist finishes)
+    if (song == null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && Navigator.canPop(context)) {
+          Navigator.pop(context);
+        }
+      });
+      return const Scaffold(backgroundColor: kBackground);
+    }
+
     return Scaffold(
       backgroundColor: kBackground,
       body: ResponsiveWrapper(
