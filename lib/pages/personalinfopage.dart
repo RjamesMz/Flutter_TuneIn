@@ -148,6 +148,12 @@ class PersonalInfoPage extends StatelessWidget {
                         icon: Icons.person_outline,
                         label: 'Full Name',
                         value: currentUser?.name ?? '—',
+                        onTap: () => _showEditDialog(
+                          context,
+                          'Full Name',
+                          currentUser?.name,
+                          (val) => authProvider.updateUserProfile(name: val),
+                        ),
                       ),
                       _InfoRow(
                         icon: Icons.alternate_email,
@@ -155,17 +161,30 @@ class PersonalInfoPage extends StatelessWidget {
                         value: currentUser?.username != null
                             ? '@${currentUser!.username}'
                             : '—',
+                        onTap: () => _showEditDialog(
+                          context,
+                          'Username',
+                          currentUser?.username,
+                          (val) => authProvider.updateUserProfile(username: val),
+                        ),
                       ),
                       _InfoRow(
                         icon: Icons.email_outlined,
                         label: 'Email',
                         value: currentUser?.email ?? '—',
+                        // Email is not editable
                       ),
                       _InfoRow(
                         icon: Icons.phone_outlined,
                         label: 'Phone',
                         value: currentUser?.phone ?? '—',
                         isLast: true,
+                        onTap: () => _showEditDialog(
+                          context,
+                          'Phone',
+                          currentUser?.phone,
+                          (val) => authProvider.updateUserProfile(phone: val),
+                        ),
                       ),
                     ],
                   ),
@@ -179,12 +198,26 @@ class PersonalInfoPage extends StatelessWidget {
                         icon: Icons.calendar_month_outlined,
                         label: 'Date of Birth',
                         value: _formatDob(currentUser?.dateOfBirth),
+                        onTap: () => _showEditDialog(
+                          context,
+                          'Date of Birth',
+                          currentUser?.dateOfBirth,
+                          (val) => authProvider.updateUserProfile(dateOfBirth: val),
+                          hint: 'YYYY-MM-DD',
+                        ),
                       ),
                       _InfoRow(
                         icon: Icons.wc_outlined,
                         label: 'Gender',
                         value: currentUser?.gender ?? '—',
                         isLast: true,
+                        onTap: () => _showEditDialog(
+                          context,
+                          'Gender',
+                          currentUser?.gender,
+                          (val) => authProvider.updateUserProfile(gender: val),
+                          hint: 'Male, Female, etc.',
+                        ),
                       ),
                     ],
                   ),
@@ -270,6 +303,47 @@ class PersonalInfoPage extends StatelessWidget {
                       },
                       icon: Icons.workspace_premium,
                     ),
+                  ] else ...[
+                    const SizedBox(height: 20),
+                    OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.redAccent,
+                        side: const BorderSide(color: Colors.redAccent),
+                        minimumSize: const Size(double.infinity, 54),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      ),
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (ctx) => AlertDialog(
+                            backgroundColor: kSurfaceContainerHighest,
+                            title: const Text('Cancel Subscription?', style: TextStyle(color: kOnSurface)),
+                            content: const Text(
+                              'Are you sure you want to cancel your premium subscription? You will lose access to offline playback and ad-free listening.',
+                              style: TextStyle(color: kOnSurfaceVariant),
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(ctx),
+                                child: const Text('No, keep it', style: TextStyle(color: kOnSurfaceVariant)),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  authProvider.updatePlan('free');
+                                  Navigator.pop(ctx);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('Subscription cancelled.')),
+                                  );
+                                },
+                                child: const Text('Yes, cancel', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.cancel_outlined),
+                      label: const Text('Cancel Subscription', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    ),
                   ],
                 ],
               ),
@@ -307,6 +381,48 @@ class PersonalInfoPage extends StatelessWidget {
     } catch (_) {
       return iso;
     }
+  }
+
+  void _showEditDialog(
+    BuildContext context,
+    String title,
+    String? currentValue,
+    Function(String) onSave, {
+    String? hint,
+  }) {
+    final controller = TextEditingController(text: currentValue);
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          backgroundColor: kSurfaceContainerHighest,
+          title: Text('Edit $title', style: const TextStyle(color: kOnSurface)),
+          content: TextField(
+            controller: controller,
+            style: const TextStyle(color: kOnSurface),
+            decoration: InputDecoration(
+              hintText: hint ?? 'Enter $title',
+              hintStyle: const TextStyle(color: kOnSurfaceVariant),
+              enabledBorder: const UnderlineInputBorder(borderSide: BorderSide(color: kOutlineVariant)),
+              focusedBorder: const UnderlineInputBorder(borderSide: BorderSide(color: kPrimary)),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancel', style: TextStyle(color: kOnSurfaceVariant)),
+            ),
+            TextButton(
+              onPressed: () {
+                onSave(controller.text.trim());
+                Navigator.pop(ctx);
+              },
+              child: const Text('Save', style: TextStyle(color: kPrimary, fontWeight: FontWeight.bold)),
+            ),
+          ],
+        );
+      },
+    );
   }
 }
 
@@ -346,10 +462,19 @@ class _InfoRow extends StatelessWidget {
   final String label;
   final String value;
   final bool isLast;
-  const _InfoRow({required this.icon, required this.label, required this.value, this.isLast = false});
+  final VoidCallback? onTap;
+
+  const _InfoRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+    this.isLast = false,
+    this.onTap,
+  });
+
   @override
   Widget build(BuildContext context) {
-    return Column(
+    final content = Column(
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -367,12 +492,23 @@ class _InfoRow extends StatelessWidget {
                   ],
                 ),
               ),
+              if (onTap != null)
+                const Icon(Icons.edit, color: kOnSurfaceVariant, size: 16),
             ],
           ),
         ),
         if (!isLast) Divider(height: 1, indent: 50, endIndent: 16, color: kOutlineVariant),
       ],
     );
+
+    if (onTap != null) {
+      return InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(isLast ? 18 : 0),
+        child: content,
+      );
+    }
+    return content;
   }
 }
 // ─── Benefit Row ──────────────────────────────────────────────────────────────
