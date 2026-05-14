@@ -1,57 +1,38 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../core/app_colors.dart';
+import '../providers/music_provider.dart';
 import 'playlist_music.dart';
 
-// 🔥 CUSTOM FAB POSITION
-class TopRightFabLocation extends FloatingActionButtonLocation {
-  @override
-  Offset getOffset(ScaffoldPrelayoutGeometry scaffoldGeometry) {
-    final double fabX = scaffoldGeometry.scaffoldSize.width
-        - scaffoldGeometry.floatingActionButtonSize.width
-        - 16;
-
-    final double fabY = scaffoldGeometry.minInsets.top + 16;
-
-    return Offset(fabX, fabY);
-  }
-}
-
-class PlaylistPage extends StatefulWidget {
+class PlaylistPage extends StatelessWidget {
   const PlaylistPage({super.key});
 
-  @override
-  State<PlaylistPage> createState() => _PlaylistPageState();
-}
-
-class _PlaylistPageState extends State<PlaylistPage> {
-  List<String> playlists = [];
-
-  void addPlaylist() {
-    TextEditingController controller = TextEditingController();
+  void _addPlaylist(BuildContext context) {
+    final controller = TextEditingController();
 
     showDialog(
       context: context,
-      builder: (context) {
+      builder: (dialogCtx) {
         return AlertDialog(
           backgroundColor: kSurface,
           title: const Text("Create Playlist", style: TextStyle(color: kOnSurface)),
           content: TextField(
             controller: controller,
+            autofocus: true,
             decoration: const InputDecoration(hintText: "Playlist name"),
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => Navigator.pop(dialogCtx),
               child: const Text("Cancel"),
             ),
             TextButton(
               onPressed: () {
-                if (controller.text.isNotEmpty) {
-                  setState(() {
-                    playlists.add(controller.text);
-                  });
+                final name = controller.text.trim();
+                if (name.isNotEmpty) {
+                  context.read<MusicProvider>().createPlaylist(name);
                 }
-                Navigator.pop(context);
+                Navigator.pop(dialogCtx);
               },
               child: const Text("Create"),
             ),
@@ -61,28 +42,29 @@ class _PlaylistPageState extends State<PlaylistPage> {
     );
   }
 
-  void deletePlaylist(int index) {
-    setState(() {
-      playlists.removeAt(index);
-    });
+  void _deletePlaylist(BuildContext context, String name) {
+    context.read<MusicProvider>().deletePlaylist(name);
   }
 
-  void openPlaylist(String name) {
+  void _openPlaylist(BuildContext context, String name) {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => PlaylistDetailPage(playlistName: name),
+        builder: (_) => PlaylistDetailPage(playlistName: name),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final music = context.watch<MusicProvider>();
+    final playlists = music.playlistNames;
+
     return Scaffold(
       backgroundColor: kSurface,
 
       appBar: AppBar(
-        backgroundColor: kSurface.withOpacity(0.9),
+        backgroundColor: kSurface,
         elevation: 0,
         automaticallyImplyLeading: false,
         title: const Text(
@@ -90,8 +72,38 @@ class _PlaylistPageState extends State<PlaylistPage> {
           style: TextStyle(
             color: kPrimary,
             fontWeight: FontWeight.w800,
+            fontSize: 22,
           ),
         ),
+        actions: [
+          // ── Add Playlist button in the app bar ───────────────────────
+          GestureDetector(
+            onTap: () => _addPlaylist(context),
+            child: Container(
+              margin: const EdgeInsets.only(right: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              decoration: BoxDecoration(
+                color: kPrimary,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.add, color: Colors.white, size: 18),
+                  SizedBox(width: 4),
+                  Text(
+                    'New',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 13,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
 
       body: playlists.isEmpty
@@ -114,7 +126,7 @@ class _PlaylistPageState extends State<PlaylistPage> {
                   ),
                   const SizedBox(height: 6),
                   const Text(
-                    "Tap + to create one",
+                    "Tap + New to create one",
                     style: TextStyle(
                       color: kOnSurfaceVariant,
                       fontSize: 13,
@@ -127,8 +139,11 @@ class _PlaylistPageState extends State<PlaylistPage> {
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
               itemCount: playlists.length,
               itemBuilder: (context, index) {
+                final name = playlists[index];
+                final songCount = music.playlists[name]?.length ?? 0;
+
                 return GestureDetector(
-                  onTap: () => openPlaylist(playlists[index]),
+                  onTap: () => _openPlaylist(context, name),
                   child: Container(
                     margin: const EdgeInsets.only(bottom: 12),
                     padding: const EdgeInsets.all(12),
@@ -138,24 +153,38 @@ class _PlaylistPageState extends State<PlaylistPage> {
                     ),
                     child: Row(
                       children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: Image.network(
-                            "https://picsum.photos/seed/${playlists[index]}/200",
-                            width: 55,
-                            height: 55,
-                            fit: BoxFit.cover,
+                        // Playlist icon
+                        Container(
+                          width: 55,
+                          height: 55,
+                          decoration: BoxDecoration(
+                            color: kPrimary.withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(12),
                           ),
+                          child: const Icon(Icons.queue_music, color: kPrimary, size: 28),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
-                          child: Text(
-                            playlists[index],
-                            style: const TextStyle(
-                              color: kOnSurface,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                            ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                name,
+                                style: const TextStyle(
+                                  color: kOnSurface,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                '$songCount song${songCount == 1 ? '' : 's'}',
+                                style: const TextStyle(
+                                  color: kOnSurfaceVariant,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                         IconButton(
@@ -172,7 +201,7 @@ class _PlaylistPageState extends State<PlaylistPage> {
                                   leading: const Icon(Icons.delete, color: Colors.red),
                                   title: const Text("Delete Playlist"),
                                   onTap: () {
-                                    deletePlaylist(index);
+                                    _deletePlaylist(context, name);
                                     Navigator.pop(context);
                                   },
                                 );
@@ -186,14 +215,6 @@ class _PlaylistPageState extends State<PlaylistPage> {
                 );
               },
             ),
-
-      // 🔥 TOP RIGHT FAB
-      floatingActionButtonLocation: TopRightFabLocation(),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: kPrimary,
-        onPressed: addPlaylist,
-        child: const Icon(Icons.add, color: Colors.white),
-      ),
     );
   }
 }

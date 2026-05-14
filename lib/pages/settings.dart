@@ -7,9 +7,8 @@ import '../pages/personalinfopage.dart';
 import '../services/auth_service.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
+import '../providers/music_provider.dart';
 import 'dart:io';
-
-
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -40,16 +39,18 @@ class SettingsScreen extends StatelessWidget {
                     child: ClipOval(
                       child: (user?.avatarUrl ?? '').isNotEmpty
                           ? (user!.avatarUrl.startsWith('http')
-                              ? Image.network(
-                                  user.avatarUrl,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (_, __, ___) => _avatarPlaceholder(),
-                                )
-                              : Image.file(
-                                  File(user.avatarUrl),
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (_, __, ___) => _avatarPlaceholder(),
-                                ))
+                                ? Image.network(
+                                    user.avatarUrl,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, __, ___) =>
+                                        _avatarPlaceholder(),
+                                  )
+                                : Image.file(
+                                    File(user.avatarUrl),
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, __, ___) =>
+                                        _avatarPlaceholder(),
+                                  ))
                           : _avatarPlaceholder(),
                     ),
                   ),
@@ -69,22 +70,30 @@ class SettingsScreen extends StatelessWidget {
               const SizedBox(height: 8),
 
               // ── Stats Row ───────────────────────────────────────────────────────
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: kSurfaceContainerLow,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    _StatItem(label: 'Playlists', value: '12'),
-                    _VerticalDivider(),
-                    _StatItem(label: 'Following', value: '48'),
-                    _VerticalDivider(),
-                    _StatItem(label: 'Liked', value: '128'),
-                  ],
-                ),
+              Consumer<MusicProvider>(
+                builder: (context, musicProvider, child) {
+                  return Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: kSurfaceContainerLow,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        _StatItem(
+                          label: 'Playlists',
+                          value: musicProvider.playlistNames.length.toString(),
+                        ),
+                        _VerticalDivider(),
+                        _StatItem(
+                          label: 'Liked',
+                          value: musicProvider.likedSongIds.length.toString(),
+                        ),
+                      ],
+                    ),
+                  );
+                },
               ),
               const SizedBox(height: 28),
 
@@ -101,11 +110,12 @@ class SettingsScreen extends StatelessWidget {
                   );
                 },
               ),
-              SettingsTile(icon: Icons.notifications_outlined, label: 'Notifications'),
-              SettingsTile(icon: Icons.download_outlined,      label: 'Downloads'),
-              SettingsTile(icon: Icons.privacy_tip_outlined,   label: 'Privacy'),
-              SettingsTile(icon: Icons.headphones_outlined,    label: 'Audio Quality'),
-              SettingsTile(icon: Icons.help_outline,           label: 'Help & Support'),
+              SettingsTile(
+                icon: Icons.notifications_outlined,
+                label: 'Notifications',
+              ),
+              SettingsTile(icon: Icons.privacy_tip_outlined, label: 'Privacy'),
+              SettingsTile(icon: Icons.help_outline, label: 'Help & Support'),
               const SizedBox(height: 28),
 
               // ── Logout Button ───────────────────────────────────────────────────
@@ -114,7 +124,11 @@ class SettingsScreen extends StatelessWidget {
                 icon: Icons.logout,
                 onPressed: () {
                   AuthService.instance.logout();
-                  Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
+                  Navigator.pushNamedAndRemoveUntil(
+                    context,
+                    '/login',
+                    (route) => false,
+                  );
                 },
               ),
             ],
@@ -129,7 +143,6 @@ Widget _avatarPlaceholder() => Container(
   color: kSurfaceContainerHighest,
   child: const Icon(Icons.person, color: kPrimary, size: 40),
 );
-
 
 // HELPER WIDGETS
 
@@ -150,7 +163,10 @@ class _StatItem extends StatelessWidget {
             color: kPrimary,
           ),
         ),
-        Text(label, style: const TextStyle(fontSize: 12, color: kOnSurfaceVariant)),
+        Text(
+          label,
+          style: const TextStyle(fontSize: 12, color: kOnSurfaceVariant),
+        ),
       ],
     );
   }
@@ -162,5 +178,3 @@ class _VerticalDivider extends StatelessWidget {
     return Container(width: 1, height: 32, color: kOutlineVariant);
   }
 }
-
-

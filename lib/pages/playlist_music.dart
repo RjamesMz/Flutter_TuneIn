@@ -1,75 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../core/app_colors.dart';
+import '../providers/music_provider.dart';
+import '../widgets/song_tile.dart';
 
-// 🔥 SAME FAB POSITION CLASS (or import it if you separate files)
-class TopRightFabLocation extends FloatingActionButtonLocation {
-  @override
-  Offset getOffset(ScaffoldPrelayoutGeometry scaffoldGeometry) {
-    final double fabX = scaffoldGeometry.scaffoldSize.width
-        - scaffoldGeometry.floatingActionButtonSize.width
-        - 16;
-
-    final double fabY = scaffoldGeometry.minInsets.top + 16;
-
-    return Offset(fabX, fabY);
-  }
-}
-
-class PlaylistDetailPage extends StatefulWidget {
+class PlaylistDetailPage extends StatelessWidget {
   final String playlistName;
 
   const PlaylistDetailPage({super.key, required this.playlistName});
 
   @override
-  State<PlaylistDetailPage> createState() => _PlaylistDetailPageState();
-}
-
-class _PlaylistDetailPageState extends State<PlaylistDetailPage> {
-  List<String> songs = [];
-
-  void addSong() {
-    TextEditingController controller = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          backgroundColor: kSurface,
-          title: const Text("Add Song", style: TextStyle(color: kOnSurface)),
-          content: TextField(
-            controller: controller,
-            decoration: const InputDecoration(hintText: "Song title"),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("Cancel"),
-            ),
-            TextButton(
-              onPressed: () {
-                if (controller.text.isNotEmpty) {
-                  setState(() {
-                    songs.add(controller.text);
-                  });
-                }
-                Navigator.pop(context);
-              },
-              child: const Text("Add"),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void deleteSong(int index) {
-    setState(() {
-      songs.removeAt(index);
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final music = context.watch<MusicProvider>();
+    final songs = music.getSongsInPlaylist(playlistName);
+
     return Scaffold(
       backgroundColor: kSurface,
 
@@ -77,7 +21,7 @@ class _PlaylistDetailPageState extends State<PlaylistDetailPage> {
         backgroundColor: kSurface.withOpacity(0.9),
         elevation: 0,
         title: Text(
-          widget.playlistName,
+          playlistName,
           style: const TextStyle(
             color: kPrimary,
             fontWeight: FontWeight.w800,
@@ -105,7 +49,7 @@ class _PlaylistDetailPageState extends State<PlaylistDetailPage> {
                   ),
                   const SizedBox(height: 6),
                   const Text(
-                    "Tap + to add music",
+                    "Add songs from the search or home screen",
                     style: TextStyle(
                       color: kOnSurfaceVariant,
                       fontSize: 13,
@@ -118,67 +62,35 @@ class _PlaylistDetailPageState extends State<PlaylistDetailPage> {
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
               itemCount: songs.length,
               itemBuilder: (context, index) {
-                return Container(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: kSurfaceContainerHighest,
-                    borderRadius: BorderRadius.circular(20),
+                final song = songs[index];
+
+                return Dismissible(
+                  key: ValueKey(song.id),
+                  direction: DismissDirection.endToStart,
+                  background: Container(
+                    alignment: Alignment.centerRight,
+                    padding: const EdgeInsets.only(right: 20),
+                    margin: const EdgeInsets.symmetric(vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.red.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: const Icon(Icons.delete, color: Colors.red),
                   ),
-                  child: Row(
-                    children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: Image.network(
-                          "https://picsum.photos/seed/${songs[index]}/200",
-                          width: 55,
-                          height: 55,
-                          fit: BoxFit.cover,
-                        ),
+                  onDismissed: (_) {
+                    music.removeSongFromPlaylist(playlistName, song.id);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Removed "${song.title}" from $playlistName'),
+                        duration: const Duration(seconds: 2),
+                        behavior: SnackBarBehavior.floating,
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          songs[index],
-                          style: const TextStyle(
-                            color: kOnSurface,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.more_vert, color: kOnSurfaceVariant),
-                        onPressed: () {
-                          showModalBottomSheet(
-                            context: context,
-                            backgroundColor: kSurface,
-                            builder: (_) {
-                              return ListTile(
-                                leading: const Icon(Icons.delete, color: Colors.red),
-                                title: const Text("Delete Song"),
-                                onTap: () {
-                                  deleteSong(index);
-                                  Navigator.pop(context);
-                                },
-                              );
-                            },
-                          );
-                        },
-                      ),
-                    ],
-                  ),
+                    );
+                  },
+                  child: SongTile(song: song, queue: songs),
                 );
               },
             ),
-
-      // 🔥 TOP RIGHT FAB
-      floatingActionButtonLocation: TopRightFabLocation(),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: kPrimary,
-        onPressed: addSong,
-        child: const Icon(Icons.add, color: Colors.white),
-      ),
     );
   }
 }

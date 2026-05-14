@@ -37,6 +37,17 @@ class AuthProvider extends ChangeNotifier {
 
   // ── Actions ────────────────────────────────────────────────────────────────
 
+  /// Checks if the user is already logged in from a previous session.
+  Future<void> checkAuthStatus() async {
+    _isLoading = true;
+    notifyListeners();
+    
+    await AuthService.instance.checkAuthStatus();
+    
+    _isLoading = false;
+    notifyListeners();
+  }
+
   /// Calls [AuthService.login] and updates state accordingly.
   Future<bool> login(String email, String password) async {
     _isLoading    = true;
