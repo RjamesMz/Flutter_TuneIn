@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../core/app_colors.dart';
 import '../models/song.dart';
+import '../providers/music_provider.dart';
 import '../providers/player_provider.dart';
 
 // ─── Song Tile ────────────────────────────────────────────────────────────────
@@ -11,20 +12,22 @@ import '../providers/player_provider.dart';
 class SongTile extends StatelessWidget {
   final Song       song;
   final List<Song> queue;          // sibling songs for next/prev
-  final bool       showTrailingMenu;
+  final bool       showActions;
 
   const SongTile({
     super.key,
     required this.song,
     required this.queue,
-    this.showTrailingMenu = true,
+    this.showActions = true,
   });
 
   @override
   Widget build(BuildContext context) {
     final player       = context.watch<PlayerProvider>();
+    final music        = context.watch<MusicProvider>();
     final isCurrentSong = player.currentSong == song;
     final isPlaying     = isCurrentSong && player.isPlaying;
+    final isLiked       = music.isLiked(song.id);
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 250),
@@ -108,15 +111,15 @@ class SongTile extends StatelessWidget {
                   ],
                 ),
               ),
-              // ── Duration / Icon ───────────────────────────────────────────
+              // ── Duration / Equalizer ───────────────────────────────────────
               if (isCurrentSong)
                 const Padding(
-                  padding: EdgeInsets.only(right: 8),
+                  padding: EdgeInsets.only(right: 4),
                   child: Icon(Icons.equalizer, color: kPrimary, size: 20),
                 )
               else
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  padding: const EdgeInsets.only(right: 4),
                   child: Text(
                     song.formattedDuration,
                     style: const TextStyle(
@@ -125,18 +128,224 @@ class SongTile extends StatelessWidget {
                     ),
                   ),
                 ),
-              if (showTrailingMenu)
+              // ── Like Button ────────────────────────────────────────────────
+              if (showActions)
                 GestureDetector(
-                  onTap: () {},
-                  child: const Icon(
-                    Icons.more_vert,
-                    color: kOnSurfaceVariant,
-                    size: 20,
+                  onTap: () => context.read<MusicProvider>().toggleLike(song.id),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 250),
+                      transitionBuilder: (child, anim) =>
+                          ScaleTransition(scale: anim, child: child),
+                      child: Icon(
+                        isLiked ? Icons.favorite : Icons.favorite_border,
+                        key: ValueKey(isLiked),
+                        color: isLiked ? kPrimary : kOnSurfaceVariant,
+                        size: 20,
+                      ),
+                    ),
+                  ),
+                ),
+              // ── Add to Playlist Button ─────────────────────────────────────
+              if (showActions)
+                GestureDetector(
+                  onTap: () => _showPlaylistSheet(context),
+                  child: const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 4),
+                    child: Icon(
+                      Icons.playlist_add,
+                      color: kOnSurfaceVariant,
+                      size: 22,
+                    ),
                   ),
                 ),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  /// Shows a bottom sheet to pick or create a playlist.
+  void _showPlaylistSheet(BuildContext context) {
+    final music = context.read<MusicProvider>();
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: kSurface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => _PlaylistBottomSheet(
+        song: song,
+        music: music,
+      ),
+    );
+  }
+}
+
+// ─── Playlist Bottom Sheet ────────────────────────────────────────────────────
+class _PlaylistBottomSheet extends StatefulWidget {
+  final Song song;
+  final MusicProvider music;
+
+  const _PlaylistBottomSheet({required this.song, required this.music});
+
+  @override
+  State<_PlaylistBottomSheet> createState() => _PlaylistBottomSheetState();
+}
+
+class _PlaylistBottomSheetState extends State<_PlaylistBottomSheet> {
+  @override
+  Widget build(BuildContext context) {
+    final names = widget.music.playlistNames;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 20, 16, 24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // ── Header ─────────────────────────────────────────────────────
+          Row(
+            children: [
+              const Icon(Icons.playlist_add, color: kPrimary, size: 22),
+              const SizedBox(width: 8),
+              const Expanded(
+                child: Text(
+                  'Add to playlist',
+                  style: TextStyle(
+                    color: kOnSurface,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              GestureDetector(
+                onTap: () => Navigator.pop(context),
+                child: const Icon(Icons.close, color: kOnSurfaceVariant, size: 22),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          // ── Create new playlist ────────────────────────────────────────
+          GestureDetector(
+            onTap: () => _showCreateDialog(context),
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
+              decoration: BoxDecoration(
+                color: kSurfaceContainerLow,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Row(
+                children: [
+                  Icon(Icons.add_circle_outline, color: kPrimary, size: 20),
+                  SizedBox(width: 10),
+                  Text(
+                    'Create new playlist',
+                    style: TextStyle(
+                      color: kPrimary,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // ── Existing playlists ─────────────────────────────────────────
+          if (names.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxHeight: 200),
+              child: ListView.builder(
+                shrinkWrap: true,
+                itemCount: names.length,
+                itemBuilder: (_, i) {
+                  final name = names[i];
+                  final alreadyAdded = widget.music.isSongInPlaylist(name, widget.song.id);
+
+                  return ListTile(
+                    dense: true,
+                    leading: Icon(
+                      alreadyAdded ? Icons.check_circle : Icons.music_note,
+                      color: alreadyAdded ? kPrimary : kOnSurfaceVariant,
+                      size: 20,
+                    ),
+                    title: Text(
+                      name,
+                      style: TextStyle(
+                        color: alreadyAdded ? kPrimary : kOnSurface,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    trailing: alreadyAdded
+                        ? const Text('Added', style: TextStyle(color: kOnSurfaceVariant, fontSize: 12))
+                        : null,
+                    onTap: alreadyAdded
+                        ? null
+                        : () {
+                            widget.music.addSongToPlaylist(name, widget.song.id);
+                            setState(() {});  // refresh checkmarks
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Added "${widget.song.title}" to $name'),
+                                duration: const Duration(seconds: 2),
+                                behavior: SnackBarBehavior.floating,
+                              ),
+                            );
+                          },
+                  );
+                },
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  void _showCreateDialog(BuildContext context) {
+    final ctrl = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (dialogCtx) => AlertDialog(
+        backgroundColor: kSurface,
+        title: const Text('Create Playlist', style: TextStyle(color: kOnSurface)),
+        content: TextField(
+          controller: ctrl,
+          autofocus: true,
+          decoration: const InputDecoration(hintText: 'Playlist name'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogCtx),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              final name = ctrl.text.trim();
+              if (name.isNotEmpty) {
+                widget.music.createPlaylist(name);
+                widget.music.addSongToPlaylist(name, widget.song.id);
+                Navigator.pop(dialogCtx);  // close dialog
+                Navigator.pop(context);    // close bottom sheet
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Created "$name" and added "${widget.song.title}"'),
+                    duration: const Duration(seconds: 2),
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              }
+            },
+            child: const Text('Create & Add'),
+          ),
+        ],
       ),
     );
   }

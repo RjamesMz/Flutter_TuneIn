@@ -42,7 +42,36 @@ class AuthService extends ChangeNotifier {
     }
   }
 
-  
+  /// Checks if a Firebase user is already logged in, and if so, fetches their data.
+  Future<void> checkAuthStatus() async {
+    final firebaseUser = _auth.currentUser;
+    if (firebaseUser != null) {
+      try {
+        final doc = await _firestore.collection('users').doc(firebaseUser.uid).get();
+        final data = doc.data() ?? {};
+        
+        final prefs = await SharedPreferences.getInstance();
+        final savedAvatarUrl = prefs.getString('avatar_${firebaseUser.uid}') ?? '';
+        
+        _currentUser = User(
+          id: firebaseUser.uid,
+          name: data['name'] ?? firebaseUser.displayName ?? 'Unknown',
+          email: firebaseUser.email ?? '',
+          username: data['username'],
+          phone: data['phone'],
+          dateOfBirth: data['dateOfBirth'],
+          gender: data['gender'],
+          plan: data['plan'] ?? 'Free',
+          avatarUrl: savedAvatarUrl.isNotEmpty ? savedAvatarUrl : (data['avatarUrl'] ?? ''),
+        );
+        notifyListeners();
+      } catch (e) {
+        // Print or handle error quietly during auto-login
+        print('Error in auto-login: $e');
+      }
+    }
+  }
+
   /// Simulates a login call. Any non-empty credentials succeed after 1.5 s.
   /// Throws [Exception] for empty credentials.
   Future<User> login(String email, String password) async {

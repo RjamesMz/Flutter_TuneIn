@@ -40,19 +40,56 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => PlayerProvider()),
       ],
       child: MaterialApp(
-        initialRoute: '/login',
-
+        initialRoute: '/',
         routes: {
-        '/login': (context) => LoginPage(),
-        '/signup': (context) => SignupScreen(),
-        '/main': (context) => const MainScreen(),
-        '/home': (context) => const HomeScreen(),
-        '/search': (context) => const SearchScreen(),
-        '/playlist': (context) => const PlaylistPage(),
-        '/settings': (context) => const SettingsScreen(),
-        '/personal_info': (context) => const PersonalInfoPage(),
-        '/subscription': (context) => const SubscriptionScreen(),
-      },
+          '/': (context) => const AuthWrapper(),
+          '/login': (context) => LoginPage(),
+          '/signup': (context) => SignupScreen(),
+          '/main': (context) => const MainScreen(),
+          '/home': (context) => const HomeScreen(),
+          '/search': (context) => const SearchScreen(),
+          '/playlist': (context) => const PlaylistPage(),
+          '/settings': (context) => const SettingsScreen(),
+          '/personal_info': (context) => const PersonalInfoPage(),
+          '/subscription': (context) => const SubscriptionScreen(),
+        },
+      ),
+    );
+  }
+}
+
+class AuthWrapper extends StatefulWidget {
+  const AuthWrapper({super.key});
+
+  @override
+  State<AuthWrapper> createState() => _AuthWrapperState();
+}
+
+class _AuthWrapperState extends State<AuthWrapper> {
+  @override
+  void initState() {
+    super.initState();
+    _checkAuth();
+  }
+
+  Future<void> _checkAuth() async {
+    final auth = context.read<AuthProvider>();
+    await auth.checkAuthStatus();
+    if (!mounted) return;
+
+    if (auth.isLoggedIn) {
+      Navigator.pushReplacementNamed(context, '/main');
+    } else {
+      Navigator.pushReplacementNamed(context, '/login');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      backgroundColor: Color(0xFF141218), // kSurface color
+      body: Center(
+        child: CircularProgressIndicator(color: Color(0xFFE28C9D)), // kPrimary color
       ),
     );
   }

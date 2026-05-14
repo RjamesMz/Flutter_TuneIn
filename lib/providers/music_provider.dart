@@ -1,5 +1,7 @@
 
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/song.dart';
 import '../services/music_service.dart';
 import '../core/app_strings.dart';
@@ -20,6 +22,43 @@ class MusicProvider extends ChangeNotifier {
   bool        _isSearching       = false;
   String      _searchQuery       = '';
   String?     _errorMessage;
+
+  static const String _playlistsKey = 'user_playlists';
+  static const String _likesKey = 'user_likes';
+
+  MusicProvider() {
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    final prefs = await SharedPreferences.getInstance();
+    
+    // Load likes
+    final likesList = prefs.getStringList(_likesKey) ?? [];
+    _likedSongIds.addAll(likesList);
+
+    // Load playlists
+    final playlistsJson = prefs.getString(_playlistsKey);
+    if (playlistsJson != null) {
+      try {
+        final Map<String, dynamic> decoded = json.decode(playlistsJson);
+        decoded.forEach((key, value) {
+          _playlists[key] = List<String>.from(value);
+        });
+      } catch (_) {}
+    }
+    notifyListeners();
+  }
+
+  Future<void> _saveLikes() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(_likesKey, _likedSongIds.toList());
+  }
+
+  Future<void> _savePlaylists() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_playlistsKey, json.encode(_playlists));
+  }
 
   // ── Getters ────────────────────────────────────────────────────────────────
   bool    get isLoading        => _isLoading;
@@ -114,5 +153,75 @@ class MusicProvider extends ChangeNotifier {
     _searchQuery   = '';
     _searchResults = [];
     notifyListeners();
+  }
+
+  // ── Liked Songs ───────────────────────────────────────────────────────────
+
+  final Set<String> _likedSongIds = {};
+
+  Set<String> get likedSongIds => _likedSongIds;
+
+  bool isLiked(String songId) => _likedSongIds.contains(songId);
+
+  void toggleLike(String songId) {
+    if (_likedSongIds.contains(songId)) {
+      _likedSongIds.remove(songId);
+    } else {
+      _likedSongIds.add(songId);
+    }
+    _saveLikes();
+    notifyListeners();
+  }
+
+  List<Song> get likedSongs =>
+      _allSongs.where((s) => _likedSongIds.contains(s.id)).toList();
+
+  // ── Playlists ─────────────────────────────────────────────────────────────
+
+  /// Map of playlist name → list of song IDs.
+  final Map<String, List<String>> _playlists = {};
+
+  Map<String, List<String>> get playlists => _playlists;
+
+  List<String> get playlistNames => _playlists.keys.toList();
+
+  void createPlaylist(String name) {
+    if (!_playlists.containsKey(name)) {
+      _playlists[name] = [];
+      _savePlaylists();
+      notifyListeners();
+    }
+  }
+
+  void addSongToPlaylist(String playlistName, String songId) {
+    final list = _playlists[playlistName];
+    if (list != null && !list.contains(songId)) {
+      list.add(songId);
+      _savePlaylists();
+      notifyListeners();
+    }
+  }
+
+  bool isSongInPlaylist(String playlistName, String songId) {
+    return _playlists[playlistName]?.contains(songId) ?? false;
+  }
+
+  void deletePlaylist(String name) {
+    _playlists.remove(name);
+    _savePlaylists();
+    notifyListeners();
+  }
+
+  void removeSongFromPlaylist(String playlistName, String songId) {
+    _playlists[playlistName]?.remove(songId);
+    _savePlaylists();
+    notifyListeners();
+  }
+
+  /// Returns actual [Song] objects for a given playlist name.
+  List<Song> getSongsInPlaylist(String playlistName) {
+    final ids = _playlists[playlistName];
+    if (ids == null) return [];
+    return _allSongs.where((s) => ids.contains(s.id)).toList();
   }
 }
