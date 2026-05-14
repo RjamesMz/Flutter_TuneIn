@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../widgets/primary_button.dart';
 import '../core/app_colors.dart';
 import '../core/app_strings.dart';
+import '../core/responsive_helper.dart';
 import '../providers/auth_provider.dart';
 
 // ─── Login Prototype ──────────────────────────────────────────────────────────
@@ -51,12 +52,13 @@ class _LoginPageState extends State<LoginPage> {
     return Scaffold(
       backgroundColor: kBackground,
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 28),
-          child: Form(
-            key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+        child: ResponsiveWrapper(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 28),
+            child: Form(
+              key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 60),
 
@@ -208,6 +210,7 @@ class _LoginPageState extends State<LoginPage> {
               const SizedBox(height: 32),
              ],
             ),
+          ),
           ),
         ),
       ),

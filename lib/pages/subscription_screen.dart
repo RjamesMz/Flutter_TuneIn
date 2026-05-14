@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:tunely/pages/checkout_screen.dart';
 
 import '../core/app_colors.dart';
+import '../core/responsive_helper.dart';
 import '../models/subscription_plan.dart';
 import '../providers/auth_provider.dart';
 
@@ -29,184 +30,185 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
   @override
   Widget build(BuildContext context) {
     final plan = _plans[_selectedPlan];
-
     return Scaffold(
       backgroundColor: kBackground,
-      body: CustomScrollView(
-        slivers: [
-          // ── App Bar ────────────────────────────────────────────────────────
-          SliverAppBar(
-            pinned: true,
-            backgroundColor: kBackground,
-            elevation: 0,
-            leading: IconButton(
-              icon: const Icon(
-                Icons.arrow_back_ios_new_rounded,
-                color: kOnSurface,
-              ),
-              onPressed: () => Navigator.pop(context),
-            ),
-            title: const Text(
-              'Choose Your Plan',
-              style: TextStyle(
-                color: kOnSurface,
-                fontWeight: FontWeight.w800,
-                fontSize: 20,
-              ),
-            ),
-            centerTitle: true,
-          ),
-
-          // ── Hero Header ───────────────────────────────────────────────────
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(24, 8, 24, 0),
-              child: Column(
-                children: [
-                  Container(
-                    width: 72,
-                    height: 72,
-                    decoration: const BoxDecoration(
-                      gradient: kSoulGradient,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.workspace_premium_rounded,
-                      color: Colors.white,
-                      size: 36,
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  const Text(
-                    'Unlock the Full\nListening Experience',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 26,
-                      fontWeight: FontWeight.w800,
-                      color: kOnSurface,
-                      height: 1.25,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Ad-free music, offline downloads,\nand crystal-clear audio — all in one.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: kOnSurfaceVariant,
-                      height: 1.5,
-                    ),
-                  ),
-                  const SizedBox(height: 28),
-                ],
-              ),
-            ),
-          ),
-
-          // ── Plan Cards ────────────────────────────────────────────────────
-          SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            sliver: SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (_, i) => Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: _PlanCard(
-                    plan: _plans[i],
-                    isSelected: _selectedPlan == i,
-                    onTap: () => _selectPlan(i),
-                  ),
+      body: ResponsiveWrapper(
+        child: CustomScrollView(
+          slivers: [
+            // ── App Bar ────────────────────────────────────────────────────────
+            SliverAppBar(
+              pinned: true,
+              backgroundColor: kBackground,
+              elevation: 0,
+              leading: IconButton(
+                icon: const Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                  color: kOnSurface,
                 ),
-                childCount: _plans.length,
+                onPressed: () => Navigator.pop(context),
               ),
+              title: const Text(
+                'Choose Your Plan',
+                style: TextStyle(
+                  color: kOnSurface,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 20,
+                ),
+              ),
+              centerTitle: true,
             ),
-          ),
 
-          // ── CTA + Fine Print ──────────────────────────────────────────────
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(24, 8, 24, 48),
-              child: Column(
-                children: [
-                  // CTA Button
-                  SizedBox(
-                    width: double.infinity,
-                    height: 54,
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        gradient: plan.id == 'free'
-                            ? LinearGradient(
-                                colors: [kOutline, kOnSurfaceVariant],
-                              )
-                            : const LinearGradient(
-                                colors: [kPrimary, kPrimaryContainer],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ),
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: plan.id != 'free'
-                            ? [
-                                BoxShadow(
-                                  color: kPrimary.withOpacity(0.35),
-                                  blurRadius: 18,
-                                  offset: const Offset(0, 6),
-                                ),
-                              ]
-                            : null,
+            // ── Hero Header ───────────────────────────────────────────────────
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(24, 8, 24, 0),
+                child: Column(
+                  children: [
+                    Container(
+                      width: 72,
+                      height: 72,
+                      decoration: const BoxDecoration(
+                        gradient: kSoulGradient,
+                        shape: BoxShape.circle,
                       ),
-                      child: ElevatedButton(
-                        onPressed: () => _onTap(context, plan),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.transparent,
-                          shadowColor: Colors.transparent,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                        ),
-                        child: Text(
-                          plan.id == 'free'
-                              ? 'Continue with Free'
-                              : 'Get ${plan.name} — ${plan.price}',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 16,
-                          ),
-                        ),
+                      child: const Icon(
+                        Icons.workspace_premium_rounded,
+                        color: Colors.white,
+                        size: 36,
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  // Fine print
-                  Text(
-                    plan.id == 'free'
-                        ? 'No payment required. Upgrade anytime.'
-                        : 'Cancel anytime. Billed ${plan.id == 'premium' ? 'monthly' : 'annualy - save 30%'}.',
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: kOnSurfaceVariant,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _TextLink('Terms of Service', onTap: () {}),
-                      const Text(
-                        '  ·  ',
-                        style: TextStyle(
-                          color: kOnSurfaceVariant,
-                          fontSize: 12,
-                        ),
+                    const SizedBox(height: 14),
+                    const Text(
+                      'Unlock the Full\nListening Experience',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 26,
+                        fontWeight: FontWeight.w800,
+                        color: kOnSurface,
+                        height: 1.25,
                       ),
-                      _TextLink('Privacy Policy', onTap: () {}),
-                    ],
-                  ),
-                ],
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Ad-free music, offline downloads,\nand crystal-clear audio — all in one.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: kOnSurfaceVariant,
+                        height: 1.5,
+                      ),
+                    ),
+                    const SizedBox(height: 28),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+
+            // ── Plan Cards ────────────────────────────────────────────────────
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              sliver: SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (_, i) => Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: _PlanCard(
+                      plan: _plans[i],
+                      isSelected: _selectedPlan == i,
+                      onTap: () => _selectPlan(i),
+                    ),
+                  ),
+                  childCount: _plans.length,
+                ),
+              ),
+            ),
+
+            // ── CTA + Fine Print ──────────────────────────────────────────────
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(24, 8, 24, 48),
+                child: Column(
+                  children: [
+                    // CTA Button
+                    SizedBox(
+                      width: double.infinity,
+                      height: 54,
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          gradient: plan.id == 'free'
+                              ? LinearGradient(
+                                  colors: [kOutline, kOnSurfaceVariant],
+                                )
+                              : const LinearGradient(
+                                  colors: [kPrimary, kPrimaryContainer],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ),
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: plan.id != 'free'
+                              ? [
+                                  BoxShadow(
+                                    color: kPrimary.withOpacity(0.35),
+                                    blurRadius: 18,
+                                    offset: const Offset(0, 6),
+                                  ),
+                                ]
+                              : null,
+                        ),
+                        child: ElevatedButton(
+                          onPressed: () => _onTap(context, plan),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.transparent,
+                            shadowColor: Colors.transparent,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                          ),
+                          child: Text(
+                            plan.id == 'free'
+                                ? 'Continue with Free'
+                                : 'Get ${plan.name} — ${plan.price}',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    // Fine print
+                    Text(
+                      plan.id == 'free'
+                          ? 'No payment required. Upgrade anytime.'
+                          : 'Cancel anytime. Billed ${plan.id == 'premium' ? 'monthly' : 'annualy - save 30%'}.',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: kOnSurfaceVariant,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _TextLink('Terms of Service', onTap: () {}),
+                        const Text(
+                          '  ·  ',
+                          style: TextStyle(
+                            color: kOnSurfaceVariant,
+                            fontSize: 12,
+                          ),
+                        ),
+                        _TextLink('Privacy Policy', onTap: () {}),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

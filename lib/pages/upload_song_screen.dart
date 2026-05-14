@@ -6,6 +6,7 @@ import 'package:file_picker/file_picker.dart';
 import '../services/supabase_service.dart';
 import '../core/app_colors.dart';
 import '../core/app_strings.dart';
+import '../core/responsive_helper.dart';
 
 class UploadSongScreen extends StatefulWidget {
   const UploadSongScreen({super.key});
@@ -127,9 +128,10 @@ class _UploadSongScreenState extends State<UploadSongScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: kBackground,
-      body: _isUploading
-          ? const Center(child: CircularProgressIndicator(color: kPrimary))
-          : Column(
+      body: ResponsiveWrapper(
+        child: _isUploading
+            ? const Center(child: CircularProgressIndicator(color: kPrimary))
+            : Column(
               children: [
                 // ── Gradient Header ───────────────────────────────────────────
                 Container(
@@ -314,6 +316,7 @@ class _UploadSongScreenState extends State<UploadSongScreen> {
                 ),
               ],
             ),
+      ),
     );
   }
 

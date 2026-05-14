@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../core/app_colors.dart';
+import '../core/responsive_helper.dart';
 import '../providers/music_provider.dart';
 import 'playlist_music.dart';
 
@@ -106,17 +107,18 @@ class PlaylistPage extends StatelessWidget {
         ],
       ),
 
-      body: playlists.isEmpty
-          ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Image.asset(
-                    'assets/image/logs/nothing.png',
-                    width: 180,
-                  ),
-                  const SizedBox(height: 16),
-                  const Text(
+      body: ResponsiveWrapper(
+        child: playlists.isEmpty
+            ? Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Image.asset(
+                      'assets/image/logs/nothing.png',
+                      width: 180,
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
                     "No Playlists Yet",
                     style: TextStyle(
                       color: kOnSurface,
@@ -215,6 +217,7 @@ class PlaylistPage extends StatelessWidget {
                 );
               },
             ),
+      ),
     );
   }
 }

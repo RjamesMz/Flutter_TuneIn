@@ -3,6 +3,7 @@ import 'package:tunely/widgets/settings_button.dart';
 import 'package:tunely/widgets/primary_button.dart';
 import '../core/app_colors.dart';
 import '../core/app_strings.dart';
+import '../core/responsive_helper.dart';
 import '../pages/personalinfopage.dart';
 import '../services/auth_service.dart';
 import 'package:provider/provider.dart';
@@ -21,9 +22,10 @@ class SettingsScreen extends StatelessWidget {
 
         return SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(24, 24, 24, 100),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
+          child: ResponsiveWrapper(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
               // ── Avatar ──────────────────────────────────────────────────────────
               const SizedBox(height: 24),
               Stack(
@@ -132,6 +134,7 @@ class SettingsScreen extends StatelessWidget {
                 },
               ),
             ],
+            ),
           ),
         );
       },

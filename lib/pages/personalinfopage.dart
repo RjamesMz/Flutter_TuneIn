@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../core/app_colors.dart';
 import '../core/app_strings.dart';
+import '../core/responsive_helper.dart';
 import '../models/subscription_plan.dart';
 import '../models/user.dart';
 import '../widgets/primary_button.dart';
@@ -26,7 +27,8 @@ class PersonalInfoPage extends StatelessWidget {
 
         return Scaffold(
           backgroundColor: kBackground,
-          body: CustomScrollView(
+          body: ResponsiveWrapper(
+            child: CustomScrollView(
         slivers: [
               SliverAppBar(
                 expandedHeight: 200,
@@ -275,8 +277,9 @@ class PersonalInfoPage extends StatelessWidget {
           ),
         ],
       ),
+      ),
     );
-    },
+      },
     );
   }
   

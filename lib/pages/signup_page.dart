@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 import '../core/app_colors.dart';
 import '../core/app_strings.dart';
+import '../core/responsive_helper.dart';
 import '../services/auth_service.dart';
 import '../widgets/primary_button.dart';
 
@@ -131,9 +132,10 @@ class _SignupScreenState extends State<SignupScreen>
             padding: const EdgeInsets.symmetric(horizontal: 28),
             child: Form(
               key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+              child: ResponsiveWrapper(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                   const SizedBox(height: 40),
 
                   // ── Logo + title ────────────────────────────────────────
@@ -324,6 +326,7 @@ class _SignupScreenState extends State<SignupScreen>
                   ),
                   const SizedBox(height: 40),
                 ],
+              ),
               ),
             ),
           ),
