@@ -8,6 +8,7 @@ import '../widgets/song_tile.dart';
 import '../widgets/mini_player.dart';
 import '../pages/now_playing_page.dart';
 import '../pages/search_screen.dart';
+import '../providers/auth_provider.dart';
 
 class PlaylistDetailPage extends StatelessWidget {
   final String playlistName;
@@ -18,7 +19,12 @@ class PlaylistDetailPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final music = context.watch<MusicProvider>();
     final player = context.watch<PlayerProvider>();
-    final songs = music.getSongsInPlaylist(playlistName);
+    final auth = context.watch<AuthProvider>();
+    
+    final isPremium = auth.currentUser?.plan != 'free';
+    final songs = playlistName == 'Liked Songs' 
+        ? music.likedSongs 
+        : music.getSongsInPlaylist(playlistName);
     final currentSong = player.currentSong;
     final hasActiveSong = currentSong != null;
 
@@ -36,6 +42,21 @@ class PlaylistDetailPage extends StatelessWidget {
           ),
         ),
         actions: [
+          if (isPremium && songs.isNotEmpty)
+            IconButton(
+              icon: const Icon(Icons.download_for_offline, color: kPrimary),
+              tooltip: 'Download All',
+              onPressed: () {
+                for (var song in songs) {
+                  if (!music.isDownloaded(song.id)) {
+                    music.downloadSong(song);
+                  }
+                }
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Downloading playlist...')),
+                );
+              },
+            ),
           IconButton(
             icon: const Icon(Icons.add, color: kPrimary),
             tooltip: 'Add Music',

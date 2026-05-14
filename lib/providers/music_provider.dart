@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/song.dart';
 import '../services/music_service.dart';
+import '../services/download_service.dart';
 import '../core/app_strings.dart';
 
 // ─── Music Provider ───────────────────────────────────────────────────────────
@@ -40,6 +41,14 @@ class MusicProvider extends ChangeNotifier {
     if (likesList.isNotEmpty) {
       await fetchSongs();
     }
+
+    // Load downloads
+    try {
+      final downloads = await DownloadService.instance.getDownloadedSongs();
+      for (final s in downloads) {
+        _downloadedSongIds.add(s.id);
+      }
+    } catch (_) {}
 
     // Load playlists
     final playlistsJson = prefs.getString(_playlistsKey);
@@ -251,5 +260,36 @@ class MusicProvider extends ChangeNotifier {
     final ids = _playlists[playlistName];
     if (ids == null) return [];
     return _allSongs.where((s) => ids.contains(s.id)).toList();
+  }
+
+  // ── Downloads ─────────────────────────────────────────────────────────────
+
+  final Set<String> _downloadedSongIds = {};
+  
+  bool isDownloaded(String songId) => _downloadedSongIds.contains(songId);
+
+  Future<void> downloadSong(Song song) async {
+    if (isDownloaded(song.id)) return;
+    try {
+      await DownloadService.instance.downloadSong(song, null);
+      _downloadedSongIds.add(song.id);
+      notifyListeners();
+    } catch (e) {
+      print('Download failed: $e');
+    }
+  }
+
+  Future<void> removeDownload(Song song) async {
+    try {
+      await DownloadService.instance.deleteDownload(song);
+      _downloadedSongIds.remove(song.id);
+      notifyListeners();
+    } catch (e) {
+      print('Remove download failed: $e');
+    }
+  }
+
+  List<Song> get downloadedSongs {
+    return _allSongs.where((s) => _downloadedSongIds.contains(s.id)).toList();
   }
 }
