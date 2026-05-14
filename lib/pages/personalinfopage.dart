@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../core/app_colors.dart';
 import '../core/app_strings.dart';
 import '../core/responsive_helper.dart';
@@ -184,6 +185,8 @@ class PersonalInfoPage extends StatelessWidget {
                           'Phone',
                           currentUser?.phone,
                           (val) => authProvider.updateUserProfile(phone: val),
+                          keyboardType: TextInputType.phone,
+                          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                         ),
                       ),
                     ],
@@ -198,26 +201,14 @@ class PersonalInfoPage extends StatelessWidget {
                         icon: Icons.calendar_month_outlined,
                         label: 'Date of Birth',
                         value: _formatDob(currentUser?.dateOfBirth),
-                        onTap: () => _showEditDialog(
-                          context,
-                          'Date of Birth',
-                          currentUser?.dateOfBirth,
-                          (val) => authProvider.updateUserProfile(dateOfBirth: val),
-                          hint: 'YYYY-MM-DD',
-                        ),
+                        onTap: () => _pickDob(context, currentUser?.dateOfBirth, authProvider),
                       ),
                       _InfoRow(
                         icon: Icons.wc_outlined,
                         label: 'Gender',
                         value: currentUser?.gender ?? '—',
                         isLast: true,
-                        onTap: () => _showEditDialog(
-                          context,
-                          'Gender',
-                          currentUser?.gender,
-                          (val) => authProvider.updateUserProfile(gender: val),
-                          hint: 'Male, Female, etc.',
-                        ),
+                        onTap: () => _showGenderEditDialog(context, currentUser?.gender, authProvider),
                       ),
                     ],
                   ),
@@ -389,6 +380,8 @@ class PersonalInfoPage extends StatelessWidget {
     String? currentValue,
     Function(String) onSave, {
     String? hint,
+    TextInputType? keyboardType,
+    List<TextInputFormatter>? inputFormatters,
   }) {
     final controller = TextEditingController(text: currentValue);
     showDialog(
@@ -399,6 +392,8 @@ class PersonalInfoPage extends StatelessWidget {
           title: Text('Edit $title', style: const TextStyle(color: kOnSurface)),
           content: TextField(
             controller: controller,
+            keyboardType: keyboardType,
+            inputFormatters: inputFormatters,
             style: const TextStyle(color: kOnSurface),
             decoration: InputDecoration(
               hintText: hint ?? 'Enter $title',
@@ -420,6 +415,82 @@ class PersonalInfoPage extends StatelessWidget {
               child: const Text('Save', style: TextStyle(color: kPrimary, fontWeight: FontWeight.bold)),
             ),
           ],
+        );
+      },
+    );
+  }
+
+  Future<void> _pickDob(BuildContext context, String? currentDob, AuthProvider authProvider) async {
+    DateTime initialDate = DateTime(2000);
+    if (currentDob != null) {
+      try {
+        initialDate = DateTime.parse(currentDob);
+      } catch (_) {}
+    }
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: initialDate,
+      firstDate: DateTime(1920),
+      lastDate: DateTime.now().subtract(const Duration(days: 365 * 10)),
+      builder: (ctx, child) => Theme(
+        data: Theme.of(ctx).copyWith(
+          colorScheme: const ColorScheme.light(
+            primary: kPrimary,
+            onPrimary: Colors.white,
+            surface: kSurface,
+          ),
+        ),
+        child: child!,
+      ),
+    );
+    if (picked != null) {
+      final iso = picked.toIso8601String().split('T').first;
+      authProvider.updateUserProfile(dateOfBirth: iso);
+    }
+  }
+
+  void _showGenderEditDialog(BuildContext context, String? currentGender, AuthProvider authProvider) {
+    String? selectedGender = currentGender;
+    const genders = ['Male', 'Female', 'Non-binary', 'Prefer not to say'];
+    if (selectedGender != null && !genders.contains(selectedGender)) {
+      selectedGender = null;
+    }
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              backgroundColor: kSurfaceContainerHighest,
+              title: const Text('Edit Gender', style: const TextStyle(color: kOnSurface)),
+              content: DropdownButtonHideUnderline(
+                child: DropdownButton<String>(
+                  value: selectedGender,
+                  hint: const Text('Gender (optional)', style: TextStyle(color: kOnSurfaceVariant, fontSize: 15)),
+                  icon: const Icon(Icons.expand_more, color: kOnSurfaceVariant),
+                  isExpanded: true,
+                  dropdownColor: kSurface,
+                  items: genders.map((g) => DropdownMenuItem(value: g, child: Text(g, style: const TextStyle(color: kOnSurface)))).toList(),
+                  onChanged: (val) {
+                    setState(() => selectedGender = val);
+                  },
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  child: const Text('Cancel', style: TextStyle(color: kOnSurfaceVariant)),
+                ),
+                TextButton(
+                  onPressed: () {
+                    authProvider.updateUserProfile(gender: selectedGender);
+                    Navigator.pop(ctx);
+                  },
+                  child: const Text('Save', style: TextStyle(color: kPrimary, fontWeight: FontWeight.bold)),
+                ),
+              ],
+            );
+          }
         );
       },
     );
