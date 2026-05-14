@@ -1,6 +1,7 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
 import '../models/song.dart';
+import '../services/download_service.dart';
 
 // ─── Player Provider ──────────────────────────────────────────────────────────
 /// Manages real audio playback using the audioplayers package.
@@ -92,7 +93,12 @@ class PlayerProvider extends ChangeNotifier {
     _currentSong = song;
     notifyListeners();
 
-    await _audioPlayer.play(UrlSource(song.audioUrl));
+    final localPath = await DownloadService.instance.getLocalAudioPath(song.id);
+    if (localPath != null && !localPath.startsWith('http')) {
+      await _audioPlayer.play(DeviceFileSource(localPath));
+    } else {
+      await _audioPlayer.play(UrlSource(song.audioUrl));
+    }
   }
 
   /// Pauses playback.

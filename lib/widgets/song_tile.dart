@@ -5,6 +5,7 @@ import '../core/app_colors.dart';
 import '../models/song.dart';
 import '../providers/music_provider.dart';
 import '../providers/player_provider.dart';
+import '../providers/auth_provider.dart';
 
 // ─── Song Tile ────────────────────────────────────────────────────────────────
 /// A reusable list tile that displays a [Song].
@@ -28,6 +29,9 @@ class SongTile extends StatelessWidget {
     final isCurrentSong = player.currentSong == song;
     final isPlaying     = isCurrentSong && player.isPlaying;
     final isLiked       = music.isLiked(song.id);
+    final auth          = context.watch<AuthProvider>();
+    final isPremium     = auth.currentUser?.plan != 'free';
+    final isDownloaded  = music.isDownloaded(song.id);
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 250),
@@ -157,6 +161,27 @@ class SongTile extends StatelessWidget {
                       Icons.playlist_add,
                       color: kOnSurfaceVariant,
                       size: 22,
+                    ),
+                  ),
+                ),
+              // ── Download Button ────────────────────────────────────────────
+              if (showActions && isPremium)
+                GestureDetector(
+                  onTap: () {
+                    if (isDownloaded) {
+                      music.removeDownload(song);
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Removed download: ${song.title}')));
+                    } else {
+                      music.downloadSong(song);
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Downloading: ${song.title}')));
+                    }
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: Icon(
+                      isDownloaded ? Icons.download_done : Icons.download_for_offline_outlined,
+                      color: isDownloaded ? kPrimary : kOnSurfaceVariant,
+                      size: 20,
                     ),
                   ),
                 ),
