@@ -43,7 +43,7 @@ dependencies:
   path_provider: ^2.1.0
   shared_preferences: ^2.2.0
   supabase_flutter: ^2.12.4
-  file_picker: 5.3.3
+  file_picker: 8.1.2
 dev_dependencies:
   flutter_test:
     sdk: flutter
