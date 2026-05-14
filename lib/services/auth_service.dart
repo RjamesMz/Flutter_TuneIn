@@ -6,6 +6,7 @@ import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user.dart';
+import 'supabase_service.dart';
 
 // ─── Auth Service ─────────────────────────────────────────────────────────────
 /// Mock authentication service. No real backend — simulates network delay.
@@ -50,9 +51,6 @@ class AuthService extends ChangeNotifier {
         final doc = await _firestore.collection('users').doc(firebaseUser.uid).get();
         final data = doc.data() ?? {};
         
-        final prefs = await SharedPreferences.getInstance();
-        final savedAvatarUrl = prefs.getString('avatar_${firebaseUser.uid}') ?? '';
-        
         _currentUser = User(
           id: firebaseUser.uid,
           name: data['name'] ?? firebaseUser.displayName ?? 'Unknown',
@@ -62,7 +60,8 @@ class AuthService extends ChangeNotifier {
           dateOfBirth: data['dateOfBirth'],
           gender: data['gender'],
           plan: data['plan'] ?? 'Free',
-          avatarUrl: savedAvatarUrl.isNotEmpty ? savedAvatarUrl : (data['avatarUrl'] ?? ''),
+          isAdmin: data['isAdmin'] ?? false,
+          avatarUrl: data['avatarUrl'] ?? '',
         );
         notifyListeners();
       } catch (e) {
@@ -91,10 +90,6 @@ class AuthService extends ChangeNotifier {
       final doc = await _firestore.collection('users').doc(firebaseUser.uid).get();
       final data = doc.data() ?? {};
       
-      // Load saved avatar path from shared preferences
-      final prefs = await SharedPreferences.getInstance();
-      final savedAvatarUrl = prefs.getString('avatar_${firebaseUser.uid}') ?? '';
-      
       // Return your local User model
       final user = User(
         id: firebaseUser.uid,
@@ -105,7 +100,8 @@ class AuthService extends ChangeNotifier {
         dateOfBirth: data['dateOfBirth'],
         gender: data['gender'],
         plan: data['plan'] ?? 'Free',
-        avatarUrl: savedAvatarUrl.isNotEmpty ? savedAvatarUrl : (data['avatarUrl'] ?? ''),
+        isAdmin: data['isAdmin'] ?? false,
+        avatarUrl: data['avatarUrl'] ?? '',
       );
       _currentUser = user;
       notifyListeners();
@@ -163,12 +159,9 @@ class AuthService extends ChangeNotifier {
         'dateOfBirth': createdUser.dateOfBirth,
         'gender': createdUser.gender,
         'plan': createdUser.plan,
+        'isAdmin': createdUser.isAdmin,
         'avatarUrl': createdUser.avatarUrl,
       });
-      
-      // Initialize avatar path in shared preferences
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('avatar_${firebaseUser.uid}', '');
 
       _currentUser = createdUser;
       notifyListeners();
@@ -197,8 +190,7 @@ class AuthService extends ChangeNotifier {
 
 
   
-  /// Saves [imageFile] to local device storage.
-  /// Returns the local file path on success.
+  /// Uploads [imageFile] to Supabase and updates the avatar URL in Firestore.
   Future<String> updateAvatar(File imageFile) async {
     if (_currentUser == null) throw Exception('Not authenticated');
     if (!await imageFile.exists()) throw Exception('Image file does not exist');
@@ -206,30 +198,21 @@ class AuthService extends ChangeNotifier {
     final uid = _currentUser!.id;
 
     try {
-      // Get local documents directory
-      final appDir = await getApplicationDocumentsDirectory();
-      final avatarDir = Directory('${appDir.path}/avatars');
-      
-      // Create avatars directory if it does not exist
-      if (!await avatarDir.exists()) {
-        await avatarDir.create(recursive: true);
-      }
+      // 1. Upload to Supabase Storage
+      final publicUrl = await SupabaseService.instance.uploadAvatar(uid, imageFile);
 
-      // Save avatar locally
-      final localPath = '${avatarDir.path}/$uid.jpg';
-      await imageFile.copy(localPath);
-      await FileImage(File(localPath)).evict();
+      // 2. Update Firestore with the new public URL
+      await _firestore.collection('users').doc(uid).set(
+        {'avatarUrl': publicUrl},
+        SetOptions(merge: true),
+      );
 
-      // Persist the avatar path to shared preferences
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('avatar_$uid', localPath);
-
-      // Update local state
-      _currentUser = _currentUser!.copyWith(avatarUrl: localPath);
+      // 3. Update local state
+      _currentUser = _currentUser!.copyWith(avatarUrl: publicUrl);
       notifyListeners();
-      return localPath;
+      return publicUrl;
     } catch (e) {
-      throw Exception('Avatar save failed: $e');
+      throw Exception('Avatar upload failed: $e');
     }
   }
 

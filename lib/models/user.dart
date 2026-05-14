@@ -6,6 +6,7 @@ class User {
   final String  email;
   final String  avatarUrl;
   final String  plan;           // e.g. "Premium", "Free"
+  final bool    isAdmin;
 
   // ── Signup fields (nullable — not collected during login flow) ─────────────
   final String? username;
@@ -19,6 +20,7 @@ class User {
     required this.email,
     required this.avatarUrl,
     this.plan         = 'Free',
+    this.isAdmin      = false,
     this.username,
     this.phone,
     this.dateOfBirth,
@@ -34,6 +36,7 @@ class User {
     String? email,
     String? avatarUrl,
     String? plan,
+    bool?   isAdmin,
     String? username,
     String? phone,
     String? dateOfBirth,
@@ -45,6 +48,7 @@ class User {
       email:       email       ?? this.email,
       avatarUrl:   avatarUrl   ?? this.avatarUrl,
       plan:        plan        ?? this.plan,
+      isAdmin:     isAdmin     ?? this.isAdmin,
       username:    username    ?? this.username,
       phone:       phone       ?? this.phone,
       dateOfBirth: dateOfBirth ?? this.dateOfBirth,
