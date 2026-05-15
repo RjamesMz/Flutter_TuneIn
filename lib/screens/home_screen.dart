@@ -36,148 +36,154 @@ class _HomeScreenState extends State<HomeScreen> {
     final selectedCategory = music.selectedCategory;
 
     return ResponsiveWrapper(
-      child: CustomScrollView(
-        slivers: [
-        SliverAppBar(
-          floating: false,
-          snap: false,
-          pinned: true,
-          automaticallyImplyLeading: false,
-          expandedHeight: 110,
-          collapsedHeight: kToolbarHeight,
-          backgroundColor: kBackground,
-          surfaceTintColor: Colors.transparent,
-          flexibleSpace: LayoutBuilder(
-            builder: (context, constraints) {
-              final delta = 110 - kToolbarHeight;
-              final t = ((constraints.maxHeight - kToolbarHeight) / delta)
-                  .clamp(0.0, 1.0);
-              final bgColor = Color.lerp(kPrimaryContainer, kBackground, t);
+      child: RefreshIndicator(
+        onRefresh: () => context.read<MusicProvider>().fetchSongs(forceRefresh: true),
+        color: kPrimary,
+        backgroundColor: kSurface,
+        child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
+            SliverAppBar(
+              floating: false,
+              snap: false,
+              pinned: true,
+              automaticallyImplyLeading: false,
+              expandedHeight: 110,
+              collapsedHeight: kToolbarHeight,
+              backgroundColor: kBackground,
+              surfaceTintColor: Colors.transparent,
+              flexibleSpace: LayoutBuilder(
+                builder: (context, constraints) {
+                  final delta = 110 - kToolbarHeight;
+                  final t = ((constraints.maxHeight - kToolbarHeight) / delta)
+                      .clamp(0.0, 1.0);
+                  final bgColor = Color.lerp(kPrimaryContainer, kBackground, t);
 
-              return DecoratedBox(
-                decoration: BoxDecoration(color: bgColor),
-              );
-            },
-          ),
-          title: const Text(
-            'TuneIn',
-            style: TextStyle(
-              color: kPrimary,
-              fontWeight: FontWeight.w800,
-              fontSize: 22,
-            ),
-          ),
-          actions: [
-            Padding(
-              padding: const EdgeInsets.only(right: 12),
-              child: Consumer<AuthProvider>(
-                builder: (context, auth, _) {
-                  final user = auth.currentUser;
-                  final hasAvatar = user != null && user.avatarUrl.isNotEmpty;
-                  
-                  return GestureDetector(
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const PersonalInfoScreen()),
-                    ),
-                    child: CircleAvatar(
-                      radius: 17,
-                      backgroundColor: kSurfaceContainerHighest,
-                      backgroundImage: hasAvatar ? NetworkImage(user.avatarUrl) : null,
-                      child: hasAvatar ? null : const Icon(Icons.person, color: kPrimary, size: 18),
-                    ),
+                  return DecoratedBox(
+                    decoration: BoxDecoration(color: bgColor),
                   );
                 },
               ),
-            ),
-          ],
-        ),
-
-        // ── Featured Banner ────────────────────────────────────────────────
-        SliverToBoxAdapter(
-          child: _FeaturedBanner(
-            song: music.allSongs.isNotEmpty ? music.allSongs.first : null,
-            allSongs: music.allSongs,
-          ),
-        ),
-
-        // ── Browse + Category Chips ────────────────────────────────────────
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 20, 0, 8),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Browse',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w800,
-                    color: kOnSurface,
-                  ),
+              title: const Text(
+                'TuneIn',
+                style: TextStyle(
+                  color: kPrimary,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 22,
                 ),
-                const SizedBox(height: 12),
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: categories.map((cat) {
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 8),
-                        child: CategoryChip(
-                          label: cat,
-                          isSelected: selectedCategory == cat,
-                          onTap: () =>
-                              context.read<MusicProvider>().selectCategory(cat),
+              ),
+              actions: [
+                Padding(
+                  padding: const EdgeInsets.only(right: 12),
+                  child: Consumer<AuthProvider>(
+                    builder: (context, auth, _) {
+                      final user = auth.currentUser;
+                      final hasAvatar = user != null && user.avatarUrl.isNotEmpty;
+
+                      return GestureDetector(
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const PersonalInfoScreen()),
+                        ),
+                        child: CircleAvatar(
+                          radius: 17,
+                          backgroundColor: kSurfaceContainerHighest,
+                          backgroundImage: hasAvatar ? NetworkImage(user.avatarUrl) : null,
+                          child: hasAvatar ? null : const Icon(Icons.person, color: kPrimary, size: 18),
                         ),
                       );
-                    }).toList(),
+                    },
                   ),
                 ),
               ],
             ),
-          ),
-        ),
 
-        // ── Song List ──────────────────────────────────────────────────────
-        if (music.isLoading)
-          const SliverFillRemaining(
-            child: Center(child: CircularProgressIndicator(color: kPrimary)),
-          )
-        else if (music.filteredSongs.isEmpty)
-          SliverFillRemaining(
-            child: Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.music_off,
-                    size: 48,
-                    color: kOnSurfaceVariant.withAlpha(102),
-                  ),
-                  const SizedBox(height: 12),
-                  const Text(
-                    'No songs in this category',
-                    style: TextStyle(color: kOnSurfaceVariant),
-                  ),
-                ],
+            // ── Featured Banner ────────────────────────────────────────────────
+            SliverToBoxAdapter(
+              child: _FeaturedBanner(
+                song: music.allSongs.isNotEmpty ? music.allSongs.first : null,
+                allSongs: music.allSongs,
               ),
             ),
-          )
-        else
-          SliverPadding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 120),
-            sliver: SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, index) => SongTile(
-                  song: music.filteredSongs[index],
-                  queue: music.filteredSongs,
+
+            // ── Browse + Category Chips ────────────────────────────────────────
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 20, 0, 8),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Browse',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
+                        color: kOnSurface,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: categories.map((cat) {
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: CategoryChip(
+                              label: cat,
+                              isSelected: selectedCategory == cat,
+                              onTap: () =>
+                                  context.read<MusicProvider>().selectCategory(cat),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                  ],
                 ),
-                childCount: music.filteredSongs.length,
               ),
             ),
-          ),
-      ],
-    ),
+
+            // ── Song List ──────────────────────────────────────────────────────
+            if (music.isLoading)
+              const SliverFillRemaining(
+                child: Center(child: CircularProgressIndicator(color: kPrimary)),
+              )
+            else if (music.filteredSongs.isEmpty)
+              SliverFillRemaining(
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.music_off,
+                        size: 48,
+                        color: kOnSurfaceVariant.withAlpha(102),
+                      ),
+                      const SizedBox(height: 12),
+                      const Text(
+                        'No songs in this category',
+                        style: TextStyle(color: kOnSurfaceVariant),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            else
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 120),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) => SongTile(
+                      song: music.filteredSongs[index],
+                      queue: music.filteredSongs,
+                    ),
+                    childCount: music.filteredSongs.length,
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
     );
   }
 }

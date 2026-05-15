@@ -42,12 +42,18 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => PlayerProvider()),
 
-        ChangeNotifierProvider(create: (_) => MusicProvider()),
-
         ChangeNotifierProvider(
           create: (context) => AuthProvider(
             playerProvider: context.read<PlayerProvider>(),
           ),
+        ),
+
+        ChangeNotifierProxyProvider<AuthProvider, MusicProvider>(
+          create: (_) => MusicProvider(),
+          update: (_, auth, music) {
+            music?.updateUser(auth.currentUser?.id);
+            return music!;
+          },
         ),
       ],
       child: MaterialApp(

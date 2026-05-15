@@ -172,29 +172,87 @@ class SupabaseService {
     await _supabase.from('songs').delete().eq('id', id);
   }
 
-  // ── Global Real-time Notifications ────────────────────────────────────────
+  // ── Global & User Real-time Notifications ─────────────────────────────────
 
-  Stream<List<Map<String, dynamic>>> get notificationsStream {
+  Stream<List<Map<String, dynamic>>> getNotificationsStream(String userId) {
+    // This will listen to notifications where user_id is NULL (global) OR matches the user
+    // Note: Supabase basic stream filters are limited, so we often listen to the whole table 
+    // and filter in the app, or use a more advanced approach. 
+    // For now, we'll keep it simple and filter in the app or use multiple streams.
     return _supabase.from('notifications').stream(primaryKey: ['id']).order('created_at', ascending: false);
   }
 
-  Future<void> postNotification(String message, int type) async {
+  Future<void> postNotification(String message, int type, {String? userId}) async {
     try {
       await _supabase.from('notifications').insert({
         'message': message,
         'type': type,
+        'user_id': userId,
       });
     } catch (e) {
       print('Error posting notification: $e');
     }
   }
 
+  Future<void> clearUserNotifications(String userId) async {
+    try {
+      await _supabase.from('notifications').delete().eq('user_id', userId);
+    } catch (e) {
+      print('Error clearing user notifications: $e');
+    }
+  }
+
   Future<void> clearGlobalNotifications() async {
     try {
-      // Deletes all notifications. Since this is global, it clears it for everyone!
-      await _supabase.from('notifications').delete().neq('type', -1);
+      await _supabase.from('notifications').delete().filter('user_id', 'is', null);
     } catch (e) {
-      print('Error clearing notifications: $e');
+      print('Error clearing global notifications: $e');
     }
+  }
+
+  // ── Playlist Management ──────────────────────────────────────────────────
+
+  Future<List<Map<String, dynamic>>> getUserPlaylists(String userId) async {
+    final res = await _supabase
+        .from('playlists')
+        .select()
+        .eq('user_id', userId)
+        .order('created_at', ascending: true);
+    return List<Map<String, dynamic>>.from(res);
+  }
+
+  Future<List<String>> getSongsInPlaylist(int playlistId) async {
+    final res = await _supabase
+        .from('playlist_songs')
+        .select('song_id')
+        .eq('playlist_id', playlistId);
+    return (res as List).map((item) => item['song_id'] as String).toList();
+  }
+
+  Future<int> createPlaylist(String userId, String name) async {
+    final res = await _supabase.from('playlists').insert({
+      'user_id': userId,
+      'name': name,
+    }).select('id').single();
+    return res['id'] as int;
+  }
+
+  Future<void> deletePlaylist(int playlistId) async {
+    await _supabase.from('playlists').delete().eq('id', playlistId);
+  }
+
+  Future<void> addSongToPlaylist(int playlistId, String songId) async {
+    await _supabase.from('playlist_songs').insert({
+      'playlist_id': playlistId,
+      'song_id': songId,
+    });
+  }
+
+  Future<void> removeSongFromPlaylist(int playlistId, String songId) async {
+    await _supabase
+        .from('playlist_songs')
+        .delete()
+        .eq('playlist_id', playlistId)
+        .eq('song_id', songId);
   }
 }
