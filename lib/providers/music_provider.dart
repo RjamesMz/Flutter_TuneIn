@@ -191,8 +191,8 @@ class MusicProvider extends ChangeNotifier {
   // ── Actions ────────────────────────────────────────────────────────────────
 
   /// Fetches the full song catalog from [MusicService].
-  Future<void> fetchSongs() async {
-    if (_allSongs.isNotEmpty) return; // already loaded
+  Future<void> fetchSongs({bool forceRefresh = false}) async {
+    if (_allSongs.isNotEmpty && !forceRefresh) return; // already loaded
 
     _isLoading    = true;
     _errorMessage = null;
