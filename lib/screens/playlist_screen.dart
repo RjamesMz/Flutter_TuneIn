@@ -160,7 +160,7 @@ class PlaylistScreen extends StatelessWidget {
                           width: 55,
                           height: 55,
                           decoration: BoxDecoration(
-                            color: kPrimary.withOpacity(0.15),
+                            color: kPrimary.withAlpha(38),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: const Icon(Icons.queue_music, color: kPrimary, size: 28),

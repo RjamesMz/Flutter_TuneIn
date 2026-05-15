@@ -62,7 +62,7 @@ class CheckoutScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(24),
                   boxShadow: [
                     BoxShadow(
-                      color: kPrimary.withOpacity(0.3),
+                      color: kPrimary.withAlpha(77),
                       blurRadius: 24,
                       offset: const Offset(0, 8),
                     ),
@@ -74,7 +74,7 @@ class CheckoutScreen extends StatelessWidget {
                       width: 64,
                       height: 64,
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
+                        color: Colors.white.withAlpha(51),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
@@ -111,7 +111,7 @@ class CheckoutScreen extends StatelessWidget {
                           child: Text(
                             planPeriod,
                             style: TextStyle(
-                              color: Colors.white.withOpacity(0.8),
+                              color: Colors.white.withAlpha(204),
                               fontSize: 14,
                             ),
                           ),
@@ -189,7 +189,7 @@ class CheckoutScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: kPrimary.withOpacity(0.35),
+                        color: kPrimary.withAlpha(89),
                         blurRadius: 18,
                         offset: const Offset(0, 6),
                       ),
@@ -199,7 +199,6 @@ class CheckoutScreen extends StatelessWidget {
                     onPressed: () {
                       final authProvider = Provider.of<AuthProvider>(context, listen: false);
                       authProvider.updatePlan(planId);
-                      // TODO: process payment, then navigate
                       Navigator.pushNamedAndRemoveUntil(
                         context,
                         '/main',

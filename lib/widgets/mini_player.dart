@@ -1,3 +1,5 @@
+// ignore_for_file: unnecessary_underscores
+
 import 'package:flutter/material.dart';
 
 import '../core/app_colors.dart';
@@ -34,12 +36,12 @@ class MiniPlayer extends StatelessWidget {
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-        decoration: BoxDecoration(
-          color: kSurfaceContainerHighest.withOpacity(0.95),
+            decoration: BoxDecoration(
+              color: kSurfaceContainerHighest.withAlpha(242),
           borderRadius: BorderRadius.circular(32),
           boxShadow: [
             BoxShadow(
-              color: kPrimary.withOpacity(0.15),
+                  color: kPrimary.withAlpha(38),
               blurRadius: 20,
               offset: const Offset(0, 4),
             ),
@@ -96,7 +98,7 @@ class MiniPlayer extends StatelessWidget {
             IconButton(
               icon: Icon(
                 Icons.skip_next,
-                color: hasNext ? kPrimary : kOnSurfaceVariant.withOpacity(0.4),
+                color: hasNext ? kPrimary : kOnSurfaceVariant.withAlpha(102),
                 size: 22,
               ),
               onPressed: hasNext ? onNext : null,

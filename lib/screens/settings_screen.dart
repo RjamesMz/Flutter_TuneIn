@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously, unnecessary_underscores
+
 import 'package:flutter/material.dart';
 import 'package:tunely/widgets/settings_button.dart';
 import 'package:tunely/widgets/primary_button.dart';

@@ -1,3 +1,5 @@
+// ignore_for_file: unnecessary_underscores
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -42,8 +44,8 @@ class SongTile extends StatelessWidget {
             : kSurfaceContainerLow,
         borderRadius: BorderRadius.circular(16),
         border: isCurrentSong
-            ? Border.all(color: kPrimary.withOpacity(0.25), width: 1.5)
-            : null,
+          ? Border.all(color: kPrimary.withAlpha(64), width: 1.5)
+          : null,
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
@@ -74,7 +76,7 @@ class SongTile extends StatelessWidget {
                     Positioned.fill(
                       child: Container(
                         decoration: BoxDecoration(
-                          color: kPrimary.withOpacity(0.4),
+                          color: kPrimary.withAlpha(102),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Icon(

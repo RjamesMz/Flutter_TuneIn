@@ -1,4 +1,6 @@
 // ─── Route Names ──────────────────────────────────────────────────────────────
+// ignore_for_file: constant_identifier_names
+
 class AppRoutes {
   AppRoutes._();
 

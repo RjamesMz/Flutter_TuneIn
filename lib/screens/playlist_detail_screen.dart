@@ -32,7 +32,7 @@ class PlaylistDetailScreen extends StatelessWidget {
       backgroundColor: kSurface,
 
       appBar: AppBar(
-        backgroundColor: kSurface.withOpacity(0.9),
+        backgroundColor: kSurface.withAlpha(230),
         elevation: 0,
         title: Text(
           playlistName,
@@ -116,7 +116,7 @@ class PlaylistDetailScreen extends StatelessWidget {
                         padding: const EdgeInsets.only(right: 20),
                         margin: const EdgeInsets.symmetric(vertical: 4),
                         decoration: BoxDecoration(
-                          color: Colors.red.withOpacity(0.15),
+                          color: Colors.red.withAlpha(38),
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: const Icon(Icons.delete, color: Colors.red),

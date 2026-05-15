@@ -140,7 +140,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                               player.seek(seekTo);
                             },
                             activeColor: kPrimary,
-                            inactiveColor: kOnSurface.withOpacity(0.2),
+                            inactiveColor: kOnSurface.withAlpha(51),
                           ),
                         ),
                       ),

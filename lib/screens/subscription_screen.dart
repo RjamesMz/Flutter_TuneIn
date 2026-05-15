@@ -147,7 +147,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                           boxShadow: plan.id != 'free'
                               ? [
                                   BoxShadow(
-                                    color: kPrimary.withOpacity(0.35),
+                                    color: kPrimary.withAlpha(89),
                                     blurRadius: 18,
                                     offset: const Offset(0, 6),
                                   ),
@@ -267,7 +267,7 @@ class _PlanCard extends StatelessWidget {
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: kPrimary.withOpacity(0.15),
+                    color: kPrimary.withAlpha(38),
                     blurRadius: 20,
                     offset: const Offset(0, 6),
                   ),
@@ -300,8 +300,8 @@ class _PlanCard extends StatelessWidget {
                     width: 44,
                     height: 44,
                     decoration: BoxDecoration(
-                      color: isHighlighted
-                          ? Colors.white.withOpacity(0.2)
+                        color: isHighlighted
+                          ? Colors.white.withAlpha(51)
                           : kSurfaceContainerHighest,
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -348,8 +348,8 @@ class _PlanCard extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 12,
                             color: isHighlighted
-                                ? Colors.white.withOpacity(0.8)
-                                : kOnSurfaceVariant,
+                              ? Colors.white.withAlpha(204)
+                              : kOnSurfaceVariant,
                           ),
                         ),
                       ],
@@ -372,7 +372,7 @@ class _PlanCard extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 11,
                           color: isHighlighted
-                              ? Colors.white.withOpacity(0.75)
+                              ? Colors.white.withAlpha(191)
                               : kOnSurfaceVariant,
                         ),
                       ),
@@ -414,25 +414,25 @@ class _FeatureRow extends StatelessWidget {
             width: 22,
             height: 22,
             decoration: BoxDecoration(
-              color: included
-                  ? kPrimary.withOpacity(0.12)
-                  : kOutlineVariant.withOpacity(0.4),
+                color: included
+                  ? kPrimary.withAlpha(31)
+                  : kOutlineVariant.withAlpha(102),
               shape: BoxShape.circle,
             ),
             child: Icon(
               included ? Icons.check_rounded : Icons.close_rounded,
               size: 13,
-              color: included ? kPrimary : kOnSurfaceVariant.withOpacity(0.5),
+              color: included ? kPrimary : kOnSurfaceVariant.withAlpha(128),
             ),
           ),
           const SizedBox(width: 10),
           Text(
             feature.label,
-            style: TextStyle(
+              style: TextStyle(
               fontSize: 13.5,
               color: included
-                  ? kOnSurface
-                  : kOnSurfaceVariant.withOpacity(0.55),
+                ? kOnSurface
+                : kOnSurfaceVariant.withAlpha(140),
               fontWeight: included ? FontWeight.w500 : FontWeight.w400,
               decoration: included
                   ? TextDecoration.none
@@ -476,7 +476,7 @@ class _Badge extends StatelessWidget {
       decoration: BoxDecoration(
         color: primary
             ? kSurfaceContainerHighest
-            : Colors.white.withOpacity(0.25),
+            : Colors.white.withAlpha(64),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
