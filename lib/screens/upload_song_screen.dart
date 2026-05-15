@@ -8,9 +8,9 @@ import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
 import '../services/supabase_service.dart';
 import '../core/app_colors.dart';
-import '../core/app_strings.dart';
 import '../core/responsive_helper.dart';
 import '../providers/music_provider.dart';
+import 'category_management_screen.dart';
 
 class UploadSongScreen extends StatefulWidget {
   const UploadSongScreen({super.key});
@@ -25,7 +25,7 @@ class _UploadSongScreenState extends State<UploadSongScreen> {
   final _artistController = TextEditingController();
   final _albumController = TextEditingController();
 
-  String _selectedCategory = MusicCategories.pop;
+  String? _selectedCategory;
 
   Uint8List? _coverBytes;
   String? _coverFileName;
@@ -82,8 +82,15 @@ class _UploadSongScreenState extends State<UploadSongScreen> {
       );
       return;
     }
+    if (_selectedCategory == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select a category')),
+      );
+      return;
+    }
 
     final songTitle = _titleController.text.trim();
+    final cat = _selectedCategory!;
     setState(() => _isUploading = true);
 
     try {
@@ -91,7 +98,7 @@ class _UploadSongScreenState extends State<UploadSongScreen> {
         title: _titleController.text.trim(),
         artist: _artistController.text.trim(),
         album: _albumController.text.trim(),
-        category: _selectedCategory,
+        category: cat,
         audioBytes: _audioBytes!,
         audioFileName: _audioFileName!,
         coverBytes: _coverBytes,
@@ -291,7 +298,7 @@ class _UploadSongScreenState extends State<UploadSongScreen> {
                                 const SizedBox(height: 12),
                                 _buildTextField('Album (Optional)', _albumController, Icons.album_rounded, required: false),
                                 const SizedBox(height: 12),
-                                _buildCategoryDropdown(),
+                                _buildCategorySection(),
                                 const SizedBox(height: 20),
 
                                 // Submit
@@ -365,40 +372,63 @@ class _UploadSongScreenState extends State<UploadSongScreen> {
     );
   }
 
-  Widget _buildCategoryDropdown() {
-    final categories = MusicCategories.all_categories
-        .where((c) => c != MusicCategories.all)
-        .toList();
+  Widget _buildCategorySection() {
+    final music = context.watch<MusicProvider>();
+    final categories = music.categoryNames;
 
-    return DropdownButtonFormField<String>(
-      value: _selectedCategory,
-      dropdownColor: kSurface,
-      style: TextStyle(color: kOnSurface, fontFamily: GoogleFonts.beVietnamPro().fontFamily),
-      decoration: InputDecoration(
-        labelText: 'Category',
-        labelStyle: const TextStyle(color: kOnSurfaceVariant),
-        prefixIcon: const Icon(Icons.category_rounded, color: kPrimary, size: 20),
-        filled: true,
-        fillColor: kSurfaceContainerLow,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: kOutlineVariant),
+    // Ensure we have a valid selection
+    if (_selectedCategory == null && categories.isNotEmpty) {
+      _selectedCategory = categories.first;
+    } else if (_selectedCategory != null && !categories.contains(_selectedCategory)) {
+      _selectedCategory = categories.isNotEmpty ? categories.first : null;
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: DropdownButtonFormField<String>(
+                value: _selectedCategory,
+                dropdownColor: kSurface,
+                style: TextStyle(
+                    color: kOnSurface, fontFamily: GoogleFonts.beVietnamPro().fontFamily),
+                decoration: InputDecoration(
+                  labelText: 'Category',
+                  labelStyle: const TextStyle(color: kOnSurfaceVariant),
+                  prefixIcon: const Icon(Icons.category_rounded, color: kPrimary, size: 20),
+                  filled: true,
+                  fillColor: kSurfaceContainerLow,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: kOutlineVariant),
+                  ),
+                ),
+                items: categories.map((String category) {
+                  return DropdownMenuItem(value: category, child: Text(category));
+                }).toList(),
+                onChanged: (String? newValue) {
+                  if (newValue != null) setState(() => _selectedCategory = newValue);
+                },
+              ),
+            ),
+            const SizedBox(width: 8),
+            IconButton.filled(
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const CategoryManagementScreen()),
+              ),
+              icon: const Icon(Icons.add_rounded),
+              style: IconButton.styleFrom(
+                backgroundColor: kSurfaceContainerHighest,
+                foregroundColor: kPrimary,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+            ),
+          ],
         ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: kOutlineVariant),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: kPrimary, width: 1.5),
-        ),
-      ),
-      items: categories.map((String category) {
-        return DropdownMenuItem(value: category, child: Text(category));
-      }).toList(),
-      onChanged: (String? newValue) {
-        if (newValue != null) setState(() => _selectedCategory = newValue);
-      },
+      ],
     );
   }
 }

@@ -36,6 +36,7 @@ class MusicProvider extends ChangeNotifier {
   String      _searchQuery       = '';
   String?     _userId;
   String?     _errorMessage;
+  List<Map<String, String>> _categories = [];
 
   final Map<String, int> _playlistIds = {};
 
@@ -143,6 +144,9 @@ class MusicProvider extends ChangeNotifier {
 
 
 
+    // Load categories
+    await fetchCategories();
+
     // Subscribe to Notifications
     _setupNotificationSubscription();
 
@@ -173,6 +177,8 @@ class MusicProvider extends ChangeNotifier {
   String  get selectedCategory => _selectedCategory;
   String  get searchQuery      => _searchQuery;
   String? get errorMessage     => _errorMessage;
+  List<Map<String, String>> get categories  => _categories;
+  List<String> get categoryNames => _categories.map((c) => c['name']!).toList();
 
   /// Songs filtered by the active category (used by HomeScreen).
   List<Song> get filteredSongs {
@@ -475,6 +481,37 @@ class MusicProvider extends ChangeNotifier {
 
   List<Song> get downloadedSongs {
     return _allSongs.where((s) => _downloadedSongIds.contains(s.id)).toList();
+  }
+
+  // ── Categories ────────────────────────────────────────────────────────────
+
+  Future<void> fetchCategories() async {
+    try {
+      _categories = await SupabaseService.instance.getCategories();
+      notifyListeners();
+    } catch (e) {
+      print('Error fetching categories: $e');
+    }
+  }
+
+  Future<void> addCategory(String name, String color) async {
+    try {
+      await SupabaseService.instance.addCategory(name, color);
+      await fetchCategories();
+      addSongAddedNotification('Admin added new category: "$name"');
+    } catch (e) {
+      print('Error adding category: $e');
+    }
+  }
+
+  Future<void> deleteCategory(String name) async {
+    try {
+      await SupabaseService.instance.deleteCategory(name);
+      await fetchCategories();
+      addSongDeletedNotification('Admin removed category: "$name"');
+    } catch (e) {
+      print('Error deleting category: $e');
+    }
   }
 }
 

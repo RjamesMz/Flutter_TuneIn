@@ -255,4 +255,28 @@ class SupabaseService {
         .eq('playlist_id', playlistId)
         .eq('song_id', songId);
   }
+
+  // ── Category Management ──────────────────────────────────────────────────
+
+  Future<List<Map<String, String>>> getCategories() async {
+    final res = await _supabase
+        .from('categories')
+        .select('name, color')
+        .order('name', ascending: true);
+    return (res as List).map((item) => {
+      'name': item['name'] as String,
+      'color': (item['color'] as String?) ?? '#3B6B8A',
+    }).toList();
+  }
+
+  Future<void> addCategory(String name, String color) async {
+    await _supabase.from('categories').insert({
+      'name': name,
+      'color': color,
+    });
+  }
+
+  Future<void> deleteCategory(String name) async {
+    await _supabase.from('categories').delete().eq('name', name);
+  }
 }
