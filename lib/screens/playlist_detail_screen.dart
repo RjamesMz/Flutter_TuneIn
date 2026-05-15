@@ -6,8 +6,8 @@ import '../providers/music_provider.dart';
 import '../providers/player_provider.dart';
 import '../widgets/song_tile.dart';
 import '../widgets/mini_player.dart';
-import '../screens/now_playing_screen.dart';
-import '../screens/search_screen.dart';
+import 'now_playing_screen.dart';
+import 'search_screen.dart';
 import '../providers/auth_provider.dart';
 
 class PlaylistDetailScreen extends StatelessWidget {

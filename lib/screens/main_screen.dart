@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import '../core/app_colors.dart';
-import '../screens/home_screen.dart';
-import '../screens/playlist_screen.dart';
-import '../screens/search_screen.dart';
-import '../screens/now_playing_screen.dart';
+import 'home_screen.dart';
+import 'playlist_screen.dart';
+import 'search_screen.dart';
+import 'now_playing_screen.dart';
 import 'settings_screen.dart';
 import 'package:provider/provider.dart';
 import '../core/responsive_helper.dart';
