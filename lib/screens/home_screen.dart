@@ -32,7 +32,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final music = context.watch<MusicProvider>();
-    final categories = MusicCategories.all_categories;
+    final categories = [MusicCategories.all, ...music.categoryNames];
     final selectedCategory = music.selectedCategory;
 
     return ResponsiveWrapper(

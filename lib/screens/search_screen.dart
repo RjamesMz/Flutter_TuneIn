@@ -1,50 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../core/app_colors.dart';
-import '../core/app_strings.dart';
 import '../core/responsive_helper.dart';
 import '../providers/music_provider.dart';
 import '../widgets/song_tile.dart';
 
 // ─── All available category tiles (shared by grid + pills) ────────────────────
-const List<_CategoryTile> _allCategoryTiles = [
-  _CategoryTile(
-    label: 'Trending',
-    categoryKey: MusicCategories.trending,
-    color: Color(0xFF9D3756),
-    icon: Icons.trending_up,
-  ),
-  _CategoryTile(
-    label: 'Pop',
-    categoryKey: MusicCategories.pop,
-    color: Color(0xFF7C3F8A),
-    icon: Icons.favorite,
-  ),
-  _CategoryTile(
-    label: 'Lo-Fi',
-    categoryKey: MusicCategories.loFi,
-    color: Color(0xFF3B6B8A),
-    icon: Icons.cloud,
-  ),
-  _CategoryTile(
-    label: 'Indie',
-    categoryKey: MusicCategories.indie,
-    color: Color(0xFF4A6741),
-    icon: Icons.forest,
-  ),
-  _CategoryTile(
-    label: 'R&B',
-    categoryKey: MusicCategories.rnb,
-    color: Color(0xFF8A4A3B),
-    icon: Icons.music_note,
-  ),
-  _CategoryTile(
-    label: 'Jazz',
-    categoryKey: MusicCategories.jazz,
-    color: Color(0xFF5C4A8A),
-    icon: Icons.piano,
-  ),
-];
+List<_CategoryTile> _getCategoryTiles(List<Map<String, String>> categories) {
+  return categories.map((catMap) {
+    final name = catMap['name']!;
+    final colorHex = catMap['color']!;
+    final color = Color(int.parse(colorHex.replaceFirst('#', '0xFF')));
+    
+    return _CategoryTile(
+      label: name,
+      categoryKey: name,
+      color: color, // Use DB color
+      icon: Icons.music_note_rounded, // Default icon for all
+    );
+  }).toList();
+}
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -115,13 +90,11 @@ class _SearchScreenState extends State<SearchScreen> {
 
   bool get _hasActiveFilter => _query.isNotEmpty || _activeKeys.isNotEmpty;
 
-  List<_CategoryTile> get _selectedTiles => _allCategoryTiles
-      .where((t) => _activeKeys.contains(t.categoryKey))
-      .toList();
+  List<_CategoryTile> _selectedTiles(List<Map<String, String>> categories) => 
+      _getCategoryTiles(categories).where((t) => _activeKeys.contains(t.categoryKey)).toList();
 
-  List<_CategoryTile> get _unselectedTiles => _allCategoryTiles
-      .where((t) => !_activeKeys.contains(t.categoryKey))
-      .toList();
+  List<_CategoryTile> _unselectedTiles(List<Map<String, String>> categories) => 
+      _getCategoryTiles(categories).where((t) => !_activeKeys.contains(t.categoryKey)).toList();
 
   @override
   Widget build(BuildContext context) {
@@ -181,7 +154,8 @@ class _SearchScreenState extends State<SearchScreen> {
                     scrollDirection: Axis.horizontal,
                     child: Row(
                       children: [
-                        ..._selectedTiles.map(
+                        // Selected categories (dismissible pills)
+                        ..._selectedTiles(music.categories).map(
                           (t) => Padding(
                             padding: const EdgeInsets.only(right: 8),
                             child: _CategoryPill(
@@ -191,7 +165,8 @@ class _SearchScreenState extends State<SearchScreen> {
                             ),
                           ),
                         ),
-                        ..._unselectedTiles.map(
+                        // Unselected categories (tappable outlines)
+                        ..._unselectedTiles(music.categories).map(
                           (t) => Padding(
                             padding: const EdgeInsets.only(right: 8),
                             child: _CategoryPill(
@@ -225,7 +200,11 @@ class _SearchScreenState extends State<SearchScreen> {
                             ),
                           ),
                           const SizedBox(height: 12),
-                          _CategoryGrid(onCategoryTap: _toggleCategory),
+                          const SizedBox(height: 12),
+              _CategoryGrid(
+                onCategoryTap: _toggleCategory,
+                categories: music.categories,
+              ),
                           const SizedBox(height: 120),
                         ],
                       ),
@@ -359,11 +338,13 @@ class _CategoryPill extends StatelessWidget {
 // ─── Category Grid (initial view) ─────────────────────────────────────────────
 class _CategoryGrid extends StatelessWidget {
   final ValueChanged<String> onCategoryTap;
+  final List<Map<String, String>> categories;
 
-  const _CategoryGrid({required this.onCategoryTap});
+  const _CategoryGrid({required this.onCategoryTap, required this.categories});
 
   @override
   Widget build(BuildContext context) {
+    final tiles = _getCategoryTiles(categories);
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -373,9 +354,9 @@ class _CategoryGrid extends StatelessWidget {
         crossAxisSpacing: 10,
         childAspectRatio: 2.5,
       ),
-      itemCount: _allCategoryTiles.length,
+      itemCount: tiles.length,
       itemBuilder: (_, i) {
-        final t = _allCategoryTiles[i];
+        final t = tiles[i];
         return GestureDetector(
           onTap: () => onCategoryTap(t.categoryKey),
           child: Container(
