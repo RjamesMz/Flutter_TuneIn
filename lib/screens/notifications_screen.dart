@@ -37,56 +37,69 @@ class NotificationsScreen extends StatelessWidget {
         ],
       ),
       body: ResponsiveWrapper(
-        child: Consumer<MusicProvider>(builder: (context, music, child) {
-          final notes = music.songNotifications;
-          if (notes.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Image.asset(
-                    'assets/image/logo/TuneIn_Logo.png',
-                    height: 80,
-                    fit: BoxFit.contain,
+        child: RefreshIndicator(
+          onRefresh: () => context.read<MusicProvider>().fetchSongs(forceRefresh: true),
+          color: kPrimary,
+          backgroundColor: kSurface,
+          child: Consumer<MusicProvider>(builder: (context, music, child) {
+            final notes = music.songNotifications;
+            if (notes.isEmpty) {
+              return SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: Container(
+                  height: MediaQuery.of(context).size.height * 0.7,
+                  alignment: Alignment.center,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Image.asset(
+                        'assets/image/logo/TuneIn_Logo.png',
+                        height: 80,
+                        fit: BoxFit.contain,
+                      ),
+                      const SizedBox(height: 20),
+                      Text(
+                        'No song notifications yet',
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                              color: kOnSurface,
+                            ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Song activity will appear here',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: kOnSurfaceVariant,
+                            ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 20),
-                  Text(
-                    'No song notifications yet',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      color: kOnSurface,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Song activity will appear here',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: kOnSurfaceVariant,
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }
-          return ListView.separated(
-            padding: const EdgeInsets.all(12),
-            itemCount: notes.length,
-            separatorBuilder: (_, __) => const Divider(),
-            itemBuilder: (context, index) {
-              final n = notes[index];
-              final icon = n.type == AppNotificationType.songDeleted
-                  ? Icons.delete_outline_rounded
-                  : Icons.add_circle_outline_rounded;
-              return ListTile(
-                title: Text(n.message),
-                subtitle: Text(TimeOfDay.fromDateTime(n.time).format(context)),
-                leading: Icon(
-                  icon,
-                  color: n.type == AppNotificationType.songDeleted ? Colors.redAccent : Colors.green,
                 ),
               );
-            },
-          );
-        }),
+            }
+            return ListView.separated(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.all(12),
+              itemCount: notes.length,
+              separatorBuilder: (_, __) => const Divider(),
+              itemBuilder: (context, index) {
+                final n = notes[index];
+                final icon = n.type == AppNotificationType.songDeleted
+                    ? Icons.delete_outline_rounded
+                    : Icons.add_circle_outline_rounded;
+                return ListTile(
+                  title: Text(n.message),
+                  subtitle: Text(TimeOfDay.fromDateTime(n.time).format(context)),
+                  leading: Icon(
+                    icon,
+                    color: n.type == AppNotificationType.songDeleted
+                        ? Colors.redAccent
+                        : Colors.green,
+                  ),
+                );
+              },
+            );
+          }),
+        ),
       ),
     );
   }
