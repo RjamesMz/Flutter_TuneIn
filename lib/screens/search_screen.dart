@@ -238,7 +238,7 @@ class _SearchScreenState extends State<SearchScreen> {
                       Icon(
                         Icons.search_off,
                         size: 56,
-                        color: kOnSurfaceVariant.withOpacity(0.3),
+                        color: kOnSurfaceVariant.withAlpha(77),
                       ),
                       const SizedBox(height: 16),
                       Text(
@@ -302,8 +302,8 @@ class _CategoryPill extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
         decoration: BoxDecoration(
           color: isSelected ? tile.color : Colors.transparent,
-          border: Border.all(
-            color: isSelected ? tile.color : kOnSurfaceVariant.withOpacity(0.3),
+            border: Border.all(
+            color: isSelected ? tile.color : kOnSurfaceVariant.withAlpha(77),
             width: 1.5,
           ),
           borderRadius: BorderRadius.circular(20),
@@ -330,7 +330,7 @@ class _CategoryPill extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(2),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.25),
+                  color: Colors.white.withAlpha(64),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(Icons.close, color: Colors.white, size: 12),
@@ -373,7 +373,7 @@ class _CategoryGrid extends StatelessWidget {
             child: Row(
               children: [
                 const SizedBox(width: 14),
-                Icon(t.icon, color: Colors.white.withOpacity(0.85), size: 22),
+                Icon(t.icon, color: Colors.white.withAlpha(217), size: 22),
                 const SizedBox(width: 10),
                 Text(
                   t.label,

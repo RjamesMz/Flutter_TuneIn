@@ -9,14 +9,14 @@ import '../providers/auth_provider.dart';
 // ─── Login Prototype ──────────────────────────────────────────────────────────
 /// Design-only version of the Login page.
 /// No authentication logic, no provider — purely for UI prototyping.
-class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _LoginScreenState extends State<LoginScreen> {
   final _formKey    = GlobalKey<FormState>();
   final _emailCtrl  = TextEditingController();
   final _passwordCtrl   = TextEditingController();
@@ -153,10 +153,10 @@ class _LoginPageState extends State<LoginPage> {
                   width: double.infinity,
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.red.withOpacity(0.08),
+                    color: Colors.red.withAlpha(20),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: Colors.red.withOpacity(0.35),
+                        color: Colors.red.withAlpha(89),
                     ),
                   ),
                   child: Text(

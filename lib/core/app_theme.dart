@@ -57,7 +57,7 @@ ThemeData buildAppTheme() {
 
     // ── AppBar ───────────────────────────────────────────────────────────────
     appBarTheme: AppBarTheme(
-      backgroundColor: kSurface.withOpacity(0.85),
+      backgroundColor: kSurface.withAlpha(217),
       elevation: 0,
       scrolledUnderElevation: 1,
       centerTitle: true,

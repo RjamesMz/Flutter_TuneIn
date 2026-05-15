@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:tunely/pages/home.dart';
-import 'package:tunely/pages/login.dart';
-import 'package:tunely/pages/personalinfopage.dart';
-import 'package:tunely/pages/settings.dart';
-import 'package:tunely/pages/search_screen.dart';
-import 'package:tunely/pages/playlist_page.dart';
-import 'package:tunely/pages/main_screen.dart';
-import 'package:tunely/pages/admin_screen.dart';
-import 'package:tunely/pages/signup_page.dart';
-import 'package:tunely/pages/subscription_screen.dart';
-import 'package:tunely/pages/notifications_page.dart';
-import 'package:tunely/pages/privacy_page.dart';
-import 'package:tunely/pages/help_support_page.dart';
+import 'package:tunely/screens/home_screen.dart';
+import 'package:tunely/screens/login_screen.dart';
+import 'package:tunely/screens/personal_info_screen.dart';
+import 'package:tunely/screens/settings_screen.dart';
+import 'package:tunely/screens/search_screen.dart';
+import 'package:tunely/screens/playlist_screen.dart';
+import 'package:tunely/screens/main_screen.dart';
+import 'package:tunely/screens/admin_screen.dart';
+import 'package:tunely/screens/signup_screen.dart';
+import 'package:tunely/screens/subscription_screen.dart';
+import 'package:tunely/screens/notifications_screen.dart';
+import 'package:tunely/screens/privacy_screen.dart';
+import 'package:tunely/screens/help_support_screen.dart';
 import 'package:tunely/providers/auth_provider.dart';
 import 'package:tunely/providers/music_provider.dart';
 import 'package:tunely/providers/player_provider.dart';
@@ -65,17 +65,17 @@ class MyApp extends StatelessWidget {
         routes: {
           '/': (context) => const AuthWrapper(),
           '/admin': (context) => const AdminScreen(),
-          '/login': (context) => LoginPage(),
+          '/login': (context) => LoginScreen(),
           '/signup': (context) => SignupScreen(),
           '/main': (context) => const MainScreen(),
           '/home': (context) => const HomeScreen(),
           '/search': (context) => const SearchScreen(),
-          '/playlist': (context) => const PlaylistPage(),
+          '/playlist': (context) => const PlaylistScreen(),
           '/settings': (context) => const SettingsScreen(),
-          '/notifications': (context) => const NotificationsPage(),
-          '/privacy': (context) => const PrivacyPage(),
-          '/help_support': (context) => const HelpSupportPage(),
-          '/personal_info': (context) => const PersonalInfoPage(),
+          '/notifications': (context) => const NotificationsScreen(),
+          '/privacy': (context) => const PrivacyScreen(),
+          '/help_support': (context) => const HelpSupportScreen(),
+          '/personal_info': (context) => const PersonalInfoScreen(),
           '/subscription': (context) => const SubscriptionScreen(),
         },
       ),

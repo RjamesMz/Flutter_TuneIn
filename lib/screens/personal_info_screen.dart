@@ -1,3 +1,5 @@
+// ignore_for_file: unnecessary_const, unnecessary_underscores, use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../core/app_colors.dart';
@@ -12,9 +14,9 @@ import 'dart:io';
 import '../providers/auth_provider.dart';
 
 
-class PersonalInfoPage extends StatelessWidget {
+class PersonalInfoScreen extends StatelessWidget {
   final User? user;
-  const PersonalInfoPage({super.key, this.user});
+  const PersonalInfoScreen({super.key, this.user});
   
   
   @override
@@ -87,10 +89,10 @@ class PersonalInfoPage extends StatelessWidget {
                                 height: 80,
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
-                                  border: Border.all(color: Colors.white.withOpacity(0.6), width: 3),
+                                  border: Border.all(color: Colors.white.withAlpha(153), width: 3),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.black.withOpacity(0.15),
+                                      color: Colors.black.withAlpha(38),
                                       blurRadius: 16,
                                       offset: const Offset(0, 4),
                                     ),
@@ -125,7 +127,7 @@ class PersonalInfoPage extends StatelessWidget {
                       ),
                       Text(
                           currentUser?.email ?? '',
-                        style: TextStyle(fontSize: 13, color: Colors.white.withOpacity(0.8)),
+                        style: TextStyle(fontSize: 13, color: Colors.white.withAlpha(204)),
                       ),
                     ],
   
@@ -226,7 +228,7 @@ class PersonalInfoPage extends StatelessWidget {
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
-                          color: (isPremium ? kPrimary : Colors.grey).withOpacity(0.25),
+                          color: (isPremium ? kPrimary : Colors.grey).withAlpha(64),
                           blurRadius: 16,
                           offset: const Offset(0, 4),
                         ),
@@ -237,7 +239,7 @@ class PersonalInfoPage extends StatelessWidget {
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
+                            color: Colors.white.withAlpha(51),
                             borderRadius: BorderRadius.circular(14),
                           ),
                           child: Icon(
@@ -264,7 +266,7 @@ class PersonalInfoPage extends StatelessWidget {
                                 isPremium
                                     ? 'Enjoy unlimited music, offline playback & more'
                                     : 'Upgrade to unlock all features',
-                                style: TextStyle(fontSize: 12, color: Colors.white.withOpacity(0.85)),
+                                style: TextStyle(fontSize: 12, color: Colors.white.withAlpha(217)),
                               ),
                             ],
                           ),
@@ -607,7 +609,7 @@ class _BenefitRow extends StatelessWidget {
               ),
               Icon(
                 enabled ? Icons.check_circle_rounded : Icons.cancel_outlined,
-                color: enabled ? kPrimary : kOnSurfaceVariant.withOpacity(0.5),
+                color: enabled ? kPrimary : kOnSurfaceVariant.withAlpha(128),
                 size: 20,
               ),
             ],

@@ -1,7 +1,9 @@
+// ignore_for_file: unnecessary_underscores, annotate_overrides
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tunely/models/song.dart';
-import 'package:tunely/pages/personalinfopage.dart';
+import 'package:tunely/screens/personal_info_screen.dart';
 import '../core/app_colors.dart';
 import '../core/app_strings.dart';
 import '../core/responsive_helper.dart';
@@ -42,7 +44,7 @@ class _HomeScreenState extends State<HomeScreen> {
           pinned: false,
           automaticallyImplyLeading: false,
           expandedHeight: 0,
-          backgroundColor: kSurface.withOpacity(0.9),
+          backgroundColor: kSurface.withAlpha(230),
           title: const Text(
             'TuneIn',
             style: TextStyle(
@@ -62,7 +64,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   return GestureDetector(
                     onTap: () => Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (_) => const PersonalInfoPage()),
+                      MaterialPageRoute(builder: (_) => const PersonalInfoScreen()),
                     ),
                     child: CircleAvatar(
                       radius: 17,
@@ -136,7 +138,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   Icon(
                     Icons.music_off,
                     size: 48,
-                    color: kOnSurfaceVariant.withOpacity(0.4),
+                    color: kOnSurfaceVariant.withAlpha(102),
                   ),
                   const SizedBox(height: 12),
                   const Text(
@@ -205,7 +207,7 @@ class _FeaturedBanner extends StatelessWidget {
                       end: Alignment.bottomCenter,
                       colors: [
                         Colors.transparent,
-                        kOnSurface.withOpacity(0.75),
+                        kOnSurface.withAlpha(191),
                       ],
                     ),
                   ),
@@ -253,7 +255,7 @@ class _FeaturedBanner extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                          color: Colors.white.withOpacity(0.75),
+                          color: Colors.white.withAlpha(191),
                           fontSize: 13,
                         ),
                       ),

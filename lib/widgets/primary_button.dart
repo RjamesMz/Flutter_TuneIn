@@ -33,7 +33,7 @@ class PrimaryButton extends StatelessWidget {
           boxShadow: onPressed != null
               ? [
                   BoxShadow(
-                    color: kPrimary.withOpacity(0.35),
+                    color: kPrimary.withAlpha(89),
                     blurRadius: 16,
                     offset: const Offset(0, 6),
                   )

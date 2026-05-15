@@ -1,3 +1,5 @@
+// ignore_for_file: unnecessary_underscores, use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:tunely/services/supabase_service.dart';
 import 'package:provider/provider.dart';

@@ -6,14 +6,14 @@ import '../providers/music_provider.dart';
 import '../providers/player_provider.dart';
 import '../widgets/song_tile.dart';
 import '../widgets/mini_player.dart';
-import '../pages/now_playing_page.dart';
-import '../pages/search_screen.dart';
+import 'now_playing_screen.dart';
+import 'search_screen.dart';
 import '../providers/auth_provider.dart';
 
-class PlaylistDetailPage extends StatelessWidget {
+class PlaylistDetailScreen extends StatelessWidget {
   final String playlistName;
 
-  const PlaylistDetailPage({super.key, required this.playlistName});
+  const PlaylistDetailScreen({super.key, required this.playlistName});
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +32,7 @@ class PlaylistDetailPage extends StatelessWidget {
       backgroundColor: kSurface,
 
       appBar: AppBar(
-        backgroundColor: kSurface.withOpacity(0.9),
+        backgroundColor: kSurface.withAlpha(230),
         elevation: 0,
         title: Text(
           playlistName,
@@ -116,7 +116,7 @@ class PlaylistDetailPage extends StatelessWidget {
                         padding: const EdgeInsets.only(right: 20),
                         margin: const EdgeInsets.symmetric(vertical: 4),
                         decoration: BoxDecoration(
-                          color: Colors.red.withOpacity(0.15),
+                          color: Colors.red.withAlpha(38),
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: const Icon(Icons.delete, color: Colors.red),
@@ -151,7 +151,7 @@ class PlaylistDetailPage extends StatelessWidget {
                 hasNext: player.hasNext,
                 onTap: () => Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => const NowPlayingPage()),
+                  MaterialPageRoute(builder: (_) => const NowPlayingScreen()),
                 ),
                 onTogglePlay: () => player.togglePlayPause(),
                 onNext: () => player.next(),
