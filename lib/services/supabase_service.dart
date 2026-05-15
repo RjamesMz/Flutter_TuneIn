@@ -151,7 +151,8 @@ class SupabaseService {
     // 2) Remove storage objects by extracting the path from the URL
     try {
       if (audioUrl != null && audioUrl.contains('/public/songs/')) {
-        final path = audioUrl.split('/public/songs/').last;
+        final encodedPath = audioUrl.split('/public/songs/').last.split('?').first;
+        final path = Uri.decodeComponent(encodedPath);
         await _supabase.storage.from('songs').remove([path]);
       }
     } catch (e) {
@@ -159,7 +160,8 @@ class SupabaseService {
     }
     try {
       if (coverUrl != null && coverUrl.contains('/public/avatars/')) {
-        final path = coverUrl.split('/public/avatars/').last;
+        final encodedPath = coverUrl.split('/public/avatars/').last.split('?').first;
+        final path = Uri.decodeComponent(encodedPath);
         await _supabase.storage.from('avatars').remove([path]);
       }
     } catch (e) {
