@@ -108,115 +108,126 @@ class PlaylistScreen extends StatelessWidget {
       ),
 
       body: ResponsiveWrapper(
-        child: playlists.isEmpty
-            ? Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Image.asset(
-                      'assets/image/logs/nothing.png',
-                      width: 180,
-                    ),
-                    const SizedBox(height: 16),
-                    const Text(
-                    "No Playlists Yet",
-                    style: TextStyle(
-                      color: kOnSurface,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  const Text(
-                    "Tap + New to create one",
-                    style: TextStyle(
-                      color: kOnSurfaceVariant,
-                      fontSize: 13,
-                    ),
-                  ),
-                ],
-              ),
-            )
-          : ListView.builder(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
-              itemCount: playlists.length,
-              itemBuilder: (context, index) {
-                final name = playlists[index];
-                final songCount = music.playlists[name]?.length ?? 0;
-
-                return GestureDetector(
-                  onTap: () => _openPlaylist(context, name),
+        child: RefreshIndicator(
+          onRefresh: () => context.read<MusicProvider>().fetchSongs(forceRefresh: true),
+          color: kPrimary,
+          backgroundColor: kSurface,
+          child: playlists.isEmpty
+              ? SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
                   child: Container(
-                    margin: const EdgeInsets.only(bottom: 12),
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: kSurfaceContainerHighest,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Row(
+                    height: MediaQuery.of(context).size.height * 0.7,
+                    alignment: Alignment.center,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        // Playlist icon
-                        Container(
-                          width: 55,
-                          height: 55,
-                          decoration: BoxDecoration(
-                            color: kPrimary.withAlpha(38),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: const Icon(Icons.queue_music, color: kPrimary, size: 28),
+                        Image.asset(
+                          'assets/image/logs/nothing.png',
+                          width: 180,
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                name,
-                                style: const TextStyle(
-                                  color: kOnSurface,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                '$songCount song${songCount == 1 ? '' : 's'}',
-                                style: const TextStyle(
-                                  color: kOnSurfaceVariant,
-                                  fontSize: 12,
-                                ),
-                              ),
-                            ],
+                        const SizedBox(height: 16),
+                        const Text(
+                          "No Playlists Yet",
+                          style: TextStyle(
+                            color: kOnSurface,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
-                        IconButton(
-                          icon: const Icon(Icons.more_vert, color: kOnSurfaceVariant),
-                          onPressed: () {
-                            showModalBottomSheet(
-                              context: context,
-                              backgroundColor: kSurface,
-                              shape: const RoundedRectangleBorder(
-                                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-                              ),
-                              builder: (_) {
-                                return ListTile(
-                                  leading: const Icon(Icons.delete, color: Colors.red),
-                                  title: const Text("Delete Playlist"),
-                                  onTap: () {
-                                    _deletePlaylist(context, name);
-                                    Navigator.pop(context);
-                                  },
-                                );
-                              },
-                            );
-                          },
+                        const SizedBox(height: 6),
+                        const Text(
+                          "Tap + New to create one",
+                          style: TextStyle(
+                            color: kOnSurfaceVariant,
+                            fontSize: 13,
+                          ),
                         ),
                       ],
                     ),
                   ),
-                );
-              },
-            ),
+                )
+              : ListView.builder(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
+                  itemCount: playlists.length,
+                  itemBuilder: (context, index) {
+                    final name = playlists[index];
+                    final songCount = music.playlists[name]?.length ?? 0;
+
+                    return GestureDetector(
+                      onTap: () => _openPlaylist(context, name),
+                      child: Container(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: kSurfaceContainerHighest,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Row(
+                          children: [
+                            // Playlist icon
+                            Container(
+                              width: 55,
+                              height: 55,
+                              decoration: BoxDecoration(
+                                color: kPrimary.withAlpha(38),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: const Icon(Icons.queue_music, color: kPrimary, size: 28),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    name,
+                                    style: const TextStyle(
+                                      color: kOnSurface,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    '$songCount song${songCount == 1 ? '' : 's'}',
+                                    style: const TextStyle(
+                                      color: kOnSurfaceVariant,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.more_vert, color: kOnSurfaceVariant),
+                              onPressed: () {
+                                showModalBottomSheet(
+                                  context: context,
+                                  backgroundColor: kSurface,
+                                  shape: const RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                                  ),
+                                  builder: (_) {
+                                    return ListTile(
+                                      leading: const Icon(Icons.delete, color: Colors.red),
+                                      title: const Text("Delete Playlist"),
+                                      onTap: () {
+                                        _deletePlaylist(context, name);
+                                        Navigator.pop(context);
+                                      },
+                                    );
+                                  },
+                                );
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+        ),
       ),
     );
   }

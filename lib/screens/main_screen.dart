@@ -103,6 +103,10 @@ class _MainScreenState extends State<MainScreen> {
                 onNext: () {
                   player.next();
                 },
+
+                onDismissed: () {
+                  player.stop();
+                },
               ),
             ),
         ],

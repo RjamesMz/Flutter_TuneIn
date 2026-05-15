@@ -16,6 +16,7 @@ class MiniPlayer extends StatelessWidget {
   final bool        hasNext;
   final VoidCallback onTogglePlay;
   final VoidCallback onNext;
+  final VoidCallback onDismissed;
 
   const MiniPlayer({
     super.key,
@@ -27,102 +28,118 @@ class MiniPlayer extends StatelessWidget {
     required this.hasNext,
     required this.onTogglePlay,
     required this.onNext,
+    required this.onDismissed,
   });
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
+    return Dismissible(
+      key: Key('mini_player_${title}_${artist}'), // Unique key
+      direction: DismissDirection.endToStart, // Swipe to the left
+      onDismissed: (_) => onDismissed(),
+      background: Container(
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            decoration: BoxDecoration(
-              color: kSurfaceContainerHighest.withAlpha(242),
+        padding: const EdgeInsets.only(right: 24),
+        alignment: Alignment.centerRight,
+        decoration: BoxDecoration(
+          color: Colors.redAccent.withAlpha(50),
           borderRadius: BorderRadius.circular(32),
-          boxShadow: [
-            BoxShadow(
-                  color: kPrimary.withAlpha(38),
-              blurRadius: 20,
-              offset: const Offset(0, 4),
-            ),
-          ],
         ),
-        child: Row(
-          children: [
-            // ── Cover Art ──────────────────────────────────────────────────
-            ClipRRect(
-              borderRadius: BorderRadius.circular(50),
-              child: Image.network(
-                coverUrl,
-                width: 40,
-                height: 40,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Container(
+        child: const Icon(Icons.stop_circle_outlined, color: Colors.redAccent),
+      ),
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          decoration: BoxDecoration(
+            color: kSurfaceContainerHighest.withAlpha(242),
+            borderRadius: BorderRadius.circular(32),
+            boxShadow: [
+              BoxShadow(
+                color: kPrimary.withAlpha(38),
+                blurRadius: 20,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              // ── Cover Art ──────────────────────────────────────────────────
+              ClipRRect(
+                borderRadius: BorderRadius.circular(50),
+                child: Image.network(
+                  coverUrl,
                   width: 40,
                   height: 40,
-                  color: kSurfaceContainer,
-                  child: const Icon(Icons.music_note, color: kPrimary, size: 18),
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            // ── Song Info ──────────────────────────────────────────────────
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      color: kOnSurface,
-                    ),
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => Container(
+                    width: 40,
+                    height: 40,
+                    color: kSurfaceContainer,
+                    child: const Icon(Icons.music_note, color: kPrimary, size: 18),
                   ),
-                  Text(
-                    artist,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 11,
-                      color: kOnSurfaceVariant,
+                ),
+              ),
+              const SizedBox(width: 12),
+              // ── Song Info ──────────────────────────────────────────────────
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: kOnSurface,
+                      ),
                     ),
+                    Text(
+                      artist,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: kOnSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // ── Controls ───────────────────────────────────────────────────
+              IconButton(
+                icon: Icon(
+                  Icons.skip_next,
+                  color: hasNext ? kPrimary : kOnSurfaceVariant.withAlpha(102),
+                  size: 22,
+                ),
+                onPressed: hasNext ? onNext : null,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+              ),
+              const SizedBox(width: 4),
+              GestureDetector(
+                onTap: onTogglePlay,
+                child: Container(
+                  width: 38,
+                  height: 38,
+                  decoration: const BoxDecoration(
+                    gradient: kSoulGradient,
+                    shape: BoxShape.circle,
                   ),
-                ],
-              ),
-            ),
-            // ── Controls ───────────────────────────────────────────────────
-            IconButton(
-              icon: Icon(
-                Icons.skip_next,
-                color: hasNext ? kPrimary : kOnSurfaceVariant.withAlpha(102),
-                size: 22,
-              ),
-              onPressed: hasNext ? onNext : null,
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-            ),
-            const SizedBox(width: 4),
-            GestureDetector(
-              onTap: onTogglePlay,
-              child: Container(
-                width: 38,
-                height: 38,
-                decoration: const BoxDecoration(
-                  gradient: kSoulGradient,
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  isPlaying ? Icons.pause : Icons.play_arrow,
-                  color: Colors.white,
-                  size: 20,
+                  child: Icon(
+                    isPlaying ? Icons.pause : Icons.play_arrow,
+                    color: Colors.white,
+                    size: 20,
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

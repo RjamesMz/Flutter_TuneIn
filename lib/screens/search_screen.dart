@@ -147,133 +147,146 @@ class _SearchScreenState extends State<SearchScreen> {
       ),
 
       body: ResponsiveWrapper(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-            const SizedBox(height: 8),
+        child: RefreshIndicator(
+          onRefresh: () => context.read<MusicProvider>().fetchSongs(forceRefresh: true),
+          color: kPrimary,
+          backgroundColor: kSurface,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 8),
 
-            // ── Search Field ───────────────────────────────────────────────
-            TextField(
-              controller: _searchCtrl,
-              onChanged: _onSearchChanged,
-              decoration: InputDecoration(
-                hintText: 'Songs, artists, albums…',
-                prefixIcon: const Icon(Icons.search, color: kOnSurfaceVariant),
-                suffixIcon: _query.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.close, color: kOnSurfaceVariant),
-                        onPressed: _clearSearch,
-                      )
-                    : null,
-              ),
-            ),
-
-            // ── Category Pills Row ─────────────────────────────────────────
-            // Show when at least one category is selected.
-            if (_activeKeys.isNotEmpty) ...[
-              const SizedBox(height: 12),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    // Selected categories (dismissible pills)
-                    ..._selectedTiles.map(
-                      (t) => Padding(
-                        padding: const EdgeInsets.only(right: 8),
-                        child: _CategoryPill(
-                          tile: t,
-                          isSelected: true,
-                          onTap: () => _removeCategory(t.categoryKey),
-                        ),
-                      ),
-                    ),
-                    // Unselected categories (tappable outlines)
-                    ..._unselectedTiles.map(
-                      (t) => Padding(
-                        padding: const EdgeInsets.only(right: 8),
-                        child: _CategoryPill(
-                          tile: t,
-                          isSelected: false,
-                          onTap: () => _toggleCategory(t.categoryKey),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-
-            const SizedBox(height: 20),
-
-            // ── No active filter → category grid ───────────────────────────
-            if (!_hasActiveFilter) ...[
-              const Text(
-                'Popular categories',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  color: kOnSurface,
-                ),
-              ),
-              const SizedBox(height: 12),
-              _CategoryGrid(onCategoryTap: _toggleCategory),
-
-              // ── Searching indicator ────────────────────────────────────────
-            ] else if (music.isSearching) ...[
-              const Expanded(
-                child: Center(
-                  child: CircularProgressIndicator(color: kPrimary),
-                ),
-              ),
-
-              // ── No results ─────────────────────────────────────────────────
-            ] else if (results.isEmpty) ...[
-              Expanded(
-                child: Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.search_off,
-                        size: 56,
-                        color: kOnSurfaceVariant.withAlpha(77),
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        _activeKeys.isNotEmpty && _query.isEmpty
-                            ? 'No songs in selected categories'
-                            : 'No results for "$_query"',
-                        style: const TextStyle(
-                          fontSize: 15,
-                          color: kOnSurfaceVariant,
-                        ),
-                      ),
-                    ],
+                // ── Search Field ───────────────────────────────────────────────
+                TextField(
+                  controller: _searchCtrl,
+                  onChanged: _onSearchChanged,
+                  decoration: InputDecoration(
+                    hintText: 'Songs, artists, albums…',
+                    prefixIcon: const Icon(Icons.search, color: kOnSurfaceVariant),
+                    suffixIcon: _query.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Icons.close, color: kOnSurfaceVariant),
+                            onPressed: _clearSearch,
+                          )
+                        : null,
                   ),
                 ),
-              ),
 
-              // ── Results list ───────────────────────────────────────────────
-            ] else ...[
-              Text(
-                '${results.length} result${results.length == 1 ? '' : 's'}',
-                style: const TextStyle(fontSize: 13, color: kOnSurfaceVariant),
-              ),
-              const SizedBox(height: 8),
-              Expanded(
-                child: ListView.builder(
-                  padding: const EdgeInsets.only(bottom: 120),
-                  itemCount: results.length,
-                  itemBuilder: (ctx, i) =>
-                      SongTile(song: results[i], queue: results),
-                ),
-              ),
-            ],
-          ],
+                // ── Category Pills Row ─────────────────────────────────────────
+                if (_activeKeys.isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        ..._selectedTiles.map(
+                          (t) => Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: _CategoryPill(
+                              tile: t,
+                              isSelected: true,
+                              onTap: () => _removeCategory(t.categoryKey),
+                            ),
+                          ),
+                        ),
+                        ..._unselectedTiles.map(
+                          (t) => Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: _CategoryPill(
+                              tile: t,
+                              isSelected: false,
+                              onTap: () => _toggleCategory(t.categoryKey),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+
+                const SizedBox(height: 20),
+
+                // ── No active filter → category grid ───────────────────────────
+                if (!_hasActiveFilter) ...[
+                  Expanded(
+                    child: SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Popular categories',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: kOnSurface,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          _CategoryGrid(onCategoryTap: _toggleCategory),
+                          const SizedBox(height: 120),
+                        ],
+                      ),
+                    ),
+                  ),
+                ] else if (music.isSearching) ...[
+                  const Expanded(
+                    child: Center(
+                      child: CircularProgressIndicator(color: kPrimary),
+                    ),
+                  ),
+                ] else if (results.isEmpty) ...[
+                  Expanded(
+                    child: SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      child: Container(
+                        height: MediaQuery.of(context).size.height * 0.6,
+                        alignment: Alignment.center,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.search_off,
+                              size: 56,
+                              color: kOnSurfaceVariant.withAlpha(77),
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              _activeKeys.isNotEmpty && _query.isEmpty
+                                  ? 'No songs in selected categories'
+                                  : 'No results for "$_query"',
+                              style: const TextStyle(
+                                fontSize: 15,
+                                color: kOnSurfaceVariant,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ] else ...[
+                  Text(
+                    '${results.length} result${results.length == 1 ? '' : 's'}',
+                    style: const TextStyle(fontSize: 13, color: kOnSurfaceVariant),
+                  ),
+                  const SizedBox(height: 8),
+                  Expanded(
+                    child: ListView.builder(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: const EdgeInsets.only(bottom: 120),
+                      itemCount: results.length,
+                      itemBuilder: (ctx, i) =>
+                          SongTile(song: results[i], queue: results),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
         ),
-      ),
       ),
     );
   }

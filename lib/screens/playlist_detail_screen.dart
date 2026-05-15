@@ -155,6 +155,7 @@ class PlaylistDetailScreen extends StatelessWidget {
                 ),
                 onTogglePlay: () => player.togglePlayPause(),
                 onNext: () => player.next(),
+                onDismissed: () => player.stop(),
               ),
             ),
         ],
