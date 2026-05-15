@@ -1,4 +1,4 @@
-package com.example.tunely
+package com.example.tunein
 
 import io.flutter.embedding.android.FlutterActivity
 

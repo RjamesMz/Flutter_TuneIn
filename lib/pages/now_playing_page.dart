@@ -87,8 +87,7 @@ class _NowPlayingPageState extends State<NowPlayingPage> {
                       ClipRRect(
                         borderRadius: BorderRadius.circular(24),
                         child: Image.network(
-                          song?.coverUrl ??
-                              'https://via.placeholder.com/150',
+                          song.coverUrl,
                           height: 260,
                           width: 260,
                           fit: BoxFit.cover,
@@ -99,7 +98,7 @@ class _NowPlayingPageState extends State<NowPlayingPage> {
 
                       /// Song title
                       Text(
-                        song?.title ?? "No song",
+                        song.title,
                         style: const TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.w800,
@@ -109,7 +108,7 @@ class _NowPlayingPageState extends State<NowPlayingPage> {
 
                       /// Artist
                       Text(
-                        song?.artist ?? "Unknown artist",
+                        song.artist,
                         style: const TextStyle(
                           color: kOnSurfaceVariant,
                         ),
@@ -204,9 +203,9 @@ class _NowPlayingPageState extends State<NowPlayingPage> {
                           IconButton(
                             icon: Icon(isLiked ? Icons.favorite : Icons.favorite_border),
                             color: kPrimary,
-                            onPressed: song != null ? () {
+                            onPressed: () {
                               music.toggleLike(song.id);
-                            } : null,
+                            },
                           ),
                         ],
                       ),

@@ -5,7 +5,6 @@ import '../core/app_colors.dart';
 import '../core/app_strings.dart';
 import '../core/responsive_helper.dart';
 import '../pages/personalinfopage.dart';
-import '../services/auth_service.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/music_provider.dart';
