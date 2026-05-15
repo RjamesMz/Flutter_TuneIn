@@ -114,9 +114,18 @@ class SettingsScreen extends StatelessWidget {
               SettingsTile(
                 icon: Icons.notifications_outlined,
                 label: 'Notifications',
+                onTap: () => Navigator.pushNamed(context, '/notifications'),
               ),
-              SettingsTile(icon: Icons.privacy_tip_outlined, label: 'Privacy'),
-              SettingsTile(icon: Icons.help_outline, label: 'Help & Support'),
+              SettingsTile(
+                icon: Icons.privacy_tip_outlined,
+                label: 'Privacy',
+                onTap: () => Navigator.pushNamed(context, '/privacy'),
+              ),
+              SettingsTile(
+                icon: Icons.help_outline,
+                label: 'Help & Support',
+                onTap: () => Navigator.pushNamed(context, '/help_support'),
+              ),
               const SizedBox(height: 28),
 
               // ── Logout Button ───────────────────────────────────────────────────
