@@ -1,12 +1,14 @@
 
 // ignore_for_file: avoid_print, unintended_html_in_doc_comment
 
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/song.dart';
 import '../services/music_service.dart';
 import '../services/download_service.dart';
+import '../services/supabase_service.dart';
 import '../core/app_strings.dart';
 
 enum AppNotificationType {
@@ -26,6 +28,8 @@ class MusicProvider extends ChangeNotifier {
   // ── State ──────────────────────────────────────────────────────────────────
   List<Song>  _allSongs          = [];
   List<Song>  _searchResults     = [];
+  StreamSubscription? _notificationsSub;
+  final List<AppNotification> _globalNotifications = [];
   String      _selectedCategory  = MusicCategories.all;
   bool        _isLoading         = false;
   bool        _isSearching       = false;
@@ -80,7 +84,26 @@ class MusicProvider extends ChangeNotifier {
       } catch (_) {}
     }
 
+    // Subscribe to Global Real-time Notifications
+    _notificationsSub = SupabaseService.instance.notificationsStream.listen((data) {
+      _globalNotifications.clear();
+      for (final row in data) {
+        _globalNotifications.add(AppNotification(
+          message: row['message'] as String,
+          time: DateTime.parse(row['created_at'] as String),
+          type: AppNotificationType.values[row['type'] as int? ?? 0],
+        ));
+      }
+      notifyListeners();
+    });
+
     notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _notificationsSub?.cancel();
+    super.dispose();
   }
 
   Future<void> _saveLikes() async {
@@ -253,13 +276,7 @@ class MusicProvider extends ChangeNotifier {
 
   List<AppNotification> get notifications => List.unmodifiable(_notifications);
 
-  List<AppNotification> get songNotifications => _notifications
-      .where(
-        (notification) =>
-            notification.type == AppNotificationType.songAdded ||
-            notification.type == AppNotificationType.songDeleted,
-      )
-      .toList();
+  List<AppNotification> get songNotifications => List.unmodifiable(_globalNotifications);
 
   void addAppNotification(String message) {
     _notifications.insert(0, AppNotification(message: message, time: DateTime.now()));
@@ -268,29 +285,11 @@ class MusicProvider extends ChangeNotifier {
   }
 
   void addSongAddedNotification(String message) {
-    _notifications.insert(
-      0,
-      AppNotification(
-        message: message,
-        time: DateTime.now(),
-        type: AppNotificationType.songAdded,
-      ),
-    );
-    _saveNotifications();
-    notifyListeners();
+    SupabaseService.instance.postNotification(message, AppNotificationType.songAdded.index);
   }
 
   void addSongDeletedNotification(String message) {
-    _notifications.insert(
-      0,
-      AppNotification(
-        message: message,
-        time: DateTime.now(),
-        type: AppNotificationType.songDeleted,
-      ),
-    );
-    _saveNotifications();
-    notifyListeners();
+    SupabaseService.instance.postNotification(message, AppNotificationType.songDeleted.index);
   }
 
   void clearNotifications() {
@@ -300,13 +299,7 @@ class MusicProvider extends ChangeNotifier {
   }
 
   void clearSongNotifications() {
-    _notifications.removeWhere(
-      (notification) =>
-          notification.type == AppNotificationType.songAdded ||
-          notification.type == AppNotificationType.songDeleted,
-    );
-    _saveNotifications();
-    notifyListeners();
+    SupabaseService.instance.clearGlobalNotifications();
   }
 
   String _songTitle(String id) {

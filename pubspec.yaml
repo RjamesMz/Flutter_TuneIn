@@ -112,3 +112,5 @@ flutter_launcher_icons:
   android: true
   ios: true
   image_path: "assets/image/logo/TuneIn_Logo.png"
+  adaptive_icon_background: "#9D3756"
+  adaptive_icon_foreground: "assets/image/logo/TuneIn_Logo.png"

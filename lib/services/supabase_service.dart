@@ -169,4 +169,30 @@ class SupabaseService {
     // 3) Delete DB row
     await _supabase.from('songs').delete().eq('id', id);
   }
+
+  // ── Global Real-time Notifications ────────────────────────────────────────
+
+  Stream<List<Map<String, dynamic>>> get notificationsStream {
+    return _supabase.from('notifications').stream(primaryKey: ['id']).order('created_at', ascending: false);
+  }
+
+  Future<void> postNotification(String message, int type) async {
+    try {
+      await _supabase.from('notifications').insert({
+        'message': message,
+        'type': type,
+      });
+    } catch (e) {
+      print('Error posting notification: $e');
+    }
+  }
+
+  Future<void> clearGlobalNotifications() async {
+    try {
+      // Deletes all notifications. Since this is global, it clears it for everyone!
+      await _supabase.from('notifications').delete().neq('type', -1);
+    } catch (e) {
+      print('Error clearing notifications: $e');
+    }
+  }
 }
