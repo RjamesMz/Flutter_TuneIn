@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../core/app_colors.dart';
-import '../core/responsive_helper.dart';
-import '../providers/music_provider.dart';
+import '../../core/app_colors.dart';
+import '../../core/responsive_helper.dart';
+import '../../providers/music_provider.dart';
 import 'playlist_detail_screen.dart';
 
 class PlaylistScreen extends StatelessWidget {

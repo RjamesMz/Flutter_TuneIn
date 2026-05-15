@@ -2,16 +2,16 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../core/app_colors.dart';
-import '../core/app_strings.dart';
-import '../core/responsive_helper.dart';
-import '../models/subscription_plan.dart';
-import '../models/user.dart';
-import '../widgets/primary_button.dart';
+import '../../core/app_colors.dart';
+import '../../core/app_strings.dart';
+import '../../core/responsive_helper.dart';
+import '../../models/subscription_plan.dart';
+import '../../models/user.dart';
+import '../../widgets/primary_button.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
-import '../providers/auth_provider.dart';
+import '../../providers/auth_provider.dart';
 
 
 class PersonalInfoScreen extends StatelessWidget {

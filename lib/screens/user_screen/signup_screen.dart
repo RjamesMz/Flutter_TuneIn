@@ -3,11 +3,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../core/app_colors.dart';
-import '../core/app_strings.dart';
-import '../core/responsive_helper.dart';
-import '../services/auth_service.dart';
-import '../widgets/primary_button.dart';
+import '../../core/app_colors.dart';
+import '../../core/app_strings.dart';
+import '../../core/responsive_helper.dart';
+import '../../services/auth_service.dart';
+import '../../widgets/primary_button.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});

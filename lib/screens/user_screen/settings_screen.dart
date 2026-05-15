@@ -3,13 +3,13 @@
 import 'package:flutter/material.dart';
 import 'package:tunely/widgets/settings_button.dart';
 import 'package:tunely/widgets/primary_button.dart';
-import '../core/app_colors.dart';
-import '../core/app_strings.dart';
-import '../core/responsive_helper.dart';
-import '../screens/personal_info_screen.dart';
+import '../../core/app_colors.dart';
+import '../../core/app_strings.dart';
+import '../../core/responsive_helper.dart';
+import 'personal_info_screen.dart';
 import 'package:provider/provider.dart';
-import '../providers/auth_provider.dart';
-import '../providers/music_provider.dart';
+import '../../providers/auth_provider.dart';
+import '../../providers/music_provider.dart';
 import 'dart:io';
 
 class SettingsScreen extends StatelessWidget {

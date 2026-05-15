@@ -6,10 +6,10 @@ import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
-import '../services/supabase_service.dart';
-import '../core/app_colors.dart';
-import '../core/responsive_helper.dart';
-import '../providers/music_provider.dart';
+import '../../services/supabase_service.dart';
+import '../../core/app_colors.dart';
+import '../../core/responsive_helper.dart';
+import '../../providers/music_provider.dart';
 import 'category_management_screen.dart';
 
 class UploadSongScreen extends StatefulWidget {

@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
-import '../core/app_colors.dart';
+import '../../core/app_colors.dart';
 import 'home_screen.dart';
 import 'playlist_screen.dart';
 import 'search_screen.dart';
 import 'now_playing_screen.dart';
 import 'settings_screen.dart';
 import 'package:provider/provider.dart';
-import '../core/responsive_helper.dart';
-import '../widgets/mini_player.dart';
-import '../widgets/bottom_navigation_bar.dart';
-import '../providers/player_provider.dart';
+import '../../core/responsive_helper.dart';
+import '../../widgets/mini_player.dart';
+import '../../widgets/bottom_navigation_bar.dart';
+import '../../providers/player_provider.dart';
 
 
 

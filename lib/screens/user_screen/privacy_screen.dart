@@ -2,8 +2,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../core/app_colors.dart';
-import '../core/responsive_helper.dart';
+import '../../core/app_colors.dart';
+import '../../core/responsive_helper.dart';
 
 class PrivacyScreen extends StatelessWidget {
   const PrivacyScreen({super.key});

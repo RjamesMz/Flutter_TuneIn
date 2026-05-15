@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../core/app_colors.dart';
-import '../core/responsive_helper.dart';
-import '../providers/music_provider.dart';
-import '../providers/player_provider.dart';
-import '../widgets/song_tile.dart';
-import '../widgets/mini_player.dart';
+import '../../core/app_colors.dart';
+import '../../core/responsive_helper.dart';
+import '../../providers/music_provider.dart';
+import '../../providers/player_provider.dart';
+import '../../widgets/song_tile.dart';
+import '../../widgets/mini_player.dart';
 import 'now_playing_screen.dart';
 import 'search_screen.dart';
-import '../providers/auth_provider.dart';
+import '../../providers/auth_provider.dart';
 
 class PlaylistDetailScreen extends StatelessWidget {
   final String playlistName;
