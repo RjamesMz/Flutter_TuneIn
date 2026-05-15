@@ -4,8 +4,8 @@ import 'package:url_launcher/url_launcher.dart';
 import '../core/app_colors.dart';
 import '../core/responsive_helper.dart';
 
-class HelpSupportPage extends StatelessWidget {
-  const HelpSupportPage({super.key});
+class HelpSupportScreen extends StatelessWidget {
+  const HelpSupportScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

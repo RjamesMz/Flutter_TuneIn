@@ -6,14 +6,14 @@ import '../providers/music_provider.dart';
 import '../providers/player_provider.dart';
 import '../widgets/song_tile.dart';
 import '../widgets/mini_player.dart';
-import '../pages/now_playing_page.dart';
-import '../pages/search_screen.dart';
+import '../screens/now_playing_screen.dart';
+import '../screens/search_screen.dart';
 import '../providers/auth_provider.dart';
 
-class PlaylistDetailPage extends StatelessWidget {
+class PlaylistDetailScreen extends StatelessWidget {
   final String playlistName;
 
-  const PlaylistDetailPage({super.key, required this.playlistName});
+  const PlaylistDetailScreen({super.key, required this.playlistName});
 
   @override
   Widget build(BuildContext context) {
@@ -151,7 +151,7 @@ class PlaylistDetailPage extends StatelessWidget {
                 hasNext: player.hasNext,
                 onTap: () => Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => const NowPlayingPage()),
+                  MaterialPageRoute(builder: (_) => const NowPlayingScreen()),
                 ),
                 onTogglePlay: () => player.togglePlayPause(),
                 onNext: () => player.next(),

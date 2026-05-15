@@ -3,8 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import '../core/app_colors.dart';
 import '../core/responsive_helper.dart';
 
-class PrivacyPage extends StatelessWidget {
-  const PrivacyPage({super.key});
+class PrivacyScreen extends StatelessWidget {
+  const PrivacyScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

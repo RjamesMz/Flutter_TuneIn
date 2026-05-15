@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tunely/models/song.dart';
-import 'package:tunely/pages/personalinfopage.dart';
+import 'package:tunely/screens/personal_info_screen.dart';
 import '../core/app_colors.dart';
 import '../core/app_strings.dart';
 import '../core/responsive_helper.dart';
@@ -62,7 +62,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   return GestureDetector(
                     onTap: () => Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (_) => const PersonalInfoPage()),
+                      MaterialPageRoute(builder: (_) => const PersonalInfoScreen()),
                     ),
                     child: CircleAvatar(
                       radius: 17,

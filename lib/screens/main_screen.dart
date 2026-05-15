@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import '../core/app_colors.dart';
-import '../pages/home.dart';
-import '../pages/playlist_page.dart';
-import '../pages/search_screen.dart';
-import '../pages/now_playing_page.dart';
-import 'settings.dart';
+import '../screens/home_screen.dart';
+import '../screens/playlist_screen.dart';
+import '../screens/search_screen.dart';
+import '../screens/now_playing_screen.dart';
+import 'settings_screen.dart';
 import 'package:provider/provider.dart';
 import '../core/responsive_helper.dart';
 import '../widgets/mini_player.dart';
@@ -27,7 +27,7 @@ class _MainScreenState extends State<MainScreen> {
   final List<Widget> _screens = const [
     HomeScreen(),
     SearchScreen(),
-    PlaylistPage(),
+    PlaylistScreen(),
     SettingsScreen(),
   ];
 
@@ -91,7 +91,7 @@ class _MainScreenState extends State<MainScreen> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => const NowPlayingPage(),
+                      builder: (_) => const NowPlayingScreen(),
                     ),
                   );
                 },

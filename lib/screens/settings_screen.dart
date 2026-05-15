@@ -4,7 +4,7 @@ import 'package:tunely/widgets/primary_button.dart';
 import '../core/app_colors.dart';
 import '../core/app_strings.dart';
 import '../core/responsive_helper.dart';
-import '../pages/personalinfopage.dart';
+import '../screens/personal_info_screen.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/music_provider.dart';
@@ -106,7 +106,7 @@ class SettingsScreen extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => PersonalInfoPage(user: user),
+                      builder: (_) => PersonalInfoScreen(user: user),
                     ),
                   );
                 },

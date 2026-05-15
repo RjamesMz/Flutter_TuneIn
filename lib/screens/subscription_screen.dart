@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:tunely/pages/checkout_screen.dart';
+import 'package:tunely/screens/checkout_screen.dart';
 
 import '../core/app_colors.dart';
 import '../core/responsive_helper.dart';

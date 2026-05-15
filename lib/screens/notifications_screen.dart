@@ -5,8 +5,8 @@ import '../core/app_colors.dart';
 import '../core/responsive_helper.dart';
 import '../providers/music_provider.dart';
 
-class NotificationsPage extends StatelessWidget {
-  const NotificationsPage({super.key});
+class NotificationsScreen extends StatelessWidget {
+  const NotificationsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

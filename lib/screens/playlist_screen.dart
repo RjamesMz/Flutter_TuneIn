@@ -3,10 +3,10 @@ import 'package:provider/provider.dart';
 import '../core/app_colors.dart';
 import '../core/responsive_helper.dart';
 import '../providers/music_provider.dart';
-import 'playlist_music.dart';
+import 'playlist_detail_screen.dart';
 
-class PlaylistPage extends StatelessWidget {
-  const PlaylistPage({super.key});
+class PlaylistScreen extends StatelessWidget {
+  const PlaylistScreen({super.key});
 
   void _addPlaylist(BuildContext context) {
     final controller = TextEditingController();
@@ -51,7 +51,7 @@ class PlaylistPage extends StatelessWidget {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => PlaylistDetailPage(playlistName: name),
+        builder: (_) => PlaylistDetailScreen(playlistName: name),
       ),
     );
   }

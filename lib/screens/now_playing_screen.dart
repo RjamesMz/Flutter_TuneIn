@@ -5,14 +5,14 @@ import '../core/responsive_helper.dart';
 import '../providers/player_provider.dart';
 import '../providers/music_provider.dart';
 
-class NowPlayingPage extends StatefulWidget {
-  const NowPlayingPage({super.key});
+class NowPlayingScreen extends StatefulWidget {
+  const NowPlayingScreen({super.key});
 
   @override
-  State<NowPlayingPage> createState() => _NowPlayingPageState();
+  State<NowPlayingScreen> createState() => _NowPlayingScreenState();
 }
 
-class _NowPlayingPageState extends State<NowPlayingPage> {
+class _NowPlayingScreenState extends State<NowPlayingScreen> {
   final ScrollController _controller = ScrollController();
   double _scrollOffset = 0;
 

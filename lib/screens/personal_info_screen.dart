@@ -12,9 +12,9 @@ import 'dart:io';
 import '../providers/auth_provider.dart';
 
 
-class PersonalInfoPage extends StatelessWidget {
+class PersonalInfoScreen extends StatelessWidget {
   final User? user;
-  const PersonalInfoPage({super.key, this.user});
+  const PersonalInfoScreen({super.key, this.user});
   
   
   @override
