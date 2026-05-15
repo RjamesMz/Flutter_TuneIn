@@ -29,19 +29,86 @@ class MusicProvider extends ChangeNotifier {
   List<Song>  _allSongs          = [];
   List<Song>  _searchResults     = [];
   StreamSubscription? _notificationsSub;
-  final List<AppNotification> _globalNotifications = [];
+  final List<AppNotificationWithUser> _allNotifications = [];
   String      _selectedCategory  = MusicCategories.all;
   bool        _isLoading         = false;
   bool        _isSearching       = false;
   String      _searchQuery       = '';
+  String?     _userId;
   String?     _errorMessage;
+
+  final Map<String, int> _playlistIds = {};
 
   static const String _playlistsKey = 'user_playlists';
   static const String _likesKey = 'user_likes';
-  static const String _notificationsKey = 'user_notifications';
 
   MusicProvider() {
     _loadData();
+  }
+
+  void updateUser(String? userId) {
+    if (_userId == userId) return;
+    _userId = userId;
+    if (_userId != null) {
+      _loadRemoteData();
+    } else {
+      _playlists.clear();
+      _playlistIds.clear();
+      _likedSongIds.clear();
+      _allNotifications.clear();
+      _notificationsSub?.cancel();
+      _notificationsSub = null;
+      notifyListeners();
+    }
+  }
+
+  void _setupNotificationSubscription() {
+    _notificationsSub?.cancel();
+    if (_userId == null) return;
+
+    _notificationsSub = SupabaseService.instance.getNotificationsStream(_userId!).listen((data) {
+      _allNotifications.clear();
+      for (final row in data) {
+        final rowUserId = row['user_id'] as String?;
+        // Only keep global (null) or this user's notifications
+        if (rowUserId == null || rowUserId == _userId) {
+          _allNotifications.add(AppNotificationWithUser(
+            message: row['message'] as String,
+            time: DateTime.parse(row['created_at'] as String).toLocal(),
+            type: AppNotificationType.values[row['type'] as int? ?? 0],
+            userId: rowUserId,
+          ));
+        }
+      }
+      notifyListeners();
+    });
+  }
+
+  Future<void> _loadRemoteData() async {
+    if (_userId == null) return;
+    
+    try {
+      final remotePlaylists = await SupabaseService.instance.getUserPlaylists(_userId!);
+      _playlists.clear();
+      _playlistIds.clear();
+      
+      for (final p in remotePlaylists) {
+        final name = p['name'] as String;
+        final id = p['id'] as int;
+        _playlistIds[name] = id;
+        
+        final songs = await SupabaseService.instance.getSongsInPlaylist(id);
+        _playlists[name] = songs;
+
+        if (name == 'Liked Songs') {
+          _likedSongIds.clear();
+          _likedSongIds.addAll(songs);
+        }
+      }
+      notifyListeners();
+    } catch (e) {
+      print('Error loading remote playlists: $e');
+    }
   }
 
   Future<void> _loadData() async {
@@ -63,9 +130,9 @@ class MusicProvider extends ChangeNotifier {
       }
     } catch (_) {}
 
-    // Load playlists
+    // Load playlists (fallback to local if remote fails or not yet loaded)
     final playlistsJson = prefs.getString(_playlistsKey);
-    if (playlistsJson != null) {
+    if (playlistsJson != null && _playlists.isEmpty) {
       try {
         final Map<String, dynamic> decoded = json.decode(playlistsJson);
         decoded.forEach((key, value) {
@@ -74,28 +141,10 @@ class MusicProvider extends ChangeNotifier {
       } catch (_) {}
     }
 
-    // Load notifications
-    final notesJson = prefs.getString(_notificationsKey);
-    if (notesJson != null) {
-      try {
-        final List<dynamic> decoded = json.decode(notesJson);
-        _notifications.clear();
-        _notifications.addAll(decoded.map((e) => AppNotification.fromJson(e as Map<String, dynamic>)));
-      } catch (_) {}
-    }
 
-    // Subscribe to Global Real-time Notifications
-    _notificationsSub = SupabaseService.instance.notificationsStream.listen((data) {
-      _globalNotifications.clear();
-      for (final row in data) {
-        _globalNotifications.add(AppNotification(
-          message: row['message'] as String,
-          time: DateTime.parse(row['created_at'] as String).toLocal(),
-          type: AppNotificationType.values[row['type'] as int? ?? 0],
-        ));
-      }
-      notifyListeners();
-    });
+
+    // Subscribe to Notifications
+    _setupNotificationSubscription();
 
     notifyListeners();
   }
@@ -116,11 +165,7 @@ class MusicProvider extends ChangeNotifier {
     await prefs.setString(_playlistsKey, json.encode(_playlists));
   }
 
-  Future<void> _saveNotifications() async {
-    final prefs = await SharedPreferences.getInstance();
-    final jsonList = _notifications.map((n) => n.toJson()).toList();
-    await prefs.setString(_notificationsKey, json.encode(jsonList));
-  }
+
 
   // ── Getters ────────────────────────────────────────────────────────────────
   bool    get isLoading        => _isLoading;
@@ -272,16 +317,18 @@ class MusicProvider extends ChangeNotifier {
   // ── In-app Notifications ─────────────────────────────────────────────────
   // Simple, local notification items shown on the Notifications page.
   // Not push notifications — just UI messages for user actions like add/delete.
-  final List<AppNotification> _notifications = [];
 
-  List<AppNotification> get notifications => List.unmodifiable(_notifications);
+  List<AppNotification> get notifications => _allNotifications
+      .where((n) => n.userId == _userId)
+      .toList();
 
-  List<AppNotification> get songNotifications => List.unmodifiable(_globalNotifications);
+  List<AppNotification> get songNotifications => _allNotifications
+      .where((n) => n.userId == null)
+      .toList();
 
   void addAppNotification(String message) {
-    _notifications.insert(0, AppNotification(message: message, time: DateTime.now()));
-    _saveNotifications();
-    notifyListeners();
+    if (_userId == null) return;
+    SupabaseService.instance.postNotification(message, AppNotificationType.general.index, userId: _userId);
   }
 
   void addSongAddedNotification(String message) {
@@ -293,9 +340,8 @@ class MusicProvider extends ChangeNotifier {
   }
 
   void clearNotifications() {
-    _notifications.clear();
-    _saveNotifications();
-    notifyListeners();
+    if (_userId == null) return;
+    SupabaseService.instance.clearUserNotifications(_userId!);
   }
 
   void clearSongNotifications() {
@@ -314,18 +360,40 @@ class MusicProvider extends ChangeNotifier {
 
   List<String> get playlistNames => _playlists.keys.toList();
 
-  void createPlaylist(String name) {
+  Future<void> createPlaylist(String name) async {
+    if (_userId == null) return;
     if (!_playlists.containsKey(name)) {
-      _playlists[name] = [];
-      _savePlaylists();
-      notifyListeners();
+      try {
+        final id = await SupabaseService.instance.createPlaylist(_userId!, name);
+        _playlistIds[name] = id;
+        _playlists[name] = [];
+        _savePlaylists(); // local fallback
+        notifyListeners();
+      } catch (e) {
+        print('Error creating playlist: $e');
+      }
     }
   }
 
-  void addSongToPlaylist(String playlistName, String songId) {
+  Future<void> addSongToPlaylist(String playlistName, String songId) async {
+    final playlistId = _playlistIds[playlistName];
+    if (playlistId == null && _userId != null) {
+       // If it exists locally but not remotely, create it remotely
+       await createPlaylist(playlistName);
+    }
+    
+    final remoteId = _playlistIds[playlistName];
     final list = _playlists[playlistName];
+    
     if (list != null && !list.contains(songId)) {
       list.add(songId);
+      if (remoteId != null) {
+        try {
+          await SupabaseService.instance.addSongToPlaylist(remoteId, songId);
+        } catch (e) {
+          print('Error adding song to remote playlist: $e');
+        }
+      }
       _savePlaylists();
       // add notification
       final title = _songTitle(songId);
@@ -338,14 +406,31 @@ class MusicProvider extends ChangeNotifier {
     return _playlists[playlistName]?.contains(songId) ?? false;
   }
 
-  void deletePlaylist(String name) {
+  Future<void> deletePlaylist(String name) async {
+    final id = _playlistIds[name];
+    if (id != null) {
+      try {
+        await SupabaseService.instance.deletePlaylist(id);
+      } catch (e) {
+        print('Error deleting remote playlist: $e');
+      }
+    }
     _playlists.remove(name);
+    _playlistIds.remove(name);
     _savePlaylists();
     addAppNotification('Deleted playlist "$name"');
     notifyListeners();
   }
 
-  void removeSongFromPlaylist(String playlistName, String songId) {
+  Future<void> removeSongFromPlaylist(String playlistName, String songId) async {
+    final id = _playlistIds[playlistName];
+    if (id != null) {
+      try {
+        await SupabaseService.instance.removeSongFromPlaylist(id, songId);
+      } catch (e) {
+        print('Error removing song from remote playlist: $e');
+      }
+    }
     _playlists[playlistName]?.remove(songId);
     _savePlaylists();
     final title = _songTitle(songId);
@@ -414,4 +499,14 @@ class AppNotification {
         time: DateTime.parse(json['time'] as String).toLocal(),
         type: AppNotificationType.values[json['type'] as int? ?? 0],
       );
+}
+
+class AppNotificationWithUser extends AppNotification {
+  final String? userId;
+  AppNotificationWithUser({
+    required super.message,
+    required super.time,
+    super.type,
+    this.userId,
+  });
 }
