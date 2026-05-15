@@ -58,7 +58,7 @@ class NotificationsScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Your song activity will appear here',
+                    'Song activity will appear here',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: kOnSurfaceVariant,
                     ),

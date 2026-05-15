@@ -34,6 +34,7 @@ class MusicProvider extends ChangeNotifier {
 
   static const String _playlistsKey = 'user_playlists';
   static const String _likesKey = 'user_likes';
+  static const String _notificationsKey = 'user_notifications';
 
   MusicProvider() {
     _loadData();
@@ -68,6 +69,17 @@ class MusicProvider extends ChangeNotifier {
         });
       } catch (_) {}
     }
+
+    // Load notifications
+    final notesJson = prefs.getString(_notificationsKey);
+    if (notesJson != null) {
+      try {
+        final List<dynamic> decoded = json.decode(notesJson);
+        _notifications.clear();
+        _notifications.addAll(decoded.map((e) => AppNotification.fromJson(e as Map<String, dynamic>)));
+      } catch (_) {}
+    }
+
     notifyListeners();
   }
 
@@ -79,6 +91,12 @@ class MusicProvider extends ChangeNotifier {
   Future<void> _savePlaylists() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_playlistsKey, json.encode(_playlists));
+  }
+
+  Future<void> _saveNotifications() async {
+    final prefs = await SharedPreferences.getInstance();
+    final jsonList = _notifications.map((n) => n.toJson()).toList();
+    await prefs.setString(_notificationsKey, json.encode(jsonList));
   }
 
   // ── Getters ────────────────────────────────────────────────────────────────
@@ -245,6 +263,7 @@ class MusicProvider extends ChangeNotifier {
 
   void addAppNotification(String message) {
     _notifications.insert(0, AppNotification(message: message, time: DateTime.now()));
+    _saveNotifications();
     notifyListeners();
   }
 
@@ -257,6 +276,7 @@ class MusicProvider extends ChangeNotifier {
         type: AppNotificationType.songAdded,
       ),
     );
+    _saveNotifications();
     notifyListeners();
   }
 
@@ -269,11 +289,13 @@ class MusicProvider extends ChangeNotifier {
         type: AppNotificationType.songDeleted,
       ),
     );
+    _saveNotifications();
     notifyListeners();
   }
 
   void clearNotifications() {
     _notifications.clear();
+    _saveNotifications();
     notifyListeners();
   }
 
@@ -283,6 +305,7 @@ class MusicProvider extends ChangeNotifier {
           notification.type == AppNotificationType.songAdded ||
           notification.type == AppNotificationType.songDeleted,
     );
+    _saveNotifications();
     notifyListeners();
   }
 
@@ -386,4 +409,16 @@ class AppNotification {
     required this.time,
     this.type = AppNotificationType.general,
   });
+
+  Map<String, dynamic> toJson() => {
+        'message': message,
+        'time': time.toIso8601String(),
+        'type': type.index,
+      };
+
+  factory AppNotification.fromJson(Map<String, dynamic> json) => AppNotification(
+        message: json['message'] as String,
+        time: DateTime.parse(json['time'] as String),
+        type: AppNotificationType.values[json['type'] as int? ?? 0],
+      );
 }

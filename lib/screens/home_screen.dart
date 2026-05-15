@@ -39,12 +39,26 @@ class _HomeScreenState extends State<HomeScreen> {
       child: CustomScrollView(
         slivers: [
         SliverAppBar(
-          floating: true,
-          snap: true,
-          pinned: false,
+          floating: false,
+          snap: false,
+          pinned: true,
           automaticallyImplyLeading: false,
-          expandedHeight: 0,
-          backgroundColor: kSurface.withAlpha(230),
+          expandedHeight: 110,
+          collapsedHeight: kToolbarHeight,
+          backgroundColor: kBackground,
+          surfaceTintColor: Colors.transparent,
+          flexibleSpace: LayoutBuilder(
+            builder: (context, constraints) {
+              final delta = 110 - kToolbarHeight;
+              final t = ((constraints.maxHeight - kToolbarHeight) / delta)
+                  .clamp(0.0, 1.0);
+              final bgColor = Color.lerp(kPrimaryContainer, kBackground, t);
+
+              return DecoratedBox(
+                decoration: BoxDecoration(color: bgColor),
+              );
+            },
+          ),
           title: const Text(
             'TuneIn',
             style: TextStyle(
