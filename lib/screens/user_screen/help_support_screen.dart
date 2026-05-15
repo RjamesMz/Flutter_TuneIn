@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../core/app_colors.dart';
-import '../core/responsive_helper.dart';
+import '../../core/app_colors.dart';
+import '../../core/responsive_helper.dart';
 
 class HelpSupportScreen extends StatelessWidget {
   const HelpSupportScreen({super.key});

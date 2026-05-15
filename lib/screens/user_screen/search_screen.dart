@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../core/app_colors.dart';
-import '../core/responsive_helper.dart';
-import '../providers/music_provider.dart';
-import '../widgets/song_tile.dart';
+import '../../core/app_colors.dart';
+import '../../core/responsive_helper.dart';
+import '../../providers/music_provider.dart';
+import '../../widgets/song_tile.dart';
 
 // ─── All available category tiles (shared by grid + pills) ────────────────────
 List<_CategoryTile> _getCategoryTiles(List<Map<String, String>> categories) {

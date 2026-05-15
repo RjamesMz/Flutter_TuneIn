@@ -3,15 +3,15 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tunely/models/song.dart';
-import 'package:tunely/screens/personal_info_screen.dart';
-import '../core/app_colors.dart';
-import '../core/app_strings.dart';
-import '../core/responsive_helper.dart';
-import '../widgets/category_chip.dart';
-import '../widgets/song_tile.dart';
-import '../providers/music_provider.dart';
-import '../providers/player_provider.dart';
-import '../providers/auth_provider.dart';
+import 'package:tunely/screens/user_screen/personal_info_screen.dart';
+import '../../core/app_colors.dart';
+import '../../core/app_strings.dart';
+import '../../core/responsive_helper.dart';
+import '../../widgets/category_chip.dart';
+import '../../widgets/song_tile.dart';
+import '../../providers/music_provider.dart';
+import '../../providers/player_provider.dart';
+import '../../providers/auth_provider.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});

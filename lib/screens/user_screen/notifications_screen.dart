@@ -3,9 +3,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import '../core/app_colors.dart';
-import '../core/responsive_helper.dart';
-import '../providers/music_provider.dart';
+import '../../core/app_colors.dart';
+import '../../core/responsive_helper.dart';
+import '../../providers/music_provider.dart';
 
 class NotificationsScreen extends StatelessWidget {
   const NotificationsScreen({super.key});

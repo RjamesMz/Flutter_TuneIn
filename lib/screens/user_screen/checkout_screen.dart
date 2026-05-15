@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../core/app_colors.dart';
-import '../core/responsive_helper.dart';
-import '../providers/auth_provider.dart';
+import '../../core/app_colors.dart';
+import '../../core/responsive_helper.dart';
+import '../../providers/auth_provider.dart';
 
 // ─── Checkout Screen ───────────────────────────────────────────────────────────
 /// Shown when the user selects a paid subscription plan.

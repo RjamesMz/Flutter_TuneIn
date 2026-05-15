@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../core/app_colors.dart';
-import '../core/responsive_helper.dart';
-import '../providers/music_provider.dart';
+import '../../core/app_colors.dart';
+import '../../core/responsive_helper.dart';
+import '../../providers/music_provider.dart';
 
 class CategoryManagementScreen extends StatefulWidget {
   const CategoryManagementScreen({super.key});

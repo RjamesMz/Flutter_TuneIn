@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:tunely/services/supabase_service.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../providers/music_provider.dart';
-import '../core/app_colors.dart';
-import '../core/responsive_helper.dart';
+import '../../providers/music_provider.dart';
+import '../../core/app_colors.dart';
+import '../../core/responsive_helper.dart';
 
 class ManageSongsScreen extends StatefulWidget {
   const ManageSongsScreen({super.key});
