@@ -90,7 +90,7 @@ class MusicProvider extends ChangeNotifier {
       for (final row in data) {
         _globalNotifications.add(AppNotification(
           message: row['message'] as String,
-          time: DateTime.parse(row['created_at'] as String),
+          time: DateTime.parse(row['created_at'] as String).toLocal(),
           type: AppNotificationType.values[row['type'] as int? ?? 0],
         ));
       }
@@ -411,7 +411,7 @@ class AppNotification {
 
   factory AppNotification.fromJson(Map<String, dynamic> json) => AppNotification(
         message: json['message'] as String,
-        time: DateTime.parse(json['time'] as String),
+        time: DateTime.parse(json['time'] as String).toLocal(),
         type: AppNotificationType.values[json['type'] as int? ?? 0],
       );
 }
