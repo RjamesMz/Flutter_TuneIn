@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
@@ -7,6 +8,7 @@ import '../services/supabase_service.dart';
 import '../core/app_colors.dart';
 import '../core/app_strings.dart';
 import '../core/responsive_helper.dart';
+import '../providers/music_provider.dart';
 
 class UploadSongScreen extends StatefulWidget {
   const UploadSongScreen({super.key});
@@ -79,6 +81,7 @@ class _UploadSongScreenState extends State<UploadSongScreen> {
       return;
     }
 
+    final songTitle = _titleController.text.trim();
     setState(() => _isUploading = true);
 
     try {
@@ -97,6 +100,9 @@ class _UploadSongScreenState extends State<UploadSongScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Song uploaded successfully!')),
       );
+      try {
+        context.read<MusicProvider>().addSongAddedNotification('Added song: "$songTitle"');
+      } catch (_) {}
       _titleController.clear();
       _artistController.clear();
       _albumController.clear();

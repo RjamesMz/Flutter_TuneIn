@@ -50,8 +50,20 @@ class _ManageSongsScreenState extends State<ManageSongsScreen> {
     if (ok != true) return;
 
     try {
+      // capture title for notification
+      String title = 'Song';
+      try {
+        final item = _songs.firstWhere((s) => s['id'] == id);
+        title = item['title'] ?? title;
+      } catch (_) {}
+
       await SupabaseService.instance.deleteSong(id);
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Song deleted')));
+      // add in-app notification
+      try {
+        Provider.of<MusicProvider>(context, listen: false).addSongDeletedNotification('Deleted song: "$title"');
+      } catch (_) {}
+
       await _loadSongs();
       // Refresh the global music provider so UI reflects deletion (and prunes likes)
       try {

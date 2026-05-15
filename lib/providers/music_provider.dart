@@ -7,6 +7,12 @@ import '../services/music_service.dart';
 import '../services/download_service.dart';
 import '../core/app_strings.dart';
 
+enum AppNotificationType {
+  general,
+  songAdded,
+  songDeleted,
+}
+
 // ─── Music Provider ───────────────────────────────────────────────────────────
 /// Manages the song catalog, search results, and active category filter.
 /// Consumed by HomeScreen and SearchScreen.
@@ -220,6 +226,74 @@ class MusicProvider extends ChangeNotifier {
 
   Map<String, List<String>> get playlists => _playlists;
 
+  // ── In-app Notifications ─────────────────────────────────────────────────
+  // Simple, local notification items shown on the Notifications page.
+  // Not push notifications — just UI messages for user actions like add/delete.
+  final List<AppNotification> _notifications = [];
+
+  List<AppNotification> get notifications => List.unmodifiable(_notifications);
+
+  List<AppNotification> get songNotifications => _notifications
+      .where(
+        (notification) =>
+            notification.type == AppNotificationType.songAdded ||
+            notification.type == AppNotificationType.songDeleted,
+      )
+      .toList();
+
+  void addAppNotification(String message) {
+    _notifications.insert(0, AppNotification(message: message, time: DateTime.now()));
+    notifyListeners();
+  }
+
+  void addSongAddedNotification(String message) {
+    _notifications.insert(
+      0,
+      AppNotification(
+        message: message,
+        time: DateTime.now(),
+        type: AppNotificationType.songAdded,
+      ),
+    );
+    notifyListeners();
+  }
+
+  void addSongDeletedNotification(String message) {
+    _notifications.insert(
+      0,
+      AppNotification(
+        message: message,
+        time: DateTime.now(),
+        type: AppNotificationType.songDeleted,
+      ),
+    );
+    notifyListeners();
+  }
+
+  void clearNotifications() {
+    _notifications.clear();
+    notifyListeners();
+  }
+
+  void clearSongNotifications() {
+    _notifications.removeWhere(
+      (notification) =>
+          notification.type == AppNotificationType.songAdded ||
+          notification.type == AppNotificationType.songDeleted,
+    );
+    notifyListeners();
+  }
+
+  String _songTitle(String id) {
+    try {
+      return _allSongs.firstWhere((s) => s.id == id).title;
+    } catch (_) {
+      return 'Unknown';
+    }
+  }
+
+  
+
   List<String> get playlistNames => _playlists.keys.toList();
 
   void createPlaylist(String name) {
@@ -235,6 +309,9 @@ class MusicProvider extends ChangeNotifier {
     if (list != null && !list.contains(songId)) {
       list.add(songId);
       _savePlaylists();
+      // add notification
+      final title = _songTitle(songId);
+      addAppNotification('Added "$title" to "$playlistName"');
       notifyListeners();
     }
   }
@@ -246,12 +323,15 @@ class MusicProvider extends ChangeNotifier {
   void deletePlaylist(String name) {
     _playlists.remove(name);
     _savePlaylists();
+    addAppNotification('Deleted playlist "$name"');
     notifyListeners();
   }
 
   void removeSongFromPlaylist(String playlistName, String songId) {
     _playlists[playlistName]?.remove(songId);
     _savePlaylists();
+    final title = _songTitle(songId);
+    addAppNotification('Removed "$title" from "$playlistName"');
     notifyListeners();
   }
 
@@ -283,6 +363,7 @@ class MusicProvider extends ChangeNotifier {
     try {
       await DownloadService.instance.deleteDownload(song);
       _downloadedSongIds.remove(song.id);
+      addAppNotification('Removed download: "${song.title}"');
       notifyListeners();
     } catch (e) {
       print('Remove download failed: $e');
@@ -292,4 +373,15 @@ class MusicProvider extends ChangeNotifier {
   List<Song> get downloadedSongs {
     return _allSongs.where((s) => _downloadedSongIds.contains(s.id)).toList();
   }
+}
+
+class AppNotification {
+  final String message;
+  final DateTime time;
+  final AppNotificationType type;
+  AppNotification({
+    required this.message,
+    required this.time,
+    this.type = AppNotificationType.general,
+  });
 }

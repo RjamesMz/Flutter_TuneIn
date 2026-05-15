@@ -10,6 +10,9 @@ import 'package:tunely/pages/main_screen.dart';
 import 'package:tunely/pages/admin_screen.dart';
 import 'package:tunely/pages/signup_page.dart';
 import 'package:tunely/pages/subscription_screen.dart';
+import 'package:tunely/pages/notifications_page.dart';
+import 'package:tunely/pages/privacy_page.dart';
+import 'package:tunely/pages/help_support_page.dart';
 import 'package:tunely/providers/auth_provider.dart';
 import 'package:tunely/providers/music_provider.dart';
 import 'package:tunely/providers/player_provider.dart';
@@ -69,6 +72,9 @@ class MyApp extends StatelessWidget {
           '/search': (context) => const SearchScreen(),
           '/playlist': (context) => const PlaylistPage(),
           '/settings': (context) => const SettingsScreen(),
+          '/notifications': (context) => const NotificationsPage(),
+          '/privacy': (context) => const PrivacyPage(),
+          '/help_support': (context) => const HelpSupportPage(),
           '/personal_info': (context) => const PersonalInfoPage(),
           '/subscription': (context) => const SubscriptionScreen(),
         },
