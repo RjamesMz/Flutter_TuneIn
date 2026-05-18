@@ -1,3 +1,7 @@
+/// File: lib/screens/user_screen/search_screen.dart
+/// Role: Tab screen providing comprehensive search operations. Supports queries on songs,
+/// artists, or albums, alongside multi-category filters and colored chips grids.
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/app_colors.dart';
@@ -5,36 +9,46 @@ import '../../core/responsive_helper.dart';
 import '../../providers/music_provider.dart';
 import '../../widgets/song_tile.dart';
 
-// ─── All available category tiles (shared by grid + pills) ────────────────────
+/// Formulates a parsed list of category tile widgets.
+///
+/// [categories] Database dynamic string lists.
 List<_CategoryTile> _getCategoryTiles(List<Map<String, String>> categories) {
   return categories.map((catMap) {
     final name = catMap['name']!;
     final colorHex = catMap['color']!;
+    
+    // Converts dynamic database hexadecimal strings safely into core Flutter Color instances.
     final color = Color(int.parse(colorHex.replaceFirst('#', '0xFF')));
     
     return _CategoryTile(
       label: name,
       categoryKey: name,
-      color: color, // Use DB color
-      icon: Icons.music_note_rounded, // Default icon for all
+      color: color,
+      icon: Icons.music_note_rounded,
     );
   }).toList();
 }
 
+/// Screen widget displaying the browse catalogs search search screen.
 class SearchScreen extends StatefulWidget {
+  /// Constructs a [SearchScreen] instance.
+  ///
+  /// [key] An optional key used for identifying the widget in the element tree.
   const SearchScreen({super.key});
+
   @override
   State<SearchScreen> createState() => _SearchScreenState();
 }
 
+/// State controller managing active input queries, category key filters, and list views in [SearchScreen].
 class _SearchScreenState extends State<SearchScreen> {
   final _searchCtrl = TextEditingController();
   String _query = '';
 
-  /// Keys of all currently selected categories.
   final Set<String> _activeKeys = {};
 
   @override
+  /// Initiates dynamic songs loading cycles.
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -43,11 +57,13 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   @override
+  /// Clears keyboard text controllers.
   void dispose() {
     _searchCtrl.dispose();
     super.dispose();
   }
 
+  /// Evaluates and submits currently formulated queries and category filters to MusicProvider.
   void _applyFilter() {
     final music = context.read<MusicProvider>();
     final q = _query.trim();
@@ -61,17 +77,24 @@ class _SearchScreenState extends State<SearchScreen> {
     }
   }
 
+  /// Triggers a re-evaluation when the user types search keys.
+  ///
+  /// [value] Current search text string.
   void _onSearchChanged(String value) {
     setState(() => _query = value);
     _applyFilter();
   }
 
+  /// Resets search strings.
   void _clearSearch() {
     _searchCtrl.clear();
     setState(() => _query = '');
     _applyFilter();
   }
 
+  /// Toggles category filters on/off.
+  ///
+  /// [key] Targeted category key.
   void _toggleCategory(String key) {
     setState(() {
       if (_activeKeys.contains(key)) {
@@ -83,20 +106,29 @@ class _SearchScreenState extends State<SearchScreen> {
     _applyFilter();
   }
 
+  /// Purges targeted category filters.
+  ///
+  /// [key] Targeted category key.
   void _removeCategory(String key) {
     setState(() => _activeKeys.remove(key));
     _applyFilter();
   }
 
+  /// Helper flag verifying if filters are active.
   bool get _hasActiveFilter => _query.isNotEmpty || _activeKeys.isNotEmpty;
 
+  /// Formulates lists containing selected elements.
   List<_CategoryTile> _selectedTiles(List<Map<String, String>> categories) => 
       _getCategoryTiles(categories).where((t) => _activeKeys.contains(t.categoryKey)).toList();
 
+  /// Formulates lists containing unselected elements.
   List<_CategoryTile> _unselectedTiles(List<Map<String, String>> categories) => 
       _getCategoryTiles(categories).where((t) => !_activeKeys.contains(t.categoryKey)).toList();
 
   @override
+  /// Builds the search search input deck, chips row, and list views.
+  ///
+  /// [context] The building context.
   Widget build(BuildContext context) {
     final music = context.watch<MusicProvider>();
     final results = music.searchResults;
@@ -131,7 +163,6 @@ class _SearchScreenState extends State<SearchScreen> {
               children: [
                 const SizedBox(height: 8),
 
-                // ── Search Field ───────────────────────────────────────────────
                 TextField(
                   controller: _searchCtrl,
                   onChanged: _onSearchChanged,
@@ -147,7 +178,6 @@ class _SearchScreenState extends State<SearchScreen> {
                   ),
                 ),
 
-                // ── Category Pills Row ─────────────────────────────────────────
                 if (_activeKeys.isNotEmpty) ...[
                   const SizedBox(height: 12),
                   SingleChildScrollView(
@@ -183,7 +213,6 @@ class _SearchScreenState extends State<SearchScreen> {
 
                 const SizedBox(height: 20),
 
-                // ── No active filter → category grid ───────────────────────────
                 if (!_hasActiveFilter) ...[
                   Expanded(
                     child: SingleChildScrollView(
@@ -201,10 +230,10 @@ class _SearchScreenState extends State<SearchScreen> {
                           ),
                           const SizedBox(height: 12),
                           const SizedBox(height: 12),
-              _CategoryGrid(
-                onCategoryTap: _toggleCategory,
-                categories: music.categories,
-              ),
+                          _CategoryGrid(
+                            onCategoryTap: _toggleCategory,
+                            categories: music.categories,
+                          ),
                           const SizedBox(height: 120),
                         ],
                       ),
@@ -271,14 +300,23 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 }
 
-// ─── Category Pill ────────────────────────────────────────────────────────────
-/// When [isSelected] is true  → solid fill with ✕ icon (remove on tap).
-/// When [isSelected] is false → outlined style (add on tap).
+/// Animated filter chip indicator widget showing selected or unselected states.
 class _CategoryPill extends StatelessWidget {
+  /// Visual tile configuration model data.
   final _CategoryTile tile;
+
+  /// Check showing if active filter is applied.
   final bool isSelected;
+
+  /// Click action callback.
   final VoidCallback onTap;
 
+  /// Constructs a [_CategoryPill] instance.
+  ///
+  /// [key] An optional key.
+  /// [tile] Tile model structure.
+  /// [isSelected] Selection state boolean.
+  /// [onTap] Tap callback.
   const _CategoryPill({
     required this.tile,
     required this.isSelected,
@@ -335,11 +373,19 @@ class _CategoryPill extends StatelessWidget {
   }
 }
 
-// ─── Category Grid (initial view) ─────────────────────────────────────────────
+/// Grid structure displaying initial browsing categories.
 class _CategoryGrid extends StatelessWidget {
+  /// Pressed handler callback returning targeted key strings.
   final ValueChanged<String> onCategoryTap;
+
+  /// Available categories database metadata map.
   final List<Map<String, String>> categories;
 
+  /// Constructs a [_CategoryGrid] instance.
+  ///
+  /// [key] An optional key.
+  /// [onCategoryTap] Pressed handler returning category key.
+  /// [categories] Database raw category parameters list.
   const _CategoryGrid({required this.onCategoryTap, required this.categories});
 
   @override
@@ -386,12 +432,21 @@ class _CategoryGrid extends StatelessWidget {
   }
 }
 
-// ─── Data class ───────────────────────────────────────────────────────────────
+/// Standard container class representing category attributes.
 class _CategoryTile {
+  /// Display string label.
   final String label;
+
+  /// Filter query key value.
   final String categoryKey;
+
+  /// Dynamic background card color.
   final Color color;
+
+  /// Predefined category icon representation.
   final IconData icon;
+
+  /// Constructs a [_CategoryTile] instance.
   const _CategoryTile({
     required this.label,
     required this.categoryKey,

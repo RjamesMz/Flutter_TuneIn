@@ -1,3 +1,7 @@
+﻿/// File: lib/services/auth_service.dart
+/// Role: Interacts with Firebase Auth for authentication transactions,
+/// and uses Cloud Firestore to store and query extended user profile documents.
+
 // ignore_for_file: avoid_print
 
 import 'package:flutter/foundation.dart';
@@ -7,18 +11,21 @@ import 'dart:io';
 import '../models/user.dart';
 import 'supabase_service.dart';
 
-// ─── Auth Service ─────────────────────────────────────────────────────────────
-/// Mock authentication service. No real backend — simulates network delay.
-/// In a real app this would call Firebase Auth, REST API, etc.
+/// Authentication service for signing in, signing up, and profile management.
 class AuthService extends ChangeNotifier {
   AuthService._();
+
+  /// Global singleton instance of [AuthService].
   static final AuthService instance = AuthService._();
+
   final auth.FirebaseAuth _auth = auth.FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   User? _currentUser;
 
+  /// Gets the currently authenticated user profile session.
   User? get currentUser => _currentUser;
 
+  /// Translates raw Firebase authentication exceptions into human-friendly messages.
   String _authErrorMessage(auth.FirebaseAuthException e) {
     switch (e.code) {
       case 'invalid-email':
@@ -50,6 +57,7 @@ class AuthService extends ChangeNotifier {
         final doc = await _firestore.collection('users').doc(firebaseUser.uid).get();
         final data = doc.data() ?? {};
         
+        // Maps the Firestore document attributes into our local immutable User model representation.
         _currentUser = User(
           id: firebaseUser.uid,
           name: data['name'] ?? firebaseUser.displayName ?? 'Unknown',
@@ -64,32 +72,30 @@ class AuthService extends ChangeNotifier {
         );
         notifyListeners();
       } catch (e) {
-        // Print or handle error quietly during auto-login
         print('Error in auto-login: $e');
       }
     }
   }
 
-  /// Simulates a login call. Any non-empty credentials succeed after 1.5 s.
-  /// Throws [Exception] for empty credentials.
+  /// Logs in a user using Firebase Auth.
+  ///
+  /// [email] User account email.
+  /// [password] User account password.
   Future<User> login(String email, String password) async {
-    // Validate email and password are not null or empty
     if (email.trim().isEmpty || password.trim().isEmpty) {
       throw Exception('Email and password are required.');
     }
 
     try {
-      // Authenticate with Firebase
       final credential = await _auth.signInWithEmailAndPassword(
         email: email.trim(),
         password: password.trim(),
       );
       final firebaseUser = credential.user!;
-      // Fetch the extra user data from Firestore
+      
       final doc = await _firestore.collection('users').doc(firebaseUser.uid).get();
       final data = doc.data() ?? {};
       
-      // Return your local User model
       final user = User(
         id: firebaseUser.uid,
         name: data['name'] ?? firebaseUser.displayName ?? 'Unknown',
@@ -112,8 +118,15 @@ class AuthService extends ChangeNotifier {
     }
   }
 
-  /// Simulates a signup call. Builds a [User] from the provided form data.
-  /// Any non-empty name + email + password will succeed after 1.5 s.
+  /// Registers a new user.
+  ///
+  /// [name] User full display name.
+  /// [email] Unique target signup email address.
+  /// [username] Selected custom profile handle.
+  /// [password] Account password.
+  /// [phone] Optional contact phone number.
+  /// [dateOfBirth] Optional user birthday string.
+  /// [gender] Optional self-identified user gender.
   Future<User> signup({
     required String name,
     required String email,
@@ -150,6 +163,8 @@ class AuthService extends ChangeNotifier {
       );
 
       await firebaseUser.updateDisplayName(name.trim());
+      
+      // Persists extended user-specific properties to Firestore to bypass Firebase Auth storage limits.
       await _firestore.collection('users').doc(firebaseUser.uid).set({
         'name': createdUser.name,
         'email': createdUser.email,
@@ -170,16 +185,21 @@ class AuthService extends ChangeNotifier {
     }
   }
 
-  /// Simulates a logout call.
+  /// Clears the active authentication session in Firebase Auth.
   Future<void> logout() async {
     await _auth.signOut();
     _currentUser = null;
     notifyListeners();
   }
 
+  /// Updates the current user's subscription plan.
+  ///
+  /// [planId] The ID of the plan to assign.
   void updateCurrentUserPlan(String planId) {
     if (_currentUser == null) return;
     _currentUser = _currentUser!.copyWith(plan: planId);
+    
+    // Updates the plan status to keep billing records synced in the database.
     _firestore.collection('users').doc(_currentUser!.id).set(
       {'plan': planId},
       SetOptions(merge: true),
@@ -187,9 +207,9 @@ class AuthService extends ChangeNotifier {
     notifyListeners();
   }
 
-
-  
   /// Uploads [imageFile] to Supabase and updates the avatar URL in Firestore.
+  ///
+  /// [imageFile] Target local file reference of the avatar image to upload.
   Future<String> updateAvatar(File imageFile) async {
     if (_currentUser == null) throw Exception('Not authenticated');
     if (!await imageFile.exists()) throw Exception('Image file does not exist');
@@ -197,16 +217,13 @@ class AuthService extends ChangeNotifier {
     final uid = _currentUser!.id;
 
     try {
-      // 1. Upload to Supabase Storage
       final publicUrl = await SupabaseService.instance.uploadAvatar(uid, imageFile);
 
-      // 2. Update Firestore with the new public URL
       await _firestore.collection('users').doc(uid).set(
         {'avatarUrl': publicUrl},
         SetOptions(merge: true),
       );
 
-      // 3. Update local state
       _currentUser = _currentUser!.copyWith(avatarUrl: publicUrl);
       notifyListeners();
       return publicUrl;
@@ -216,6 +233,12 @@ class AuthService extends ChangeNotifier {
   }
 
   /// Updates user profile details in Firestore and local state.
+  ///
+  /// [name] Target updated display name.
+  /// [username] Target updated unique profile handle.
+  /// [phone] Target updated phone number.
+  /// [dateOfBirth] Target updated birth date.
+  /// [gender] Target updated gender classification.
   Future<void> updateUserProfile({
     String? name,
     String? username,
@@ -246,4 +269,3 @@ class AuthService extends ChangeNotifier {
     notifyListeners();
   }
 }
-

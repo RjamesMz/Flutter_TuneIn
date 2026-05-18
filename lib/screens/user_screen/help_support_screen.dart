@@ -1,13 +1,24 @@
+﻿/// File: lib/screens/user_screen/help_support_screen.dart
+/// Role: Renders the Help and Support center UI. Provides categorized FAQ suggestions,
+/// search options, and deep-links to launch support chats in external messengers.
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../core/app_colors.dart';
 import '../../core/responsive_helper.dart';
 
+/// Screen widget providing support resources and direct messaging links.
 class HelpSupportScreen extends StatelessWidget {
+  /// Constructs a [HelpSupportScreen] instance.
+  ///
+  /// [key] An optional key used for identifying the widget in the element tree.
   const HelpSupportScreen({super.key});
 
   @override
+  /// Builds the help center category catalog and contact buttons.
+  ///
+  /// [context] The widget build context.
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -33,7 +44,6 @@ class HelpSupportScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // ── Header: Icon & Welcome ───────────────────────────────────
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
@@ -60,7 +70,6 @@ class HelpSupportScreen extends StatelessWidget {
               ),
               const SizedBox(height: 24),
 
-              // ── Search Bar ────────────────────────────────────────────────
               TextField(
                 decoration: InputDecoration(
                   hintText: 'Search for articles, topics, or FAQs',
@@ -84,7 +93,6 @@ class HelpSupportScreen extends StatelessWidget {
               ),
               const SizedBox(height: 32),
 
-              // ── Categories ────────────────────────────────────────────────
               _helpCategoryCard(
                 icon: Icons.music_note_rounded,
                 title: 'Audio & Playback',
@@ -107,7 +115,6 @@ class HelpSupportScreen extends StatelessWidget {
               ),
               const SizedBox(height: 32),
 
-              // ── Contact Support Button ────────────────────────────────────
               Container(
                 width: double.infinity,
                 decoration: BoxDecoration(
@@ -129,15 +136,13 @@ class HelpSupportScreen extends StatelessWidget {
                       final facebookUrl = Uri.parse('https://www.facebook.com/renanjames.miranda.1');
                       
                       try {
-                        // Try to open Messenger app first
+                        // Tries opening the Messenger app deep-link first, falling back to standard browser Facebook URLs if app is uninstalled.
                         if (await canLaunchUrl(messengerUrl)) {
                           await launchUrl(messengerUrl, mode: LaunchMode.externalApplication);
                         } else {
-                          // Fall back to Facebook web URL if Messenger app isn't installed
                           await launchUrl(facebookUrl, mode: LaunchMode.externalApplication);
                         }
                       } catch (e) {
-                        // If anything fails, try the web URL
                         await launchUrl(facebookUrl, mode: LaunchMode.externalApplication);
                       }
                     },
@@ -181,6 +186,11 @@ class HelpSupportScreen extends StatelessWidget {
     );
   }
 
+  /// Builds a row card for a specific support genre category.
+  ///
+  /// [icon] Leading decorator icon.
+  /// [title] Genre title string.
+  /// [description] Detailed description text of the category.
   Widget _helpCategoryCard({
     required IconData icon,
     required String title,
@@ -203,7 +213,6 @@ class HelpSupportScreen extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // ── Icon ──────────────────────────────────────────────────────
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
@@ -214,7 +223,6 @@ class HelpSupportScreen extends StatelessWidget {
           ),
           const SizedBox(width: 16),
 
-          // ── Title & Description ───────────────────────────────────────
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -241,7 +249,6 @@ class HelpSupportScreen extends StatelessWidget {
           ),
           const SizedBox(width: 12),
 
-          // ── Arrow ─────────────────────────────────────────────────────
           Icon(
             Icons.arrow_forward_ios_rounded,
             color: kOnSurfaceVariant,

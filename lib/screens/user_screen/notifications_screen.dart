@@ -1,3 +1,7 @@
+﻿/// File: lib/screens/user_screen/notifications_screen.dart
+/// Role: Screen where users view administrative song activity notifications (additions/deletions).
+/// Provides clear buttons to purge history logs and a pull-to-refresh list feed.
+
 // ignore_for_file: unnecessary_underscores
 
 import 'package:flutter/material.dart';
@@ -6,11 +10,19 @@ import 'package:provider/provider.dart';
 import '../../core/app_colors.dart';
 import '../../core/responsive_helper.dart';
 import '../../providers/music_provider.dart';
+import '../../providers/user_provider.dart';
 
+/// Screen widget displaying the list of global song catalog activity notifications.
 class NotificationsScreen extends StatelessWidget {
+  /// Constructs a [NotificationsScreen] instance.
+  ///
+  /// [key] An optional key used for identifying the widget in the element tree.
   const NotificationsScreen({super.key});
 
   @override
+  /// Builds the notification list or empty state.
+  ///
+  /// [context] The building context.
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -32,7 +44,7 @@ class NotificationsScreen extends StatelessWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.delete_outline, color: kOnPrimary),
-            onPressed: () => context.read<MusicProvider>().clearSongNotifications(),
+            onPressed: () => context.read<UserProvider>().clearSongNotifications(),
           )
         ],
       ),
@@ -41,8 +53,9 @@ class NotificationsScreen extends StatelessWidget {
           onRefresh: () => context.read<MusicProvider>().fetchSongs(forceRefresh: true),
           color: kPrimary,
           backgroundColor: kSurface,
-          child: Consumer<MusicProvider>(builder: (context, music, child) {
-            final notes = music.songNotifications;
+          child: Consumer<UserProvider>(builder: (context, user, child) {
+            // Isolates global song catalog insertion/deletion broadcast messages to show track updates.
+            final notes = user.songNotifications;
             if (notes.isEmpty) {
               return SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),

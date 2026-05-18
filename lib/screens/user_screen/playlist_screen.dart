@@ -1,13 +1,25 @@
+﻿/// File: lib/screens/user_screen/playlist_screen.dart
+/// Role: Tab screen presenting the user's collection of custom playlists. Offers creation dialogs,
+/// track counts, and bottom sheets to manage and delete playlists.
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/app_colors.dart';
 import '../../core/responsive_helper.dart';
 import '../../providers/music_provider.dart';
+import '../../providers/user_provider.dart';
 import 'playlist_detail_screen.dart';
 
+/// Screen widget providing the user's playlists catalog list.
 class PlaylistScreen extends StatelessWidget {
+  /// Constructs a [PlaylistScreen] instance.
+  ///
+  /// [key] An optional key used for identifying the widget in the element tree.
   const PlaylistScreen({super.key});
 
+  /// Displays an input text dialog prompt to register a new playlist name.
+  ///
+  /// [context] Dynamic routing context.
   void _addPlaylist(BuildContext context) {
     final controller = TextEditingController();
 
@@ -31,7 +43,7 @@ class PlaylistScreen extends StatelessWidget {
               onPressed: () {
                 final name = controller.text.trim();
                 if (name.isNotEmpty) {
-                  context.read<MusicProvider>().createPlaylist(name);
+                  context.read<UserProvider>().createPlaylist(name);
                 }
                 Navigator.pop(dialogCtx);
               },
@@ -43,10 +55,18 @@ class PlaylistScreen extends StatelessWidget {
     );
   }
 
+  /// Removes the targeted playlist records from state memory.
+  ///
+  /// [context] Action trigger context.
+  /// [name] The identifier name of the playlist to delete.
   void _deletePlaylist(BuildContext context, String name) {
-    context.read<MusicProvider>().deletePlaylist(name);
+    context.read<UserProvider>().deletePlaylist(name);
   }
 
+  /// Pushes the playlist details screen route onto the navigation stack.
+  ///
+  /// [context] Navigation stack router.
+  /// [name] Playlist key identifier name.
   void _openPlaylist(BuildContext context, String name) {
     Navigator.push(
       context,
@@ -57,9 +77,12 @@ class PlaylistScreen extends StatelessWidget {
   }
 
   @override
+  /// Builds the playlist catalog collection grid screen.
+  ///
+  /// [context] The building context.
   Widget build(BuildContext context) {
-    final music = context.watch<MusicProvider>();
-    final playlists = music.playlistNames;
+    final user = context.watch<UserProvider>();
+    final playlists = user.playlists.keys.toList();
 
     return Scaffold(
       backgroundColor: kSurface,
@@ -77,7 +100,6 @@ class PlaylistScreen extends StatelessWidget {
           ),
         ),
         actions: [
-          // ── Add Playlist button in the app bar ───────────────────────
           GestureDetector(
             onTap: () => _addPlaylist(context),
             child: Container(
@@ -152,7 +174,8 @@ class PlaylistScreen extends StatelessWidget {
                   itemCount: playlists.length,
                   itemBuilder: (context, index) {
                     final name = playlists[index];
-                    final songCount = music.playlists[name]?.length ?? 0;
+                    final user = context.read<UserProvider>();
+                    final songCount = user.playlists[name]?.length ?? 0;
 
                     return GestureDetector(
                       onTap: () => _openPlaylist(context, name),
@@ -202,6 +225,7 @@ class PlaylistScreen extends StatelessWidget {
                             IconButton(
                               icon: const Icon(Icons.more_vert, color: kOnSurfaceVariant),
                               onPressed: () {
+                                // Triggers bottom sheet modals to request consent before executing custom playlist removals.
                                 showModalBottomSheet(
                                   context: context,
                                   backgroundColor: kSurface,

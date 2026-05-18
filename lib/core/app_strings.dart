@@ -1,59 +1,63 @@
-// ─── Route Names ──────────────────────────────────────────────────────────────
-// ignore_for_file: constant_identifier_names
+﻿/// File: lib/core/app_strings.dart
+/// Role: Manages global string constants, route definitions, and catalog categories
+/// throughout the TuneIn application to avoid hardcoded strings.
 
-class AppRoutes {
-  AppRoutes._();
-
-  static const String login = '/';
-  static const String shell = '/shell';
-  static const String player = '/player';
-}
-
-// ─── App Strings ─────────────────────────────────────────────────────────────
+/// Centralizes general localization string constants used in the user interface.
 class AppStrings {
+  /// Private constructor to prevent instantiation.
   AppStrings._();
 
+  /// Application brand name.
   static const String appName = 'TuneIn';
+
+  /// Brand tagline.
   static const String tagline = 'Tune into your world';
+
+  /// Home screen label.
   static const String home = 'Home';
+
+  /// Search screen label.
   static const String search = 'Search';
+
+  /// Now playing header label.
   static const String nowPlaying = 'Now Playing';
+
+  /// Profile screen label.
   static const String profile = 'Profile';
+
+  /// Playlists screen label.
   static const String playlists = 'Playlists';
+
+  /// Login button/header label.
   static const String login = 'Login';
+
+  /// Logout button label.
   static const String logout = 'Logout';
+
+  /// Email field label.
   static const String email = 'Email';
+
+  /// Password field label.
   static const String password = 'Password';
+
+  /// Welcome banner label.
   static const String welcomeBack = 'Welcome back 👋';
+
+  /// Sign up button/header label.
   static const String signup = 'Sign Up';
+
+  /// Create account header label.
   static const String createAccount = 'Create Account';
+
+  /// Under-login banner label.
   static const String signInToContinue = 'Sign in to continue listening.';
+
+  /// Personal information settings label.
   static const String personalInfo = 'Personal Info';
+
+  /// Navigation prompt for existing users.
   static const String alreadyHaveAcc = 'Already have an account?';
+
+  /// Navigation prompt for new users.
   static const String dontHaveAcc = "Don't have an account?";
-}
-
-// ─── Music Categories ────────────────────────────────────────────────────────
-class MusicCategories {
-  MusicCategories._();
-
-  static const String all = 'All';
-  static const String trending = 'Trending';
-  static const String loFi = 'Lo-Fi';
-  static const String indie = 'Indie';
-  static const String rnb = 'R&B';
-  static const String pop = 'Pop';
-  static const String jazz = 'Jazz';
-  static const String sad = 'Sad Songs';
-
-  static const List<String> all_categories = [
-    all,
-    trending,
-    loFi,
-    indie,
-    rnb,
-    pop,
-    jazz,
-    sad,
-  ];
 }

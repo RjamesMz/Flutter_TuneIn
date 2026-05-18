@@ -1,3 +1,7 @@
+﻿/// File: lib/services/supabase_service.dart
+/// Role: Provides administrative tools and database operations (publishing/deleting tracks,
+/// uploading storage assets to buckets, user-specific notifications, categories management).
+
 // ignore_for_file: avoid_print
 
 import 'dart:io';
@@ -5,13 +9,19 @@ import 'dart:typed_data';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:audioplayers/audioplayers.dart';
 
+/// Comprehensive data manager handling uploads, storage deletions, and real-time triggers in Supabase.
 class SupabaseService {
   SupabaseService._();
+
+  /// Global singleton instance of [SupabaseService].
   static final SupabaseService instance = SupabaseService._();
 
   final SupabaseClient _supabase = Supabase.instance.client;
 
   /// Upload an avatar image (as File) to Supabase Storage.
+  ///
+  /// [userId] The unique user database ID.
+  /// [imageFile] Local avatar picture file reference to upload.
   Future<String> uploadAvatar(String userId, File imageFile) async {
     final fileExt = imageFile.path.split('.').last;
     final fileName =
@@ -30,6 +40,11 @@ class SupabaseService {
   }
 
   /// Upload raw bytes to a bucket (works on Android emulator where path is null).
+  ///
+  /// [bucketName] The target storage bucket.
+  /// [path] Relative destination file path inside the bucket.
+  /// [bytes] Stream contents to upload.
+  /// [mimeType] MIME type string.
   Future<String> _uploadBytes(
     String bucketName,
     String path,
@@ -51,6 +66,15 @@ class SupabaseService {
   }
 
   /// Full flow: Upload audio bytes + optional cover image, then insert metadata into the songs table.
+  ///
+  /// [title] Human-readable song title.
+  /// [artist] The performing artist.
+  /// [album] Album classification.
+  /// [category] Genre categorization.
+  /// [audioBytes] Audio stream data content.
+  /// [audioFileName] Target filename of the audio asset.
+  /// [coverBytes] Optional picture data content.
+  /// [coverFileName] Optional filename of the picture asset.
   Future<void> publishSong({
     required String title,
     required String artist,
@@ -87,13 +111,12 @@ class SupabaseService {
       );
     }
 
-    // 3. Get actual duration using audioplayers
+    // 3. Employs a temporary AudioPlayer to read true track duration before recording rows.
     int durationSeconds = 0;
     try {
       final player = AudioPlayer();
       await player.setSourceUrl(audioUrl);
 
-      // Wait for duration to be parsed (it usually fires immediately after setting source)
       final duration = await player.getDuration();
       if (duration != null) {
         durationSeconds = duration.inSeconds;
@@ -132,6 +155,8 @@ class SupabaseService {
   }
 
   /// Delete a song by its id (primary key in `songs` table).
+  ///
+  /// [id] The primary key ID of the target song to delete.
   Future<void> deleteSong(dynamic id) async {
     // 1) Read the stored object URLs for audio and cover
     String? audioUrl;
@@ -148,7 +173,7 @@ class SupabaseService {
       }
     } catch (_) {}
 
-    // 2) Remove storage objects by extracting the path from the URL
+    // 2) Parses relative storage paths from absolute public URLs to execute bucket object deletions securely.
     try {
       if (audioUrl != null && audioUrl.contains('/public/songs/')) {
         final encodedPath = audioUrl.split('/public/songs/').last.split('?').first;
@@ -172,16 +197,19 @@ class SupabaseService {
     await _supabase.from('songs').delete().eq('id', id);
   }
 
-  // ── Global & User Real-time Notifications ─────────────────────────────────
 
+  /// Generates a real-time stream of notifications from database.
+  ///
+  /// [userId] Target user session ID.
   Stream<List<Map<String, dynamic>>> getNotificationsStream(String userId) {
-    // This will listen to notifications where user_id is NULL (global) OR matches the user
-    // Note: Supabase basic stream filters are limited, so we often listen to the whole table 
-    // and filter in the app, or use a more advanced approach. 
-    // For now, we'll keep it simple and filter in the app or use multiple streams.
     return _supabase.from('notifications').stream(primaryKey: ['id']).order('created_at', ascending: false);
   }
 
+  /// Logs a notification message in the remote table.
+  ///
+  /// [message] Alert body string.
+  /// [type] Alert semantic type index.
+  /// [userId] Optional specific target user recipient.
   Future<void> postNotification(String message, int type, {String? userId}) async {
     try {
       await _supabase.from('notifications').insert({
@@ -194,6 +222,9 @@ class SupabaseService {
     }
   }
 
+  /// Purges personal alerts from the database.
+  ///
+  /// [userId] Targeted user database ID.
   Future<void> clearUserNotifications(String userId) async {
     try {
       await _supabase.from('notifications').delete().eq('user_id', userId);
@@ -202,6 +233,7 @@ class SupabaseService {
     }
   }
 
+  /// Purges all global broadcast alerts from the database.
   Future<void> clearGlobalNotifications() async {
     try {
       await _supabase.from('notifications').delete().filter('user_id', 'is', null);
@@ -210,8 +242,10 @@ class SupabaseService {
     }
   }
 
-  // ── Playlist Management ──────────────────────────────────────────────────
 
+  /// Fetches playlist metadata records associated with the user ID.
+  ///
+  /// [userId] Targeted user database ID.
   Future<List<Map<String, dynamic>>> getUserPlaylists(String userId) async {
     final res = await _supabase
         .from('playlists')
@@ -221,6 +255,9 @@ class SupabaseService {
     return List<Map<String, dynamic>>.from(res);
   }
 
+  /// Retrieves list of song ID records configured in a specific playlist.
+  ///
+  /// [playlistId] Database primary key ID of the custom playlist.
   Future<List<String>> getSongsInPlaylist(int playlistId) async {
     final res = await _supabase
         .from('playlist_songs')
@@ -229,6 +266,10 @@ class SupabaseService {
     return (res as List).map((item) => item['song_id'] as String).toList();
   }
 
+  /// Inserts a new playlist record under the user's account ID.
+  ///
+  /// [userId] Current user database ID.
+  /// [name] Label name of the playlist to create.
   Future<int> createPlaylist(String userId, String name) async {
     final res = await _supabase.from('playlists').insert({
       'user_id': userId,
@@ -237,10 +278,17 @@ class SupabaseService {
     return res['id'] as int;
   }
 
+  /// Deletes a playlist record completely.
+  ///
+  /// [playlistId] Custom playlist database ID.
   Future<void> deletePlaylist(int playlistId) async {
     await _supabase.from('playlists').delete().eq('id', playlistId);
   }
 
+  /// Enrolls a song item under a playlist index.
+  ///
+  /// [playlistId] Custom playlist database ID.
+  /// [songId] Target song ID to register.
   Future<void> addSongToPlaylist(int playlistId, String songId) async {
     await _supabase.from('playlist_songs').insert({
       'playlist_id': playlistId,
@@ -248,6 +296,10 @@ class SupabaseService {
     });
   }
 
+  /// Deletes a song item relationship from a playlist index.
+  ///
+  /// [playlistId] Custom playlist database ID.
+  /// [songId] Target song ID to remove.
   Future<void> removeSongFromPlaylist(int playlistId, String songId) async {
     await _supabase
         .from('playlist_songs')
@@ -256,8 +308,8 @@ class SupabaseService {
         .eq('song_id', songId);
   }
 
-  // ── Category Management ──────────────────────────────────────────────────
 
+  /// Fetches genre categories list.
   Future<List<Map<String, String>>> getCategories() async {
     final res = await _supabase
         .from('categories')
@@ -269,6 +321,10 @@ class SupabaseService {
     }).toList();
   }
 
+  /// Registers a new category genre chip.
+  ///
+  /// [name] Genre label name.
+  /// [color] Hex color string.
   Future<void> addCategory(String name, String color) async {
     await _supabase.from('categories').insert({
       'name': name,
@@ -276,6 +332,9 @@ class SupabaseService {
     });
   }
 
+  /// Deletes a category genre chip from the database.
+  ///
+  /// [name] Genre name.
   Future<void> deleteCategory(String name) async {
     await _supabase.from('categories').delete().eq('name', name);
   }

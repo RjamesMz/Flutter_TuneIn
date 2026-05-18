@@ -1,3 +1,7 @@
+﻿/// File: lib/screens/user_screen/privacy_screen.dart
+/// Role: Static disclosure document screen detailing children privacy, copyright fair-use disclaimers,
+/// data capture scopes, storage models, and student/university authors contacts.
+
 // ignore_for_file: unnecessary_string_interpolations
 
 import 'package:flutter/material.dart';
@@ -5,10 +9,17 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../core/app_colors.dart';
 import '../../core/responsive_helper.dart';
 
+/// Screen widget displaying the university student project privacy terms and disclaimers.
 class PrivacyScreen extends StatelessWidget {
+  /// Constructs a [PrivacyScreen] instance.
+  ///
+  /// [key] An optional key used for identifying the widget in the element tree.
   const PrivacyScreen({super.key});
 
   @override
+  /// Builds the privacy terms rich text divisions inside styled cards.
+  ///
+  /// [context] The building context.
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final textStyle = theme.textTheme.bodyMedium?.copyWith(
@@ -314,6 +325,12 @@ class PrivacyScreen extends StatelessWidget {
     );
   }
 
+  /// Helper layout builder constructing card divisions.
+  ///
+  /// [context] Widget build context.
+  /// [title] Section header.
+  /// [icon] Leading decorator icon.
+  /// [child] Section content body.
   Widget _sectionCard(
     BuildContext context, {
     required String title,
@@ -368,6 +385,9 @@ class PrivacyScreen extends StatelessWidget {
     );
   }
 
+  /// Renders a concise metadata badge representation.
+  ///
+  /// [text] Chip label string.
   Widget _infoChip(String text) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -387,6 +407,11 @@ class PrivacyScreen extends StatelessWidget {
     );
   }
 
+  /// Formulates standard paragraph widgets with formatted line heights.
+  ///
+  /// [context] Dynamic building context.
+  /// [text] Content text.
+  /// [style] Optional text styling properties.
   Widget _paragraph(
     BuildContext context,
     String text, {
@@ -398,6 +423,11 @@ class PrivacyScreen extends StatelessWidget {
     );
   }
 
+  /// Constructs aligned bullet elements using custom row containers.
+  ///
+  /// [context] Dynamic building context.
+  /// [title] Bold leading title string.
+  /// [detail] Optional trailing description.
   Widget _bullet(BuildContext context, String title, [String? detail]) => Padding(
         padding: const EdgeInsets.symmetric(vertical: 5.0),
         child: Row(
@@ -438,4 +468,3 @@ class PrivacyScreen extends StatelessWidget {
         ),
       );
 }
-

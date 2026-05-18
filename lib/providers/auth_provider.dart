@@ -1,43 +1,53 @@
+﻿/// File: lib/providers/auth_provider.dart
+/// Role: Manages authentication, profile edits, and subscription state updates.
+/// Directs operations to [AuthService], updates local states reactively,
+/// and signals UI listeners to rebuild.
+
 import 'package:flutter/foundation.dart';
 import 'dart:io';
 import '../models/user.dart';
 import '../services/auth_service.dart';
 import '../providers/player_provider.dart';
 
-// ─── Auth Provider ────────────────────────────────────────────────────────────
 /// Manages authentication state: current user, loading status, and errors.
-//
 class AuthProvider extends ChangeNotifier {
-  // ── State ──────────────────────────────────────────────────────────────────
   User?   _currentUser;
   bool    _isLoading   = false;
   String? _errorMessage;
   final PlayerProvider? _playerProvider;
 
- 
+  /// Constructs an [AuthProvider] instance.
+  ///
+  /// [playerProvider] State provider injected to control audio when user logs out.
   AuthProvider({PlayerProvider? playerProvider}) : _playerProvider = playerProvider {
-    // Listen to AuthService changes (plan updates, etc)
+    // Listens to global AuthService changes to automatically sync user instance states.
     AuthService.instance.addListener(_onAuthServiceChanged);
   }
 
+  /// Synchronizes local user properties with current [AuthService] session states.
   void _onAuthServiceChanged() {
     _currentUser = AuthService.instance.currentUser;
     notifyListeners();
   }
 
   @override
+  /// Clears active listeners on service disposal.
   void dispose() {
     AuthService.instance.removeListener(_onAuthServiceChanged);
     super.dispose();
   }
 
-  // ── Getters ────────────────────────────────────────────────────────────────
+  /// Retrieves the currently authenticated [User] profile model.
   User?   get currentUser   => _currentUser;
-  bool    get isLoading     => _isLoading;
-  bool    get isLoggedIn    => _currentUser != null;
-  String? get errorMessage  => _errorMessage;
 
-  // ── Actions ────────────────────────────────────────────────────────────────
+  /// Returns true if an authentication or profile transaction is pending.
+  bool    get isLoading     => _isLoading;
+
+  /// Returns true if a user profile is actively authenticated.
+  bool    get isLoggedIn    => _currentUser != null;
+
+  /// Returns the current error string from failed authentication attempts.
+  String? get errorMessage  => _errorMessage;
 
   /// Checks if the user is already logged in from a previous session.
   Future<void> checkAuthStatus() async {
@@ -51,6 +61,9 @@ class AuthProvider extends ChangeNotifier {
   }
 
   /// Calls [AuthService.login] and updates state accordingly.
+  ///
+  /// [email] Account identifier.
+  /// [password] Account security password.
   Future<bool> login(String email, String password) async {
     _isLoading    = true;
     _errorMessage = null;
@@ -71,6 +84,14 @@ class AuthProvider extends ChangeNotifier {
   }
 
   /// Calls [AuthService.signup] and updates state accordingly.
+  ///
+  /// [name] User display name.
+  /// [email] Target email.
+  /// [username] Selected unique identifier profile handle.
+  /// [password] Account security password.
+  /// [phone] Optional contact number.
+  /// [dateOfBirth] Optional user birthday string.
+  /// [gender] Optional user self-identified gender.
   Future<bool> signup({
     required String name,
     required String email,
@@ -111,6 +132,7 @@ class AuthProvider extends ChangeNotifier {
     _isLoading = true;
     notifyListeners();
 
+    // Halts active music tracks during logout sequence to prevent unauthorized background streaming.
     await _playerProvider?.stop();
     await AuthService.instance.logout();
 
@@ -126,12 +148,15 @@ class AuthProvider extends ChangeNotifier {
   }
 
   /// Updates the current user's subscription plan.
+  ///
+  /// [planId] The target plan identifier.
   void updatePlan(String planId) {
     AuthService.instance.updateCurrentUserPlan(planId);
-    // _onAuthServiceChanged will be called automatically by AuthService.notifyListeners()
   }
 
   /// Upload a new avatar image file and update the current user.
+  ///
+  /// [imageFile] Target image file path reference to upload.
   Future<bool> updateAvatar(File imageFile) async {
     if (_currentUser == null) return false;
     _isLoading = true;
@@ -150,7 +175,13 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  /// Updates user profile details
+  /// Updates user profile details.
+  ///
+  /// [name] Updated display name.
+  /// [username] Updated unique handle identifier.
+  /// [phone] Updated contact phone number.
+  /// [dateOfBirth] Updated birth date string.
+  /// [gender] Updated gender label.
   Future<bool> updateUserProfile({
     String? name,
     String? username,

@@ -1,3 +1,6 @@
+﻿/// File: lib/screens/admin_screen/manage_songs_screen.dart
+/// Role: Screen where administrators view the total music catalog and execute database/storage deletions.
+
 // ignore_for_file: unnecessary_underscores, use_build_context_synchronously
 
 import 'package:flutter/material.dart';
@@ -5,27 +8,35 @@ import 'package:tunely/services/supabase_service.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../providers/music_provider.dart';
+import '../../providers/admin_provider.dart';
 import '../../core/app_colors.dart';
 import '../../core/responsive_helper.dart';
 
+/// Screen widget for viewing the list of published songs and deleting records.
 class ManageSongsScreen extends StatefulWidget {
+  /// Constructs a [ManageSongsScreen] instance.
+  ///
+  /// [key] An optional key used for identifying the widget in the element tree.
   const ManageSongsScreen({super.key});
 
   @override
   State<ManageSongsScreen> createState() => _ManageSongsScreenState();
 }
 
+/// State controller for managing catalog loads and deletions in [ManageSongsScreen].
 class _ManageSongsScreenState extends State<ManageSongsScreen> {
   bool _loading = true;
   List<Map<String, dynamic>> _songs = [];
   String _selectedCategory = 'All';
 
   @override
+  /// Loads initial songs list on screen bootstrap.
   void initState() {
     super.initState();
     _loadSongs();
   }
 
+  /// Calls SupabaseService to fetch all available song metadata records.
   Future<void> _loadSongs() async {
     setState(() => _loading = true);
     try {
@@ -40,6 +51,9 @@ class _ManageSongsScreenState extends State<ManageSongsScreen> {
     }
   }
 
+  /// Displays confirmation dialog and triggers song removal from storage and database.
+  ///
+  /// [id] The primary key ID of the target song to delete.
   Future<void> _confirmAndDelete(dynamic id) async {
     final ok = await showDialog<bool>(
       context: context,
@@ -64,23 +78,24 @@ class _ManageSongsScreenState extends State<ManageSongsScreen> {
         title = item['title'] ?? title;
       } catch (_) {}
 
-      await SupabaseService.instance.deleteSong(id);
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Song deleted')));
-      
-      try {
-        Provider.of<MusicProvider>(context, listen: false).addSongDeletedNotification('Deleted song: "$title"');
-      } catch (_) {}
+      final musicProvider = Provider.of<MusicProvider>(context, listen: false);
+      await Provider.of<AdminProvider>(context, listen: false).deleteSong(
+        musicProvider: musicProvider,
+        id: id,
+        title: title,
+      );
 
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Song deleted')));
       await _loadSongs();
-      try {
-        await Provider.of<MusicProvider>(context, listen: false).fetchSongs();
-      } catch (_) {}
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Delete failed: $e')));
     }
   }
 
   @override
+  /// Builds the catalog manager list with category filter chips.
+  ///
+  /// [context] The widget build context.
   Widget build(BuildContext context) {
     final music = context.watch<MusicProvider>();
     final categories = ['All', ...music.categoryNames];
@@ -94,7 +109,6 @@ class _ManageSongsScreenState extends State<ManageSongsScreen> {
       body: ResponsiveWrapper(
         child: Column(
           children: [
-            // ── Gradient Header ───────────────────────────────────────────
             Container(
               width: double.infinity,
               decoration: const BoxDecoration(
@@ -132,7 +146,6 @@ class _ManageSongsScreenState extends State<ManageSongsScreen> {
               ),
             ),
 
-            // ── Category Filter ───────────────────────────────────────────
             Padding(
               padding: const EdgeInsets.only(top: 16),
               child: SingleChildScrollView(
@@ -173,7 +186,6 @@ class _ManageSongsScreenState extends State<ManageSongsScreen> {
             const SizedBox(height: 12),
             const Divider(height: 1),
 
-            // ── Song List ──────────────────────────────────────────────────
             Expanded(
               child: _loading
                   ? const Center(child: CircularProgressIndicator(color: kPrimary))

@@ -1,3 +1,7 @@
+/// File: lib/screens/user_screen/personal_info_screen.dart
+/// Role: Screen where users manage their personal details (DOB, gender, name, phone)
+/// and view current subscription packages and tier benefits. Supports profile picture upload.
+
 // ignore_for_file: unnecessary_const, unnecessary_underscores, use_build_context_synchronously
 
 import 'package:flutter/material.dart';
@@ -13,13 +17,21 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import '../../providers/auth_provider.dart';
 
-
+/// Screen widget displaying editable personal user profile attributes and subscription benefits.
 class PersonalInfoScreen extends StatelessWidget {
+  /// Custom fallback user instance structure if AuthProvider state is unhydrated.
   final User? user;
+
+  /// Constructs a [PersonalInfoScreen] instance.
+  ///
+  /// [key] An optional key used for identifying the widget in the element tree.
+  /// [user] Fallback user profile reference.
   const PersonalInfoScreen({super.key, this.user});
-  
-  
+
   @override
+  /// Builds the profile management screen.
+  ///
+  /// [context] The building context.
   Widget build(BuildContext context) {
     return Consumer<AuthProvider>(
       builder: (context, authProvider, child) {
@@ -72,6 +84,8 @@ class PersonalInfoScreen extends StatelessWidget {
                           );
                           if (picked == null) return;
                           final file = File(picked.path);
+                          
+                          // Submits the local avatar photo to Supabase storage administrative buckets.
                           final success = await authProvider.updateAvatar(file);
                           ScaffoldMessenger.of(context).clearSnackBars();
                           ScaffoldMessenger.of(context).showSnackBar(
@@ -350,6 +364,9 @@ class PersonalInfoScreen extends StatelessWidget {
     );
   }
   
+  /// Helper logic to format birthdate elements.
+  ///
+  /// [iso] ISO date representation string.
   String _formatDob(String? iso) {
     if (iso == null) return '—';
     try {
@@ -370,12 +387,22 @@ class PersonalInfoScreen extends StatelessWidget {
         'November',
         'December',
       ];
+      // Formulates a formatted birth date representation using clean monthly lookup lists.
       return '${parts[2]} ${months[int.parse(parts[1])]} ${parts[0]}';
     } catch (_) {
       return iso;
     }
   }
 
+  /// Displays general text controllers in dialog forms to edit strings.
+  ///
+  /// [context] Building routing context.
+  /// [title] Property key name.
+  /// [currentValue] Populated default string.
+  /// [onSave] Save actions callback.
+  /// [hint] Form text suggestion.
+  /// [keyboardType] Native layout input key types.
+  /// [inputFormatters] Whitelist validation character regex tools.
   void _showEditDialog(
     BuildContext context,
     String title,
@@ -422,6 +449,11 @@ class PersonalInfoScreen extends StatelessWidget {
     );
   }
 
+  /// Launches the native platform date picker wrapper modal.
+  ///
+  /// [context] Dialog context.
+  /// [currentDob] Existing DOB string reference.
+  /// [authProvider] Core authentication state manager.
   Future<void> _pickDob(BuildContext context, String? currentDob, AuthProvider authProvider) async {
     DateTime initialDate = DateTime(2000);
     if (currentDob != null) {
@@ -451,6 +483,11 @@ class PersonalInfoScreen extends StatelessWidget {
     }
   }
 
+  /// Renders a modal selection dropdown list dialog to pick user gender.
+  ///
+  /// [context] Dynamic route builder context.
+  /// [currentGender] Current gender string reference.
+  /// [authProvider] Authentication state manager.
   void _showGenderEditDialog(BuildContext context, String? currentGender, AuthProvider authProvider) {
     String? selectedGender = currentGender;
     const genders = ['Male', 'Female', 'Non-binary', 'Prefer not to say'];
@@ -499,10 +536,17 @@ class PersonalInfoScreen extends StatelessWidget {
   }
 }
 
-// ─── Section Header ───────────────────────────────────────────────────────────
+/// Custom decorative section headers.
 class _SectionHeader extends StatelessWidget {
+  /// Primary visual section title.
   final String title;
+
+  /// Constructs a [_SectionHeader] instance.
+  ///
+  /// [key] An optional key.
+  /// [title] Text title content.
   const _SectionHeader({required this.title});
+
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -517,10 +561,18 @@ class _SectionHeader extends StatelessWidget {
     );
   }
 }
-// ─── Info Card ────────────────────────────────────────────────────────────────
+
+/// Unified card container hosting individual configuration row widgets.
 class _InfoCard extends StatelessWidget {
+  /// Row items wrapped in the layout.
   final List<Widget> children;
+
+  /// Constructs a [_InfoCard] instance.
+  ///
+  /// [key] An optional key.
+  /// [children] The list of row list tiles inside the card.
   const _InfoCard({required this.children});
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -529,14 +581,32 @@ class _InfoCard extends StatelessWidget {
     );
   }
 }
-// ─── Info Row ─────────────────────────────────────────────────────────────────
+
+/// Individual configuration row containing visual icons and labels.
 class _InfoRow extends StatelessWidget {
+  /// Decorator icon.
   final IconData icon;
+
+  /// Input prompt label string.
   final String label;
+
+  /// Value content representing properties.
   final String value;
+
+  /// Boolean check to hide borders for last elements.
   final bool isLast;
+
+  /// Callback tap listener.
   final VoidCallback? onTap;
 
+  /// Constructs a [_InfoRow] instance.
+  ///
+  /// [key] An optional key.
+  /// [icon] Display leading icon.
+  /// [label] Top label prompt.
+  /// [value] Dynamic text value.
+  /// [isLast] Boolean to hide divider.
+  /// [onTap] Optional edit callback.
   const _InfoRow({
     required this.icon,
     required this.label,
@@ -584,13 +654,35 @@ class _InfoRow extends StatelessWidget {
     return content;
   }
 }
-// ─── Benefit Row ──────────────────────────────────────────────────────────────
+
+/// Highlighting items available under designated subscriptions tiers.
 class _BenefitRow extends StatelessWidget {
+  /// Visual icon indicating target benefit.
   final IconData icon;
+
+  /// Name string describing benefit.
   final String label;
+
+  /// Checked state showing if the benefit is included.
   final bool enabled;
+
+  /// Boolean check to hide bottom border divider for cards list elements.
   final bool isLast;
-  const _BenefitRow({required this.icon, required this.label, required this.enabled, this.isLast = false});
+
+  /// Constructs a [_BenefitRow] instance.
+  ///
+  /// [key] An optional key.
+  /// [icon] Display leading icon.
+  /// [label] Benefit title.
+  /// [enabled] Boolean showing if active under current plan tier.
+  /// [isLast] Boolean to hide bottom divider border.
+  const _BenefitRow({
+    required this.icon,
+    required this.label,
+    required this.enabled,
+    this.isLast = false,
+  });
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -652,4 +744,3 @@ Widget _buildAvatarImage(String? avatarUrl) {
     errorBuilder: (_, __, ___) => _avatarFallback(),
   );
 }
-

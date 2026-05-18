@@ -1,3 +1,7 @@
+﻿/// File: lib/services/download_service.dart
+/// Role: Handles downloading audio tracks and cover art assets to the device,
+/// and registers downloaded index entries in a local SQLite database to manage offline playback.
+
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
@@ -6,16 +10,20 @@ import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart' as p;
 import '../models/song.dart';
 
+/// Service responsible for managing offline song downloads and database records.
 class DownloadService {
   DownloadService._();
+
+  /// Global singleton instance of [DownloadService].
   static final DownloadService instance = DownloadService._();
 
   Database? _db;
   final Dio _dio = Dio();
 
-  /// Whether downloads are supported on this platform
+  /// Whether downloads are supported on the current runtime platform.
   bool get isSupported => !kIsWeb && (Platform.isAndroid || Platform.isIOS);
 
+  /// Lazily initializes and retrieves the local SQLite database.
   Future<Database?> get database async {
     if (!isSupported) return null;
     if (_db != null) return _db!;
@@ -23,10 +31,12 @@ class DownloadService {
     return _db!;
   }
 
+  /// Sets up database connection and schema configurations.
   Future<Database> _initDB() async {
     final dbPath = await getDatabasesPath();
     final path = p.join(dbPath, 'downloads.db');
 
+    // Builds the localized schema to cache track columns for robust SQL search filters offline.
     return await openDatabase(
       path,
       version: 1,
@@ -48,6 +58,9 @@ class DownloadService {
   }
 
   /// Downloads a song and saves it to local storage & SQLite.
+  ///
+  /// [song] The track metadata containing remote streaming URLs to download.
+  /// [onProgress] Optional callback to stream download percentage updates to UI.
   Future<Song> downloadSong(Song song, Function(double)? onProgress) async {
     if (!isSupported) return song;
 
@@ -68,7 +81,7 @@ class DownloadService {
       );
     }
 
-    // 2. Download Cover (best-effort)
+    // 2. Download Cover (best-effort basis to avoid failing the overall song download transaction)
     if (song.coverUrl.startsWith('http')) {
       try {
         await _dio.download(song.coverUrl, coverSavePath);
@@ -110,7 +123,7 @@ class DownloadService {
     return localSong;
   }
 
-  /// Fetch all downloaded songs from SQLite
+  /// Fetch all downloaded songs from SQLite.
   Future<List<Song>> getDownloadedSongs() async {
     if (!isSupported) return [];
     final db = await database;
@@ -128,14 +141,17 @@ class DownloadService {
     )).toList();
   }
 
-  /// Delete a downloaded song from storage and SQLite
+  /// Delete a downloaded song from storage and SQLite.
+  ///
+  /// [song] The song model containing localized file paths to delete.
   Future<void> deleteDownload(Song song) async {
     if (!isSupported) return;
     final db = await database;
     if (db != null) {
       await db.delete('downloaded_songs', where: 'id = ?', whereArgs: [song.id]);
     }
-    // Delete local files
+    
+    // Deletes raw files from document directory to free up space on user device.
     if (!song.audioUrl.startsWith('http')) {
       final audioFile = File(song.audioUrl);
       if (await audioFile.exists()) await audioFile.delete();
@@ -146,7 +162,9 @@ class DownloadService {
     }
   }
 
-  /// Get local audio path if the song is downloaded
+  /// Get local audio path if the song is downloaded.
+  ///
+  /// [id] The targeted song ID.
   Future<String?> getLocalAudioPath(String id) async {
     if (!isSupported) return null;
     final db = await database;

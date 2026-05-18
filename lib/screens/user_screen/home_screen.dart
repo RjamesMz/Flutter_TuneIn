@@ -1,3 +1,7 @@
+/// File: lib/screens/user_screen/home_screen.dart
+/// Role: Renders the primary user landing dashboard tab. Offers genre category chips,
+/// a featured song banner, pull-to-refresh feeds, and standard catalog list views.
+
 // ignore_for_file: unnecessary_underscores, annotate_overrides
 
 import 'package:flutter/material.dart';
@@ -5,7 +9,6 @@ import 'package:provider/provider.dart';
 import 'package:tunely/models/song.dart';
 import 'package:tunely/screens/user_screen/personal_info_screen.dart';
 import '../../core/app_colors.dart';
-import '../../core/app_strings.dart';
 import '../../core/responsive_helper.dart';
 import '../../widgets/category_chip.dart';
 import '../../widgets/song_tile.dart';
@@ -13,26 +16,36 @@ import '../../providers/music_provider.dart';
 import '../../providers/player_provider.dart';
 import '../../providers/auth_provider.dart';
 
+/// Screen widget displaying the home browse tab for regular users.
 class HomeScreen extends StatefulWidget {
+  /// Constructs a [HomeScreen] instance.
+  ///
+  /// [key] An optional key used for identifying the widget in the element tree.
   const HomeScreen({super.key});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
+/// State controller for managing catalog loads and sliver scroll effects in [HomeScreen].
 class _HomeScreenState extends State<HomeScreen> {
+  /// Invokes initial song loading once the screen is fully constructed.
   void initState() {
     super.initState();
-    // Kick off data load after first frame
+    
+    // Triggers initial asynchronous song catalog fetching after the screen renders to ensure smooth animation frames.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<MusicProvider>().fetchSongs();
     });
   }
 
   @override
+  /// Builds the scrollable browse layout with sliver components.
+  ///
+  /// [context] The building context.
   Widget build(BuildContext context) {
     final music = context.watch<MusicProvider>();
-    final categories = [MusicCategories.all, ...music.categoryNames];
+    final categories = ['All', ...music.categoryNames];
     final selectedCategory = music.selectedCategory;
 
     return ResponsiveWrapper(
@@ -98,7 +111,6 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
 
-            // ── Featured Banner ────────────────────────────────────────────────
             SliverToBoxAdapter(
               child: _FeaturedBanner(
                 song: music.allSongs.isNotEmpty ? music.allSongs.first : null,
@@ -106,7 +118,6 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
 
-            // ── Browse + Category Chips ────────────────────────────────────────
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(16, 20, 0, 8),
@@ -143,7 +154,6 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
 
-            // ── Song List ──────────────────────────────────────────────────────
             if (music.isLoading)
               const SliverFillRemaining(
                 child: Center(child: CircularProgressIndicator(color: kPrimary)),
@@ -188,14 +198,25 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-// ── Featured Banner ────────────────────────────────────────────────────────────
+/// A banner widget showcasing a highlighted track on the user home view.
 class _FeaturedBanner extends StatelessWidget {
+  /// Highlighted song displayed on the banner.
   final Song? song;
+
+  /// Full queue fallback sequence for playback context.
   final List<Song> allSongs;
 
+  /// Constructs a [_FeaturedBanner] instance.
+  ///
+  /// [key] An optional key.
+  /// [song] Highlighted song track.
+  /// [allSongs] Complete catalog sequence list.
   const _FeaturedBanner({this.song, required this.allSongs});
 
   @override
+  /// Renders the highlighted card stack containing metadata overlays.
+  ///
+  /// [context] The building context.
   Widget build(BuildContext context) {
     if (song == null) {
       return const SizedBox(height: 180);

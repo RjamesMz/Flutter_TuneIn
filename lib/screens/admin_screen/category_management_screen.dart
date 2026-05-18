@@ -1,50 +1,69 @@
+﻿/// File: lib/screens/admin_screen/category_management_screen.dart
+/// Role: Screen where administrators define new genre categories (with custom colors)
+/// and delete unused genres from the database.
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/app_colors.dart';
 import '../../core/responsive_helper.dart';
 import '../../providers/music_provider.dart';
+import '../../providers/admin_provider.dart';
 
+/// Screen widget for managing the database's available song genres.
 class CategoryManagementScreen extends StatefulWidget {
+  /// Constructs a [CategoryManagementScreen] instance.
+  ///
+  /// [key] An optional key used for identifying the widget in the element tree.
   const CategoryManagementScreen({super.key});
 
   @override
-  State<CategoryManagementScreen> createState() => _CategoryManagementScreenState();
+  State<CategoryManagementScreen> createState() =>
+      _CategoryManagementScreenState();
 }
 
+/// State controller for managing inputs and updates in [CategoryManagementScreen].
 class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
   final _nameController = TextEditingController();
   Color _selectedColor = const Color(0xFF3B6B8A);
 
   final List<Color> _presetColors = [
-    const Color(0xFF9D3756), // Trending
-    const Color(0xFF7C3F8A), // Pop
-    const Color(0xFF3B6B8A), // Lo-Fi
-    const Color(0xFF4A6741), // Indie
-    const Color(0xFF8A4A3B), // R&B
-    const Color(0xFF5C4A8A), // Jazz
-    const Color(0xFF5C728A), // Sad
-    const Color(0xFFE67E22), // Orange
-    const Color(0xFF16A085), // Teal
-    const Color(0xFF2980B9), // Blue
-    const Color(0xFF8E44AD), // Purple
-    const Color(0xFF2C3E50), // Navy
+    const Color(0xFF9D3756),
+    const Color(0xFF7C3F8A),
+    const Color(0xFF3B6B8A),
+    const Color(0xFF4A6741),
+    const Color(0xFF8A4A3B),
+    const Color(0xFF5C4A8A),
+    const Color(0xFFE67E22),
+    const Color(0xFF16A085),
+    const Color(0xFF2980B9),
+    const Color(0xFF8E44AD),
+    const Color(0xFF2C3E50),
   ];
 
+  /// Converts a [Color] instance to a hex string code.
+  ///
+  /// [color] The target color instance to read.
   String _colorToHex(Color color) {
+    // Converts Flutter Color integers to database-compatible hex format strings.
     return '#${color.value.toRadixString(16).padLeft(8, '0').substring(2).toUpperCase()}';
   }
 
+  /// Triggers a write command to register the new category name and color.
   void _addCategory() {
     final name = _nameController.text.trim();
     if (name.isEmpty) return;
 
     final hex = _colorToHex(_selectedColor);
-    context.read<MusicProvider>().addCategory(name, hex);
+    final music = context.read<MusicProvider>();
+    context.read<AdminProvider>().addCategory(music, name, hex);
     _nameController.clear();
     FocusScope.of(context).unfocus();
   }
 
+  /// Displays a validation dialog box requesting delete consent.
+  ///
+  /// [name] The name of the category to remove.
   void _confirmDelete(String name) {
     showDialog(
       context: context,
@@ -52,10 +71,14 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
         title: const Text('Delete Category'),
         content: Text('Are you sure you want to delete "$name"?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
           TextButton(
             onPressed: () {
-              context.read<MusicProvider>().deleteCategory(name);
+              final music = context.read<MusicProvider>();
+              context.read<AdminProvider>().deleteCategory(music, name);
               Navigator.pop(ctx);
             },
             child: const Text('Delete', style: TextStyle(color: Colors.red)),
@@ -66,12 +89,16 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
   }
 
   @override
+  /// Disposes controllers on widget destroy.
   void dispose() {
     _nameController.dispose();
     super.dispose();
   }
 
   @override
+  /// Builds the screen layout containing the category creation card and the existing genres list.
+  ///
+  /// [context] The widget build context.
   Widget build(BuildContext context) {
     final music = context.watch<MusicProvider>();
     final categories = music.categories;
@@ -85,7 +112,9 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
-        flexibleSpace: Container(decoration: const BoxDecoration(gradient: kSoulGradient)),
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(gradient: kSoulGradient),
+        ),
         iconTheme: const IconThemeData(color: Colors.white),
         titleTextStyle: const TextStyle(color: Colors.white, fontSize: 20),
       ),
@@ -120,7 +149,10 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    const Text('Pick a Color', style: TextStyle(fontWeight: FontWeight.bold)),
+                    const Text(
+                      'Pick a Color',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
                     const SizedBox(height: 12),
                     Wrap(
                       spacing: 10,
@@ -136,14 +168,27 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
                               color: color,
                               shape: BoxShape.circle,
                               border: Border.all(
-                                color: isSelected ? kPrimary : Colors.transparent,
+                                color: isSelected
+                                    ? kPrimary
+                                    : Colors.transparent,
                                 width: 3,
                               ),
-                              boxShadow: isSelected ? [
-                                BoxShadow(color: color.withAlpha(100), blurRadius: 8)
-                              ] : null,
+                              boxShadow: isSelected
+                                  ? [
+                                      BoxShadow(
+                                        color: color.withAlpha(100),
+                                        blurRadius: 8,
+                                      ),
+                                    ]
+                                  : null,
                             ),
-                            child: isSelected ? const Icon(Icons.check, color: Colors.white, size: 20) : null,
+                            child: isSelected
+                                ? const Icon(
+                                    Icons.check,
+                                    color: Colors.white,
+                                    size: 20,
+                                  )
+                                : null,
                           ),
                         );
                       }).toList(),
@@ -155,9 +200,14 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
                         backgroundColor: kPrimary,
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
                       ),
-                      child: const Text('Add Category', style: TextStyle(fontWeight: FontWeight.bold)),
+                      child: const Text(
+                        'Add Category',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
                     ),
                   ],
                 ),
@@ -171,13 +221,20 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
               child: categories.isEmpty
                   ? const Center(child: Text('No categories found.'))
                   : ListView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 8,
+                      ),
                       itemCount: categories.length,
                       itemBuilder: (context, index) {
                         final cat = categories[index];
                         final name = cat['name']!;
                         final colorHex = cat['color']!;
-                        final color = Color(int.parse(colorHex.replaceFirst('#', '0xFF')));
+
+                        // Formulates a Color instance from database hex value strings.
+                        final color = Color(
+                          int.parse(colorHex.replaceFirst('#', '0xFF')),
+                        );
 
                         return Card(
                           margin: const EdgeInsets.only(bottom: 10),
@@ -198,10 +255,16 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
                             ),
                             title: Text(
                               name,
-                              style: const TextStyle(fontWeight: FontWeight.bold, color: kOnSurface),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: kOnSurface,
+                              ),
                             ),
                             trailing: IconButton(
-                              icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent),
+                              icon: const Icon(
+                                Icons.delete_outline_rounded,
+                                color: Colors.redAccent,
+                              ),
                               onPressed: () => _confirmDelete(name),
                             ),
                           ),

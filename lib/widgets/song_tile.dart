@@ -1,3 +1,7 @@
+/// File: lib/widgets/song_tile.dart
+/// Role: Interactive list tile showing track durations, names, cover arts, and active play indicators.
+/// Supports liking, downloading, and adding songs to custom playlists via a Bottom Sheet overlay.
+
 // ignore_for_file: unnecessary_underscores
 
 import 'package:flutter/material.dart';
@@ -5,18 +9,27 @@ import 'package:provider/provider.dart';
 
 import '../core/app_colors.dart';
 import '../models/song.dart';
-import '../providers/music_provider.dart';
+import '../providers/user_provider.dart';
 import '../providers/player_provider.dart';
 import '../providers/auth_provider.dart';
 
-// ─── Song Tile ────────────────────────────────────────────────────────────────
-/// A reusable list tile that displays a [Song].
-/// Tapping it calls [PlayerProvider.play] with the full [queue].
+/// Highly customizable track card component loaded inside catalog lists.
 class SongTile extends StatelessWidget {
+  /// Selected track model parameters.
   final Song       song;
-  final List<Song> queue;          // sibling songs for next/prev
+
+  /// Complete queue list for active track context.
+  final List<Song> queue;
+
+  /// Check showing if likes, playlists, and downloads buttons should be displayed.
   final bool       showActions;
 
+  /// Constructs a [SongTile] instance.
+  ///
+  /// [key] An optional key used for identifying the widget in the element tree.
+  /// [song] Active Song model data.
+  /// [queue] Complete sibling songs list.
+  /// [showActions] Visual actions display indicator.
   const SongTile({
     super.key,
     required this.song,
@@ -25,15 +38,18 @@ class SongTile extends StatelessWidget {
   });
 
   @override
+  /// Builds the animated song card tile layout.
+  ///
+  /// [context] The building context.
   Widget build(BuildContext context) {
     final player       = context.watch<PlayerProvider>();
-    final music        = context.watch<MusicProvider>();
+    final user         = context.watch<UserProvider>();
     final isCurrentSong = player.currentSong == song;
     final isPlaying     = isCurrentSong && player.isPlaying;
-    final isLiked       = music.isLiked(song.id);
+    final isLiked       = user.isLiked(song.id);
     final auth          = context.watch<AuthProvider>();
     final isPremium     = auth.currentUser?.plan != 'free';
-    final isDownloaded  = music.isDownloaded(song.id);
+    final isDownloaded  = user.isDownloaded(song.id);
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 250),
@@ -44,7 +60,7 @@ class SongTile extends StatelessWidget {
             : kSurfaceContainerLow,
         borderRadius: BorderRadius.circular(16),
         border: isCurrentSong
-          ? Border.all(color: kPrimary.withAlpha(64), width: 1.5)
+          ? Border.all(color: kPrimary.withValues(alpha: 0.25), width: 1.5)
           : null,
       ),
       child: InkWell(
@@ -54,7 +70,6 @@ class SongTile extends StatelessWidget {
           padding: const EdgeInsets.all(10),
           child: Row(
             children: [
-              // ── Cover Art ────────────────────────────────────────────────
               Stack(
                 children: [
                   ClipRRect(
@@ -76,7 +91,7 @@ class SongTile extends StatelessWidget {
                     Positioned.fill(
                       child: Container(
                         decoration: BoxDecoration(
-                          color: kPrimary.withAlpha(102),
+                          color: kPrimary.withValues(alpha: 0.4),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Icon(
@@ -89,7 +104,6 @@ class SongTile extends StatelessWidget {
                 ],
               ),
               const SizedBox(width: 14),
-              // ── Title + Artist ────────────────────────────────────────────
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -117,7 +131,6 @@ class SongTile extends StatelessWidget {
                   ],
                 ),
               ),
-              // ── Duration / Equalizer ───────────────────────────────────────
               if (isCurrentSong)
                 const Padding(
                   padding: EdgeInsets.only(right: 4),
@@ -134,10 +147,9 @@ class SongTile extends StatelessWidget {
                     ),
                   ),
                 ),
-              // ── Like Button ────────────────────────────────────────────────
               if (showActions)
                 GestureDetector(
-                  onTap: () => context.read<MusicProvider>().toggleLike(song.id),
+                  onTap: () => context.read<UserProvider>().toggleLike(song.id),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 4),
                     child: AnimatedSwitcher(
@@ -153,7 +165,6 @@ class SongTile extends StatelessWidget {
                     ),
                   ),
                 ),
-              // ── Add to Playlist Button ─────────────────────────────────────
               if (showActions)
                 GestureDetector(
                   onTap: () => _showPlaylistSheet(context),
@@ -166,15 +177,14 @@ class SongTile extends StatelessWidget {
                     ),
                   ),
                 ),
-              // ── Download Button ────────────────────────────────────────────
               if (showActions && isPremium)
                 GestureDetector(
                   onTap: () {
                     if (isDownloaded) {
-                      music.removeDownload(song);
+                      user.removeDownload(song);
                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Removed download: ${song.title}')));
                     } else {
-                      music.downloadSong(song);
+                      user.downloadSong(song);
                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Downloading: ${song.title}')));
                     }
                   },
@@ -194,9 +204,9 @@ class SongTile extends StatelessWidget {
     );
   }
 
-  /// Shows a bottom sheet to pick or create a playlist.
+  /// Opens the playlist sheet dialogue.
   void _showPlaylistSheet(BuildContext context) {
-    final music = context.read<MusicProvider>();
+    final user = context.read<UserProvider>();
 
     showModalBottomSheet(
       context: context,
@@ -206,27 +216,37 @@ class SongTile extends StatelessWidget {
       ),
       builder: (_) => _PlaylistBottomSheet(
         song: song,
-        music: music,
+        user: user,
       ),
     );
   }
 }
 
-// ─── Playlist Bottom Sheet ────────────────────────────────────────────────────
+/// Modal panel sheet rendering checklists of custom playlists to append new songs.
 class _PlaylistBottomSheet extends StatefulWidget {
+  /// Target song to append.
   final Song song;
-  final MusicProvider music;
 
-  const _PlaylistBottomSheet({required this.song, required this.music});
+  /// Custom provider managing active user state library operations.
+  final UserProvider user;
+
+  /// Constructs a [_PlaylistBottomSheet] instance.
+  ///
+  /// [key] An optional key.
+  /// [song] Selected Song instance.
+  /// [user] Active UserProvider instance.
+  const _PlaylistBottomSheet({required this.song, required this.user});
 
   @override
   State<_PlaylistBottomSheet> createState() => _PlaylistBottomSheetState();
 }
 
+/// State controller managing checkmarks list updates on [_PlaylistBottomSheet].
 class _PlaylistBottomSheetState extends State<_PlaylistBottomSheet> {
   @override
+  /// Builds the playlists selection list inside sheet frames.
   Widget build(BuildContext context) {
-    final names = widget.music.playlistNames;
+    final names = widget.user.playlists.keys.toList();
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 20, 16, 24),
@@ -234,7 +254,6 @@ class _PlaylistBottomSheetState extends State<_PlaylistBottomSheet> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Header ─────────────────────────────────────────────────────
           Row(
             children: [
               const Icon(Icons.playlist_add, color: kPrimary, size: 22),
@@ -257,7 +276,6 @@ class _PlaylistBottomSheetState extends State<_PlaylistBottomSheet> {
           ),
           const SizedBox(height: 16),
 
-          // ── Create new playlist ────────────────────────────────────────
           GestureDetector(
             onTap: () => _showCreateDialog(context),
             child: Container(
@@ -283,7 +301,6 @@ class _PlaylistBottomSheetState extends State<_PlaylistBottomSheet> {
             ),
           ),
 
-          // ── Existing playlists ─────────────────────────────────────────
           if (names.isNotEmpty) ...[
             const SizedBox(height: 12),
             ConstrainedBox(
@@ -293,7 +310,7 @@ class _PlaylistBottomSheetState extends State<_PlaylistBottomSheet> {
                 itemCount: names.length,
                 itemBuilder: (_, i) {
                   final name = names[i];
-                  final alreadyAdded = widget.music.isSongInPlaylist(name, widget.song.id);
+                  final alreadyAdded = widget.user.isSongInPlaylist(name, widget.song.id);
 
                   return ListTile(
                     dense: true,
@@ -315,8 +332,9 @@ class _PlaylistBottomSheetState extends State<_PlaylistBottomSheet> {
                     onTap: alreadyAdded
                         ? null
                         : () {
-                            widget.music.addSongToPlaylist(name, widget.song.id);
-                            setState(() {});  // refresh checkmarks
+                            // Syncs checklist checks inside the active state view frame dynamically on new items selection.
+                            widget.user.addSongToPlaylist(name, widget.song.id);
+                            setState(() {});
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text('Added "${widget.song.title}" to $name'),
@@ -335,6 +353,7 @@ class _PlaylistBottomSheetState extends State<_PlaylistBottomSheet> {
     );
   }
 
+  /// Opens the confirm dialogue inputting new playlist names.
   void _showCreateDialog(BuildContext context) {
     final ctrl = TextEditingController();
 
@@ -357,10 +376,10 @@ class _PlaylistBottomSheetState extends State<_PlaylistBottomSheet> {
             onPressed: () {
               final name = ctrl.text.trim();
               if (name.isNotEmpty) {
-                widget.music.createPlaylist(name);
-                widget.music.addSongToPlaylist(name, widget.song.id);
-                Navigator.pop(dialogCtx);  // close dialog
-                Navigator.pop(context);    // close bottom sheet
+                widget.user.createPlaylist(name);
+                widget.user.addSongToPlaylist(name, widget.song.id);
+                Navigator.pop(dialogCtx);
+                Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text('Created "$name" and added "${widget.song.title}"'),

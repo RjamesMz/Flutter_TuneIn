@@ -1,3 +1,7 @@
+/// File: lib/screens/user_screen/settings_screen.dart
+/// Role: Tab view representing user dashboard configurations. Displays profile details,
+/// active library statistics (liked counts, playlist amounts), routes to FAQ lists, and logout triggers.
+
 // ignore_for_file: use_build_context_synchronously, unnecessary_underscores
 
 import 'package:flutter/material.dart';
@@ -9,13 +13,20 @@ import '../../core/responsive_helper.dart';
 import 'personal_info_screen.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
-import '../../providers/music_provider.dart';
+import '../../providers/user_provider.dart';
 import 'dart:io';
 
+/// Screen widget displaying the user settings dashboard panel.
 class SettingsScreen extends StatelessWidget {
+  /// Constructs a [SettingsScreen] instance.
+  ///
+  /// [key] An optional key used for identifying the widget in the element tree.
   const SettingsScreen({super.key});
 
   @override
+  /// Builds the settings view layout including stats summaries.
+  ///
+  /// [context] The building context.
   Widget build(BuildContext context) {
     return Consumer<AuthProvider>(
       builder: (context, authProvider, child) {
@@ -27,7 +38,6 @@ class SettingsScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-              // ── Avatar ──────────────────────────────────────────────────────────
               const SizedBox(height: 24),
               Stack(
                 alignment: Alignment.bottomRight,
@@ -61,7 +71,6 @@ class SettingsScreen extends StatelessWidget {
               ),
               const SizedBox(height: 14),
 
-              // ── Name ────────────────────────────────────────────────────────────
               Text(
                 user?.name ?? 'Guest User',
                 style: const TextStyle(
@@ -72,9 +81,8 @@ class SettingsScreen extends StatelessWidget {
               ),
               const SizedBox(height: 8),
 
-              // ── Stats Row ───────────────────────────────────────────────────────
-              Consumer<MusicProvider>(
-                builder: (context, musicProvider, child) {
+              Consumer<UserProvider>(
+                builder: (context, userProvider, child) {
                   return Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
@@ -86,12 +94,12 @@ class SettingsScreen extends StatelessWidget {
                       children: [
                         _StatItem(
                           label: 'Playlists',
-                          value: musicProvider.playlistNames.length.toString(),
+                          value: userProvider.playlists.keys.length.toString(),
                         ),
                         _VerticalDivider(),
                         _StatItem(
                           label: 'Liked',
-                          value: musicProvider.likedSongIds.length.toString(),
+                          value: userProvider.likedSongIds.length.toString(),
                         ),
                       ],
                     ),
@@ -100,7 +108,6 @@ class SettingsScreen extends StatelessWidget {
               ),
               const SizedBox(height: 28),
 
-              // ── Settings Tiles ──────────────────────────────────────────────────
               SettingsTile(
                 icon: Icons.badge_outlined,
                 label: AppStrings.personalInfo,
@@ -130,11 +137,11 @@ class SettingsScreen extends StatelessWidget {
               ),
               const SizedBox(height: 28),
 
-              // ── Logout Button ───────────────────────────────────────────────────
               PrimaryButton(
                 label: 'Logout',
                 icon: Icons.logout,
                 onPressed: () async {
+                  // Resets authorization tokens and clears the active screen routes before returning to login.
                   await context.read<AuthProvider>().logout();
                   Navigator.pushNamedAndRemoveUntil(
                     context,
@@ -159,9 +166,19 @@ Widget _avatarPlaceholder() => Container(
 
 // HELPER WIDGETS
 
+/// Helper layout class displaying statistics counts.
 class _StatItem extends StatelessWidget {
+  /// Header category label.
   final String label;
+
+  /// Amount statistics to show.
   final String value;
+
+  /// Constructs a [_StatItem] instance.
+  ///
+  /// [key] An optional key.
+  /// [label] Title description.
+  /// [value] Calculated statistic amount.
   const _StatItem({required this.label, required this.value});
 
   @override
@@ -185,7 +202,13 @@ class _StatItem extends StatelessWidget {
   }
 }
 
+/// Decorative vertical line layout widget.
 class _VerticalDivider extends StatelessWidget {
+  /// Constructs a [_VerticalDivider] instance.
+  ///
+  /// [key] An optional key.
+  const _VerticalDivider();
+
   @override
   Widget build(BuildContext context) {
     return Container(width: 1, height: 32, color: kOutlineVariant);

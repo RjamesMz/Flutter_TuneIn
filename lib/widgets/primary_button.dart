@@ -1,14 +1,31 @@
+﻿/// File: lib/widgets/primary_button.dart
+/// Role: Reusable premium primary CTA button component styled with custom brand gradient colors,
+/// optional leading icons, action states, and custom circular loading indicator overlays.
+
 import 'package:flutter/material.dart';
 import '../core/app_colors.dart';
 
-// ─── Primary Gradient Button ──────────────────────────────────────────────────
-/// A reusable CTA button with the soul gradient background.
+/// Renders a full-width call-to-action button decorated with smooth drop-shadows.
 class PrimaryButton extends StatelessWidget {
-  final String   label;
+  /// Button display name string printed in bold.
+  final String label;
+
+  /// Press callback method. If null, the button is rendered in a disabled grey state.
   final VoidCallback? onPressed;
-  final bool     isLoading;
+
+  /// Flag indicating if the button is locked in an active async processing state.
+  final bool isLoading;
+
+  /// Optional leading vector icon decorator.
   final IconData? icon;
 
+  /// Constructs a [PrimaryButton] instance.
+  ///
+  /// [key] An optional key used for identifying the widget in the element tree.
+  /// [label] Title text string.
+  /// [onPressed] Tap callback.
+  /// [isLoading] Loading state status.
+  /// [icon] Optional leading icon.
   const PrimaryButton({
     super.key,
     required this.label,
@@ -18,12 +35,16 @@ class PrimaryButton extends StatelessWidget {
   });
 
   @override
+  /// Builds the gradient container representing the brand CTA visual.
+  ///
+  /// [context] The building context.
   Widget build(BuildContext context) {
     return SizedBox(
       width: double.infinity,
       height: 56,
       child: DecoratedBox(
         decoration: BoxDecoration(
+          // Formulates flat solid disabled colors when no press actions are configured.
           gradient: onPressed != null
               ? kSoulGradient
               : const LinearGradient(
@@ -33,7 +54,7 @@ class PrimaryButton extends StatelessWidget {
           boxShadow: onPressed != null
               ? [
                   BoxShadow(
-                    color: kPrimary.withAlpha(89),
+                    color: kPrimary.withValues(alpha: 0.35),
                     blurRadius: 16,
                     offset: const Offset(0, 6),
                   )

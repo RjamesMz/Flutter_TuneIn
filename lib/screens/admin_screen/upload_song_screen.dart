@@ -1,3 +1,7 @@
+/// File: lib/screens/admin_screen/upload_song_screen.dart
+/// Role: Form screen designed for administrators to specify track names, upload audio files,
+/// pick cover art images, select genres, and publish them to Supabase.
+
 // ignore_for_file: deprecated_member_use
 
 import 'dart:typed_data';
@@ -6,19 +10,24 @@ import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
-import '../../services/supabase_service.dart';
 import '../../core/app_colors.dart';
 import '../../core/responsive_helper.dart';
 import '../../providers/music_provider.dart';
+import '../../providers/admin_provider.dart';
 import 'category_management_screen.dart';
 
+/// Screen widget providing the song publishing form layout.
 class UploadSongScreen extends StatefulWidget {
+  /// Constructs an [UploadSongScreen] instance.
+  ///
+  /// [key] An optional key used for identifying the widget in the element tree.
   const UploadSongScreen({super.key});
 
   @override
   State<UploadSongScreen> createState() => _UploadSongScreenState();
 }
 
+/// State controller for managing picker utilities, inputs, and upload progress in [UploadSongScreen].
 class _UploadSongScreenState extends State<UploadSongScreen> {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
@@ -33,6 +42,7 @@ class _UploadSongScreenState extends State<UploadSongScreen> {
   String? _audioFileName;
   bool _isUploading = false;
 
+  /// Invokes the native file manager picking interface to load target audio streams.
   Future<void> _pickAudio() async {
     try {
       final result = await FilePicker.platform.pickFiles(
@@ -62,6 +72,7 @@ class _UploadSongScreenState extends State<UploadSongScreen> {
     }
   }
 
+  /// Invokes native gallery tools to load picture assets.
   Future<void> _pickCover() async {
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
@@ -74,6 +85,7 @@ class _UploadSongScreenState extends State<UploadSongScreen> {
     }
   }
 
+  /// Triggers form validation, uploads media assets to storage, and posts DB rows.
   Future<void> _uploadSong() async {
     if (!_formKey.currentState!.validate()) return;
     if (_audioBytes == null) {
@@ -90,14 +102,18 @@ class _UploadSongScreenState extends State<UploadSongScreen> {
     }
 
     final songTitle = _titleController.text.trim();
+    final artist = _artistController.text.trim();
+    final album = _albumController.text.trim();
     final cat = _selectedCategory!;
     setState(() => _isUploading = true);
 
     try {
-      await SupabaseService.instance.publishSong(
-        title: _titleController.text.trim(),
-        artist: _artistController.text.trim(),
-        album: _albumController.text.trim(),
+      final musicProvider = context.read<MusicProvider>();
+      await context.read<AdminProvider>().uploadSong(
+        musicProvider: musicProvider,
+        title: songTitle,
+        artist: artist,
+        album: album,
         category: cat,
         audioBytes: _audioBytes!,
         audioFileName: _audioFileName!,
@@ -109,9 +125,6 @@ class _UploadSongScreenState extends State<UploadSongScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Song uploaded successfully!')),
       );
-      try {
-        context.read<MusicProvider>().addSongAddedNotification('Added song: "$songTitle"');
-      } catch (_) {}
       _titleController.clear();
       _artistController.clear();
       _albumController.clear();
@@ -132,6 +145,7 @@ class _UploadSongScreenState extends State<UploadSongScreen> {
   }
 
   @override
+  /// Disposes controllers on destroy.
   void dispose() {
     _titleController.dispose();
     _artistController.dispose();
@@ -140,6 +154,9 @@ class _UploadSongScreenState extends State<UploadSongScreen> {
   }
 
   @override
+  /// Builds the scrollable form responsive layout.
+  ///
+  /// [context] The widget build context.
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: kBackground,
@@ -148,7 +165,6 @@ class _UploadSongScreenState extends State<UploadSongScreen> {
             ? const Center(child: CircularProgressIndicator(color: kPrimary))
             : Column(
               children: [
-                // ── Gradient Header ───────────────────────────────────────────
                 Container(
                   width: double.infinity,
                   decoration: const BoxDecoration(
@@ -198,7 +214,6 @@ class _UploadSongScreenState extends State<UploadSongScreen> {
                   ),
                 ),
 
-                // ── Form ─────────────────────────────────────────────────────
                 Expanded(
                   child: Center(
                     child: ConstrainedBox(
@@ -335,6 +350,12 @@ class _UploadSongScreenState extends State<UploadSongScreen> {
     );
   }
 
+  /// Helper method to construct input fields with styling and validation.
+  ///
+  /// [label] The header prompt on the input box.
+  /// [controller] Form input controller capturing state modifications.
+  /// [icon] Leading decorator icon.
+  /// [required] Set to true to enforce validation on empty inputs.
   Widget _buildTextField(
     String label,
     TextEditingController controller,
@@ -372,6 +393,7 @@ class _UploadSongScreenState extends State<UploadSongScreen> {
     );
   }
 
+  /// Category selection section with dropdown selection and button to manage categories.
   Widget _buildCategorySection() {
     final music = context.watch<MusicProvider>();
     final categories = music.categoryNames;

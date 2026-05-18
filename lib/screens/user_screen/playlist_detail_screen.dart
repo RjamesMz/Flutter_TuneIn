@@ -1,8 +1,12 @@
+/// File: lib/screens/user_screen/playlist_detail_screen.dart
+/// Role: Screen displaying tracks inside a selected playlist. Offers offline downloads,
+/// a search shortcut to add music, and support for swiping to remove songs.
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/app_colors.dart';
 import '../../core/responsive_helper.dart';
-import '../../providers/music_provider.dart';
+import '../../providers/user_provider.dart';
 import '../../providers/player_provider.dart';
 import '../../widgets/song_tile.dart';
 import '../../widgets/mini_player.dart';
@@ -10,21 +14,30 @@ import 'now_playing_screen.dart';
 import 'search_screen.dart';
 import '../../providers/auth_provider.dart';
 
+/// Screen widget listing the detailed songs in a specific user playlist.
 class PlaylistDetailScreen extends StatelessWidget {
+  /// The active name header identifying the user's custom playlist.
   final String playlistName;
 
+  /// Constructs a [PlaylistDetailScreen] instance.
+  ///
+  /// [key] An optional key used for identifying the widget in the element tree.
+  /// [playlistName] Targeted playlist name string.
   const PlaylistDetailScreen({super.key, required this.playlistName});
 
   @override
+  /// Builds the detailed playlist screen with dismissible swipe remove lists.
+  ///
+  /// [context] The building context.
   Widget build(BuildContext context) {
-    final music = context.watch<MusicProvider>();
+    final user = context.watch<UserProvider>();
     final player = context.watch<PlayerProvider>();
     final auth = context.watch<AuthProvider>();
     
     final isPremium = auth.currentUser?.plan != 'free';
     final songs = playlistName == 'Liked Songs' 
-        ? music.likedSongs 
-        : music.getSongsInPlaylist(playlistName);
+        ? user.likedSongs 
+        : user.getSongsInPlaylist(playlistName);
     final currentSong = player.currentSong;
     final hasActiveSong = currentSong != null;
 
@@ -47,9 +60,10 @@ class PlaylistDetailScreen extends StatelessWidget {
               icon: const Icon(Icons.download_for_offline, color: kPrimary),
               tooltip: 'Download All',
               onPressed: () {
+                // Iterates and invokes background offline SQLite music files download on all tracks in the playlist.
                 for (var song in songs) {
-                  if (!music.isDownloaded(song.id)) {
-                    music.downloadSong(song);
+                  if (!user.isDownloaded(song.id)) {
+                    user.downloadSong(song);
                   }
                 }
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -68,10 +82,8 @@ class PlaylistDetailScreen extends StatelessWidget {
         ],
       ),
 
-
       body: Stack(
         children: [
-          // ── Song List ────────────────────────────────────────────────────
           ResponsiveWrapper(
             child: songs.isEmpty
                 ? Center(
@@ -122,7 +134,7 @@ class PlaylistDetailScreen extends StatelessWidget {
                         child: const Icon(Icons.delete, color: Colors.red),
                       ),
                       onDismissed: (_) {
-                        music.removeSongFromPlaylist(playlistName, song.id);
+                        user.removeSongFromPlaylist(playlistName, song.id);
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text('Removed "${song.title}" from $playlistName'),
@@ -137,7 +149,6 @@ class PlaylistDetailScreen extends StatelessWidget {
                 ),
             ),
 
-          // ── Mini Player ──────────────────────────────────────────────────
           if (hasActiveSong)
             Positioned(
               left: 0,

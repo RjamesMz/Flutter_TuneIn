@@ -1,15 +1,18 @@
+﻿/// File: lib/providers/player_provider.dart
+/// Role: Manages real-time audio playback using the audioplayers package.
+/// Tracks current song, play/pause states, queue index history, shuffle/repeat parameters,
+/// and updates stream positions.
+
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
 import '../models/song.dart';
 import '../services/download_service.dart';
 
-// ─── Player Provider ──────────────────────────────────────────────────────────
 /// Manages real audio playback using the audioplayers package.
 /// Handles current song, play/pause, seek, next/previous, shuffle, repeat.
 class PlayerProvider extends ChangeNotifier {
   final AudioPlayer _audioPlayer = AudioPlayer();
 
-  // ── State ──────────────────────────────────────────────────────────────────
   Song? _currentSong;
   List<Song> _queue = [];
   int _currentIndex = 0;
@@ -19,33 +22,52 @@ class PlayerProvider extends ChangeNotifier {
   Duration _position = Duration.zero;
   Duration _duration = Duration.zero;
 
-  // ── Getters ────────────────────────────────────────────────────────────────
+
+  /// Retrieves the currently loaded [Song] track.
   Song? get currentSong => _currentSong;
+
+  /// Returns true if audio is actively playing.
   bool get isPlaying => _isPlaying;
+
+  /// Returns true if shuffle order mode is active.
   bool get isShuffled => _isShuffled;
+
+  /// Returns true if repeat/loop mode is active.
   bool get isRepeating => _isRepeating;
+
+  /// Retrieves the current track progress position duration.
   Duration get position => _position;
+
+  /// Retrieves the total duration of the actively loaded audio track.
   Duration get duration => _duration;
+
+  /// Retrieves the active music tracks queue.
   List<Song> get queue => _queue;
+
+  /// Gets the index of the currently playing track in the queue.
   int get currentIndex => _currentIndex;
 
+  /// Returns true if there is a song prior to the current song in the queue.
   bool get hasPrevious => _currentIndex > 0;
+
+  /// Returns true if there is a song after the current song in the queue.
   bool get hasNext => _currentIndex < _queue.length - 1;
 
+  /// Constructs a [PlayerProvider] and configures the audio player listeners.
   PlayerProvider() {
-    // Live position updates
+    // Listens to progress ticker updates from the audio device.
     _audioPlayer.onPositionChanged.listen((pos) {
       _position = pos;
       notifyListeners();
     });
 
-    // Total duration once loaded
+    // Listens to track metadata resolution to register the total track length.
     _audioPlayer.onDurationChanged.listen((dur) {
       _duration = dur;
       notifyListeners();
     });
 
-    // When current track finishes, auto-advance
+    // Configures auto-advance behaviour when the current song completes playback.
     _audioPlayer.onPlayerComplete.listen((_) {
       if (_isRepeating) {
         _playCurrentIndex();
@@ -56,16 +78,18 @@ class PlayerProvider extends ChangeNotifier {
       }
     });
 
-    // Keep _isPlaying in sync with actual player state
+    // Keeps the provider's boolean playing state in sync with external device state updates.
     _audioPlayer.onPlayerStateChanged.listen((state) {
       _isPlaying = state == PlayerState.playing;
       notifyListeners();
     });
   }
 
-  // ── Actions ────────────────────────────────────────────────────────────────
 
   /// Loads [song] into the player and begins playback.
+  ///
+  /// [song] Target song to load.
+  /// [queue] Optional custom queue context to assign.
   Future<void> play(Song song, {List<Song>? queue}) async {
     if (queue != null) {
       _queue = queue;
@@ -88,6 +112,7 @@ class PlayerProvider extends ChangeNotifier {
     await _playCurrentIndex();
   }
 
+  /// Looks up local cached audio files or streams online sources to run playback.
   Future<void> _playCurrentIndex() async {
     final song = _queue[_currentIndex];
     _currentSong = song;
@@ -141,7 +166,6 @@ class PlayerProvider extends ChangeNotifier {
   /// Skips to the previous song in the queue.
   Future<void> previous() async {
     if (_queue.isEmpty) return;
-    // If more than 3s in, restart current song
     if (_position.inSeconds > 3) {
       await seek(Duration.zero);
       return;
@@ -158,6 +182,8 @@ class PlayerProvider extends ChangeNotifier {
   }
 
   /// Seeks to a given position.
+  ///
+  /// [position] Targeted playback position offset.
   Future<void> seek(Duration position) async {
     await _audioPlayer.seek(position);
     _position = position;
@@ -187,11 +213,14 @@ class PlayerProvider extends ChangeNotifier {
   }
 
   /// Legacy — kept for compatibility. Use [seek] instead.
+  ///
+  /// [position] Targeted playback position offset.
   void updatePosition(Duration position) {
     seek(position);
   }
 
   @override
+  /// Disposes background player resources and listeners.
   void dispose() {
     _audioPlayer.dispose();
     super.dispose();

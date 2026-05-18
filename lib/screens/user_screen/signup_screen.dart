@@ -1,21 +1,29 @@
+/// File: lib/screens/user_screen/signup_screen.dart
+/// Role: Screen providing user onboarding account registration. Collects demographics (name, DOB, gender)
+/// and security passwords while handling backend Firestore/auth synchronization via AuthService.
+
 // ignore_for_file: sized_box_for_whitespace
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
 import '../../core/app_colors.dart';
 import '../../core/app_strings.dart';
 import '../../core/responsive_helper.dart';
 import '../../services/auth_service.dart';
 import '../../widgets/primary_button.dart';
 
+/// Screen widget displaying the onboarding client signup and user generation forms.
 class SignupScreen extends StatefulWidget {
+  /// Constructs a [SignupScreen] instance.
+  ///
+  /// [key] An optional key used for identifying the widget in the element tree.
   const SignupScreen({super.key});
 
   @override
   State<SignupScreen> createState() => _SignupScreenState();
 }
 
+/// State controller managing input validation, password obscuring, animation timers, and database signup triggers.
 class _SignupScreenState extends State<SignupScreen>
     with SingleTickerProviderStateMixin {
   final _formKey      = GlobalKey<FormState>();
@@ -38,6 +46,7 @@ class _SignupScreenState extends State<SignupScreen>
   static const _genders = ['Male', 'Female', 'Non-binary', 'Prefer not to say'];
 
   @override
+  /// Initiates fade-in transitions.
   void initState() {
     super.initState();
     _fadeCtrl = AnimationController(
@@ -48,6 +57,7 @@ class _SignupScreenState extends State<SignupScreen>
   }
 
   @override
+  /// Disposes form input controllers and animation frames.
   void dispose() {
     _fadeCtrl.dispose();
     _nameCtrl.dispose();
@@ -59,17 +69,20 @@ class _SignupScreenState extends State<SignupScreen>
     super.dispose();
   }
 
+  /// Returns a clean formatted string of the selected DOB, if configured.
   String? _dobDisplay() {
     if (_selectedDob == null) return null;
     final d = _selectedDob!;
     return '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
   }
 
+  /// Opens the native calendar selection frame modal.
   Future<void> _pickDob() async {
     final picked = await showDatePicker(
       context: context,
       initialDate: DateTime(2000),
       firstDate: DateTime(1920),
+      // Restricts the birthday date picker selections to users who are at least 10 years old.
       lastDate: DateTime.now().subtract(const Duration(days: 365 * 10)),
       builder: (ctx, child) => Theme(
         data: Theme.of(ctx).copyWith(
@@ -85,6 +98,7 @@ class _SignupScreenState extends State<SignupScreen>
     if (picked != null) setState(() => _selectedDob = picked);
   }
 
+  /// Submits valid demographic details to AuthService to generate the user record.
   Future<void> _handleSignup() async {
     if (!_formKey.currentState!.validate()) return;
     if (_selectedDob == null) {
@@ -124,6 +138,9 @@ class _SignupScreenState extends State<SignupScreen>
   }
 
   @override
+  /// Builds the onboarding registration layout, segmenting sections using Custom Labels.
+  ///
+  /// [context] The building context.
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: kBackground,
@@ -140,7 +157,6 @@ class _SignupScreenState extends State<SignupScreen>
                   children: [
                   const SizedBox(height: 40),
 
-                  // ── Logo + title ────────────────────────────────────────
                   Center(
                     child: Column(
                       children: [
@@ -151,7 +167,7 @@ class _SignupScreenState extends State<SignupScreen>
                           child: Center(
                                 child: Image.asset(
                                     'assets/image/logo/TuneIn_Logo.png',
-                                    width: 500,   // adjust to taste
+                                    width: 500,
                                     height: 500,
                                   ),
                               ),
@@ -167,7 +183,6 @@ class _SignupScreenState extends State<SignupScreen>
                   ),
                   const SizedBox(height: 36),
 
-                  // ── Personal Details ────────────────────────────────────
                   const _SectionLabel(label: 'Personal Details'),
                   const SizedBox(height: 12),
 
@@ -200,7 +215,6 @@ class _SignupScreenState extends State<SignupScreen>
                   ),
                   const SizedBox(height: 24),
 
-                  // ── Additional Info ─────────────────────────────────────
                   const _SectionLabel(label: 'Additional Info'),
                   const SizedBox(height: 12),
 
@@ -258,7 +272,6 @@ class _SignupScreenState extends State<SignupScreen>
                   ),
                   const SizedBox(height: 24),
 
-                  // ── Security ────────────────────────────────────────────
                   const _SectionLabel(label: 'Security'),
                   const SizedBox(height: 12),
 
@@ -337,6 +350,7 @@ class _SignupScreenState extends State<SignupScreen>
     );
   }
 
+  /// Private helper utility rendering modularized form input elements.
   Widget _field({
     required TextEditingController controller,
     required String label,
@@ -358,9 +372,15 @@ class _SignupScreenState extends State<SignupScreen>
   }
 }
 
-// ─── Section Label ────────────────────────────────────────────────────────────
+/// Custom decorative section headers for onboarding fields lists.
 class _SectionLabel extends StatelessWidget {
+  /// Primary Visual Section Label.
   final String label;
+
+  /// Constructs a [_SectionLabel] instance.
+  ///
+  /// [key] An optional key.
+  /// [label] Title section text.
   const _SectionLabel({required this.label});
 
   @override

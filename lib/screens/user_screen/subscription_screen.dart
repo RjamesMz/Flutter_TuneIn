@@ -1,3 +1,7 @@
+/// File: lib/screens/user_screen/subscription_screen.dart
+/// Role: Screen presenting three subscription plan tiers (Free, Plus, Premium).
+/// Displays tier comparison grids, feature availability, and handles checkout/main navigation.
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tunely/screens/user_screen/checkout_screen.dart';
@@ -7,27 +11,35 @@ import '../../core/responsive_helper.dart';
 import '../../models/subscription_plan.dart';
 import '../../providers/auth_provider.dart';
 
-// ─── Subscription Screen ──────────────────────────────────────────────────────
-/// Displays available subscription plans: Free, Plus, and Premium.
-
+/// Screen widget displaying the subscription tiers selection browse board.
 class SubscriptionScreen extends StatefulWidget {
+  /// Constructs a [SubscriptionScreen] instance.
+  ///
+  /// [key] An optional key used for identifying the widget in the element tree.
   const SubscriptionScreen({super.key});
 
   @override
   State<SubscriptionScreen> createState() => _SubscriptionScreenState();
 }
 
+/// State controller managing plan selections and checkout routes in [SubscriptionScreen].
 class _SubscriptionScreenState extends State<SubscriptionScreen> {
   int _selectedPlan = 2;
 
   static final _plans = SubscriptionPlan.availablePlans;
 
+  /// Changes the active highlighted plan selection.
+  ///
+  /// [index] Target selection list index.
   void _selectPlan(int index) {
     if (index == _selectedPlan) return;
     setState(() => _selectedPlan = index);
   }
 
   @override
+  /// Builds the subscription options card deck and CTA submit configurations.
+  ///
+  /// [context] The building context.
   Widget build(BuildContext context) {
     final plan = _plans[_selectedPlan];
     return Scaffold(
@@ -35,7 +47,6 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
       body: ResponsiveWrapper(
         child: CustomScrollView(
           slivers: [
-            // ── App Bar ────────────────────────────────────────────────────────
             SliverAppBar(
               pinned: true,
               backgroundColor: kBackground,
@@ -58,7 +69,6 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
               centerTitle: true,
             ),
 
-            // ── Hero Header ───────────────────────────────────────────────────
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(24, 8, 24, 0),
@@ -104,7 +114,6 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
               ),
             ),
 
-            // ── Plan Cards ────────────────────────────────────────────────────
             SliverPadding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               sliver: SliverList(
@@ -122,7 +131,6 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
               ),
             ),
 
-            // ── CTA + Fine Print ──────────────────────────────────────────────
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(24, 8, 24, 48),
@@ -187,7 +195,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                         color: kOnSurfaceVariant,
                       ),
                       textAlign: TextAlign.center,
-                    ),
+                     ),
                     const SizedBox(height: 8),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -213,14 +221,17 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     );
   }
 
+  /// Directs routes based on target premium or free options.
+  ///
+  /// [context] Route manager context.
+  /// [plan] Subscription plan to proceed with.
   void _onTap(BuildContext context, SubscriptionPlan plan) {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     if (plan.id == 'free') {
+      // Free tier selections bypass online checkout gateways and transition instantly into primary tabs.
       authProvider.updatePlan(plan.id);
-      // Free plan → go to the main screen, clearing the back stack
       Navigator.pushNamedAndRemoveUntil(context, '/main', (_) => false);
     } else {
-      // Paid plan → go to checkout, passing the plan details
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -236,12 +247,23 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
   }
 }
 
-// ─── Plan Card ────────────────────────────────────────────────────────────────
+/// Interactive individual plan card component detailing names, taglines, and prices.
 class _PlanCard extends StatelessWidget {
+  /// Detailed plan configurations model.
   final SubscriptionPlan plan;
+
+  /// Selection flag.
   final bool isSelected;
+
+  /// Trigger callback.
   final VoidCallback onTap;
 
+  /// Constructs a [_PlanCard] instance.
+  ///
+  /// [key] An optional key.
+  /// [plan] SubscriptionPlan representation parameters.
+  /// [isSelected] Selection state.
+  /// [onTap] Click handler.
   const _PlanCard({
     required this.plan,
     required this.isSelected,
@@ -277,7 +299,6 @@ class _PlanCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Card Header ──────────────────────────────────────────────
             Container(
               padding: const EdgeInsets.fromLTRB(20, 18, 20, 16),
               decoration: BoxDecoration(
@@ -334,11 +355,11 @@ class _PlanCard extends StatelessWidget {
                             ),
                             if (plan.id == 'monthly') ...[
                               const SizedBox(width: 8),
-                              _Badge(label: 'Most Popular', primary: true),
+                              const _Badge(label: 'Most Popular', primary: true),
                             ],
                             if (plan.id == 'premium_annual') ...[
                               const SizedBox(width: 8),
-                              _Badge(label: 'Best Value', primary: false),
+                              const _Badge(label: 'Best Value', primary: false),
                             ],
                           ],
                         ),
@@ -382,7 +403,6 @@ class _PlanCard extends StatelessWidget {
               ),
             ),
 
-            // ── Feature List ─────────────────────────────────────────────
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 14, 20, 18),
               child: Column(
@@ -398,10 +418,19 @@ class _PlanCard extends StatelessWidget {
   }
 }
 
-// ─── Feature Row ──────────────────────────────────────────────────────────────
+/// Individual plan benefit checklist row indicating included properties.
 class _FeatureRow extends StatelessWidget {
+  /// Visual checkbox properties model.
   final PlanFeature feature;
+
+  /// Checks if this item is included.
   final bool included;
+
+  /// Constructs a [_FeatureRow] instance.
+  ///
+  /// [key] An optional key.
+  /// [feature] PlanFeature configuration model.
+  /// [included] Whether feature is active in target tier.
   const _FeatureRow({required this.feature, required this.included});
 
   @override
@@ -463,10 +492,19 @@ class _FeatureRow extends StatelessWidget {
   }
 }
 
-// ─── Badge chip ───────────────────────────────────────────────────────────────
+/// Decorative value highlight badge.
 class _Badge extends StatelessWidget {
+  /// Card description label.
   final String label;
+
+  /// Selector distinguishing card color palettes.
   final bool primary;
+
+  /// Constructs a [_Badge] instance.
+  ///
+  /// [key] An optional key.
+  /// [label] Title description.
+  /// [primary] Color palette selector.
   const _Badge({required this.label, required this.primary});
 
   @override
@@ -492,10 +530,19 @@ class _Badge extends StatelessWidget {
   }
 }
 
-// ─── Text link ────────────────────────────────────────────────────────────────
+/// Tap-enabled underlined text links.
 class _TextLink extends StatelessWidget {
+  /// Linked label.
   final String text;
+
+  /// Press callback.
   final VoidCallback onTap;
+
+  /// Constructs a [_TextLink] instance.
+  ///
+  /// [key] An optional key.
+  /// [text] Label string.
+  /// [onTap] Pressed callback.
   const _TextLink(this.text, {required this.onTap});
 
   @override

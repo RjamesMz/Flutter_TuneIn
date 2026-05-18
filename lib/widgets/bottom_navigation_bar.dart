@@ -1,14 +1,23 @@
+/// File: lib/widgets/bottom_navigation_bar.dart
+/// Role: Premium bottom navigation bar component that tracks and signals index selections
+/// for active home, search, playlist, or settings pages.
+
 import 'package:flutter/material.dart';
 import '../core/app_colors.dart';
 
-// ─── Bottom Navigation Bar (StatelessWidget) ─────────────────────────────────
-// Receives the current active tab index and an onTap callback.
-// MainScreen controls the selected tab via IndexedStack.
-
+/// Interactive navigation bar displaying tab buttons with colored highlight overlays.
 class BottomNavBar extends StatelessWidget {
-  final int currentIndex; // 0=Home, 1=Search, 2=Playlist, 3=Profile
-  final void Function(int) onTap; // called when a tab is tapped
+  /// The active highlighted tab index (0=Home, 1=Search, 2=Playlist, 3=Settings).
+  final int currentIndex;
 
+  /// Trigger callback fired when a navigation item gets selected.
+  final void Function(int) onTap;
+
+  /// Constructs a [BottomNavBar] instance.
+  ///
+  /// [key] An optional key used for identifying the widget in the element tree.
+  /// [currentIndex] The current active selected tab index.
+  /// [onTap] Pressed callback mapping selected index.
   const BottomNavBar({
     super.key,
     required this.currentIndex,
@@ -16,6 +25,9 @@ class BottomNavBar extends StatelessWidget {
   });
 
   @override
+  /// Builds the safe-area nav rows containing individual nav items.
+  ///
+  /// [context] The building context.
   Widget build(BuildContext context) {
     return Container(
       color: kSurface,
@@ -36,13 +48,31 @@ class BottomNavBar extends StatelessWidget {
   }
 }
 
+/// Helper individual item tile rendering vector icons and highlighted text indicators.
 class _NavItem extends StatelessWidget {
+  /// Visual leading icon.
   final IconData icon;
+
+  /// Display name label.
   final String label;
+
+  /// Unique item identifier index.
   final int index;
-  final int currentIndex;
+
+  /// Active highlighted index.
   final void Function(int) onTap;
 
+  /// Tap callback handler.
+  final int currentIndex;
+
+  /// Constructs a [_NavItem] instance.
+  ///
+  /// [key] An optional key.
+  /// [icon] Tab icon.
+  /// [label] Text indicator name.
+  /// [index] Unique index.
+  /// [currentIndex] Global active index.
+  /// [onTap] Press callback.
   const _NavItem({
     required this.icon,
     required this.label,
@@ -56,6 +86,7 @@ class _NavItem extends StatelessWidget {
     final bool isActive = index == currentIndex;
 
     return GestureDetector(
+      // Triggers index callbacks to sync current page views dynamically.
       onTap: () => onTap(index),
       child: Container(
         padding: isActive

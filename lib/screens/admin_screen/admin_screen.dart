@@ -1,3 +1,7 @@
+﻿/// File: lib/screens/admin_screen/admin_screen.dart
+/// Role: Renders the central administrative control dashboard screen.
+/// Offers navigation buttons to manage songs, upload new tracks, and log out.
+
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:flutter/material.dart';
@@ -8,16 +12,22 @@ import '../../core/app_colors.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 
+/// Screen widget displaying the primary dashboard options for administrator users.
 class AdminScreen extends StatelessWidget {
+  /// Constructs an [AdminScreen] instance.
+  ///
+  /// [key] An optional key used for identifying the widget in the element tree.
   const AdminScreen({super.key});
 
   @override
+  /// Builds the layout grid of control option cards.
+  ///
+  /// [context] The widget build context.
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: kBackground,
       body: Column(
         children: [
-          // ── Compact Gradient Header ─────────────────────────────────────
           Container(
             width: double.infinity,
             decoration: const BoxDecoration(
@@ -60,7 +70,6 @@ class AdminScreen extends StatelessWidget {
             ),
           ),
 
-          // ── Content ─────────────────────────────────────────────────────
           Expanded(
             child: Center(
               child: ConstrainedBox(
@@ -73,11 +82,14 @@ class AdminScreen extends StatelessWidget {
                       _AdminCard(
                         icon: Icons.cloud_upload_rounded,
                         title: 'Upload New Song',
-                        subtitle: 'Add music, cover art, and metadata to the library.',
+                        subtitle:
+                            'Add music, cover art, and metadata to the library.',
                         color: kPrimary,
                         onTap: () => Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (_) => const UploadSongScreen()),
+                          MaterialPageRoute(
+                            builder: (_) => const UploadSongScreen(),
+                          ),
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -88,7 +100,9 @@ class AdminScreen extends StatelessWidget {
                         color: Colors.pinkAccent,
                         onTap: () => Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (_) => const ManageSongsScreen()),
+                          MaterialPageRoute(
+                            builder: (_) => const ManageSongsScreen(),
+                          ),
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -99,6 +113,8 @@ class AdminScreen extends StatelessWidget {
                         color: kTertiary,
                         onTap: () async {
                           await context.read<AuthProvider>().logout();
+
+                          // Restores the navigation context and clears page routes completely to block unauthorized browser back-clicks.
                           Navigator.pushNamedAndRemoveUntil(
                             context,
                             '/login',
@@ -118,13 +134,30 @@ class AdminScreen extends StatelessWidget {
   }
 }
 
+/// A custom dashboard option card representation.
 class _AdminCard extends StatelessWidget {
+  /// The leading visual icon mapping to the administrative control action.
   final IconData icon;
+
+  /// The primary header text.
   final String title;
+
+  /// Detailed descriptive caption of the option.
   final String subtitle;
+
+  /// Primary theme accent color.
   final Color color;
+
+  /// Action listener called when the card is pressed.
   final VoidCallback onTap;
 
+  /// Constructs an [_AdminCard] instance.
+  ///
+  /// [icon] The leading icon.
+  /// [title] The main title.
+  /// [subtitle] Detailed descriptive text.
+  /// [color] Visual accent color.
+  /// [onTap] Callback triggered on tap.
   const _AdminCard({
     required this.icon,
     required this.title,
@@ -134,6 +167,9 @@ class _AdminCard extends StatelessWidget {
   });
 
   @override
+  /// Renders the card row contents decorated with visual shadows.
+  ///
+  /// [context] The building context.
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
@@ -192,7 +228,11 @@ class _AdminCard extends StatelessWidget {
                 ],
               ),
             ),
-            const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: kOnSurfaceVariant),
+            const Icon(
+              Icons.arrow_forward_ios_rounded,
+              size: 14,
+              color: kOnSurfaceVariant,
+            ),
           ],
         ),
       ),

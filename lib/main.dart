@@ -1,3 +1,8 @@
+﻿/// File: lib/main.dart
+/// Role: Entry point for the TuneIn application. Initializes core Firebase and Supabase services,
+/// configures global state providers (PlayerProvider, AuthProvider, MusicProvider), and defines
+/// the application routing table.
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tunely/screens/user_screen/home_screen.dart';
@@ -16,13 +21,23 @@ import 'package:tunely/screens/user_screen/help_support_screen.dart';
 import 'package:tunely/providers/auth_provider.dart';
 import 'package:tunely/providers/music_provider.dart';
 import 'package:tunely/providers/player_provider.dart';
+import 'package:tunely/providers/admin_provider.dart';
+import 'package:tunely/providers/user_provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'firebase_options.dart';
 
-void main() async {
+/// Entry point for the TuneIn app.
+///
+/// Initializes Firebase and Supabase SDKs before running the Flutter
+/// application. This function deliberately performs asynchronous SDK
+/// initialization synchronously at startup to ensure services are ready
+/// before UI code accesses them.
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // We initialize the third-party backend services before launching UI so that
+  // user authorization and storage mechanisms are fully set up for the providers.
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   await Supabase.initialize(
@@ -33,10 +48,20 @@ void main() async {
   runApp(const MyApp());
 }
 
+/// Root widget that wires up providers and routes for the app.
+///
+/// Provides global `ChangeNotifier` instances and registers named routes
+/// used throughout the application.
 class MyApp extends StatelessWidget {
+  /// Constructs the root [MyApp] widget.
+  ///
+  /// [key] An optional key used for identifying the widget in the element tree.
   const MyApp({super.key});
 
   @override
+  /// Builds the multi-provider and routing system for the application.
+  ///
+  /// [context] The location in the widget tree where this widget is built.
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
@@ -48,11 +73,16 @@ class MyApp extends StatelessWidget {
           ),
         ),
 
-        ChangeNotifierProxyProvider<AuthProvider, MusicProvider>(
-          create: (_) => MusicProvider(),
-          update: (_, auth, music) {
-            music?.updateUser(auth.currentUser?.id);
-            return music!;
+        ChangeNotifierProvider(create: (_) => AdminProvider()),
+
+        ChangeNotifierProvider(create: (_) => MusicProvider()),
+
+        // UserProvider manages personal likes, playlists, downloads, and notices reactively
+        ChangeNotifierProxyProvider2<AuthProvider, MusicProvider, UserProvider>(
+          create: (_) => UserProvider(),
+          update: (_, auth, music, user) {
+            user?.update(auth.currentUser?.id, music);
+            return user!;
           },
         ),
       ],
@@ -89,13 +119,19 @@ class MyApp extends StatelessWidget {
   }
 }
 
+/// Small bootstrapping widget that checks authentication status and
+/// redirects to the appropriate top-level route.
 class AuthWrapper extends StatefulWidget {
+  /// Constructs an [AuthWrapper] widget.
+  ///
+  /// [key] An optional key used for identifying the widget in the tree.
   const AuthWrapper({super.key});
 
   @override
   State<AuthWrapper> createState() => _AuthWrapperState();
 }
 
+/// State implementation for the [AuthWrapper] bootstrapping flow.
 class _AuthWrapperState extends State<AuthWrapper> {
   @override
   void initState() {
@@ -103,11 +139,16 @@ class _AuthWrapperState extends State<AuthWrapper> {
     _checkAuth();
   }
 
+  /// Checks whether a user is already authenticated and redirects.
+  ///
+  /// Uses [AuthProvider.checkAuthStatus] and then routes to `/admin`,
+  /// `/main`, or `/login` depending on the result.
   Future<void> _checkAuth() async {
     final auth = context.read<AuthProvider>();
     await auth.checkAuthStatus();
     if (!mounted) return;
 
+    // Checks user role and login status to enforce access controls early in the application lifecycle.
     if (auth.isLoggedIn) {
       if (auth.currentUser?.isAdmin == true) {
         Navigator.pushReplacementNamed(context, '/admin');
@@ -120,6 +161,9 @@ class _AuthWrapperState extends State<AuthWrapper> {
   }
 
   @override
+  /// Builds the splash loader layout while authentication status is resolved.
+  ///
+  /// [context] The location in the widget tree where this widget is built.
   Widget build(BuildContext context) {
     return const Scaffold(
       backgroundColor: Color(0xFF141218), // kSurface color

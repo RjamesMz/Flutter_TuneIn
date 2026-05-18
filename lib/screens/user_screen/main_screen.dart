@@ -1,3 +1,7 @@
+﻿/// File: lib/screens/user_screen/main_screen.dart
+/// Role: Core user interface scaffold. Hosts a page controller to transition between
+/// Home, Search, Playlists, and Settings tabs while maintaining a global MiniPlayer overlay.
+
 import 'package:flutter/material.dart';
 import '../../core/app_colors.dart';
 import 'home_screen.dart';
@@ -11,15 +15,18 @@ import '../../widgets/mini_player.dart';
 import '../../widgets/bottom_navigation_bar.dart';
 import '../../providers/player_provider.dart';
 
-
-
+/// Screen widget hosting the primary client tab navigation container.
 class MainScreen extends StatefulWidget {
+  /// Constructs a [MainScreen] instance.
+  ///
+  /// [key] An optional key used for identifying the widget in the element tree.
   const MainScreen({super.key});
 
   @override
   State<MainScreen> createState() => _MainScreenState();
 }
 
+/// State controller managing active tab selections, page views, and global mini-player widgets in [MainScreen].
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
   late final PageController _pageController = PageController(initialPage: _currentIndex);
@@ -32,12 +39,16 @@ class _MainScreenState extends State<MainScreen> {
   ];
 
   @override
+  /// Disposes page controllers to release animation bindings.
   void dispose() {
     _pageController.dispose();
     super.dispose();
   }
 
   @override
+  /// Builds the primary client layout, overlaying the active tab screen and mini player.
+  ///
+  /// [context] The building context.
   Widget build(BuildContext context) {
     final player = context.watch<PlayerProvider>();
     final currentSong = player.currentSong;
@@ -46,7 +57,6 @@ class _MainScreenState extends State<MainScreen> {
     return Scaffold(
       backgroundColor: kBackground,
 
-      // ── Bottom Navigation ─────────────────────────
       bottomNavigationBar: BottomNavBar(
         currentIndex: _currentIndex,
         onTap: (i) {
@@ -59,7 +69,6 @@ class _MainScreenState extends State<MainScreen> {
         },
       ),
 
-      // ── Body with MiniPlayer ──────────────────────
       body: ResponsiveWrapper(
         child: Stack(
           children: [
@@ -75,6 +84,7 @@ class _MainScreenState extends State<MainScreen> {
             ),
 
           // MiniPlayer
+          // Avoids rendering the mini player overlay when the settings/profile tab (index 3) is active.
           if (hasActiveSong && _currentIndex != 3)
             Positioned(
               left: 0,

@@ -1,8 +1,15 @@
+﻿/// File: lib/core/app_theme.dart
+/// Role: Constructs and returns the application's overall ThemeData.
+/// Specifies brightness, custom colorScheme bindings, typography utilizing Google Fonts,
+/// and customized widget styles for components like AppBars, InputFields, and NavigationBars.
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'app_colors.dart';
 
-// ─── TuneIn App Theme ─────────────────────────────────────────────────────────
+/// Builds the custom [ThemeData] system for TuneIn.
+///
+/// Combines MD3 guidelines with customized color tokens and fonts.
 ThemeData buildAppTheme() {
   return ThemeData(
     useMaterial3: true,
@@ -36,7 +43,6 @@ ThemeData buildAppTheme() {
     ),
     scaffoldBackgroundColor: kBackground,
 
-    // ── Typography ──────────────────────────────────────────────────────────
     textTheme: TextTheme(
       displayLarge:  GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800, color: kOnSurface),
       displayMedium: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800, color: kOnSurface),
@@ -55,7 +61,6 @@ ThemeData buildAppTheme() {
       labelSmall:    GoogleFonts.beVietnamPro(fontWeight: FontWeight.w500, color: kOnSurfaceVariant),
     ),
 
-    // ── AppBar ───────────────────────────────────────────────────────────────
     appBarTheme: AppBarTheme(
       backgroundColor: kSurface.withAlpha(217),
       elevation: 0,
@@ -69,7 +74,6 @@ ThemeData buildAppTheme() {
       iconTheme: const IconThemeData(color: kPrimary),
     ),
 
-    // ── BottomNavigationBar ───────────────────────────────────────────────────
     bottomNavigationBarTheme: const BottomNavigationBarThemeData(
       backgroundColor: Colors.transparent,
       selectedItemColor: kPrimary,
@@ -79,7 +83,6 @@ ThemeData buildAppTheme() {
       elevation: 0,
     ),
 
-    // ── InputDecoration ───────────────────────────────────────────────────────
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
       fillColor: kSurfaceContainerLow,

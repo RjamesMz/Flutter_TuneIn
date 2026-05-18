@@ -1,16 +1,28 @@
+﻿/// File: lib/widgets/settings_button.dart
+/// Role: Reusable premium Settings List Tile component showcasing leading icons,
+/// text titles, and navigating chevron decorators for the options lists.
+
 import 'package:flutter/material.dart';
 
 import '../core/app_colors.dart';
 
-// ─── Settings Tile ────────────────────────────────────────────────────────────
-/// A reusable styled list tile for settings-style navigation rows.
-/// Shows a leading [icon], a [label], and a trailing chevron.
-/// Tap behaviour is provided via the optional [onTap] callback.
+/// Styled individual settings options row wrapper widget.
 class SettingsTile extends StatelessWidget {
-  final IconData      icon;
-  final String        label;
+  /// Visual leading category icon.
+  final IconData icon;
+
+  /// Custom setting display title string.
+  final String label;
+
+  /// Optional action trigger callback.
   final VoidCallback? onTap;
 
+  /// Constructs a [SettingsTile] instance.
+  ///
+  /// [key] An optional key used for identifying the widget in the element tree.
+  /// [icon] Leading options category icon.
+  /// [label] Setting title label.
+  /// [onTap] Optional pressed callback.
   const SettingsTile({
     super.key,
     required this.icon,
@@ -19,9 +31,13 @@ class SettingsTile extends StatelessWidget {
   });
 
   @override
+  /// Builds the decorated tile container.
+  ///
+  /// [context] The building context.
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
+      // Formulates list rows with premium subtle background containers.
       decoration: BoxDecoration(
         color: kSurfaceContainerLow,
         borderRadius: BorderRadius.circular(14),

@@ -1,23 +1,54 @@
+/// File: lib/widgets/mini_player.dart
+/// Role: Compact floating mini-player overlay bar. Renders dynamic track progress, title details,
+/// and allows play/skip/dismiss controls aligned to the active player queue state.
+
 // ignore_for_file: unnecessary_underscores
 
 import 'package:flutter/material.dart';
 
 import '../core/app_colors.dart';
 
-// ─── Mini Player ──────────────────────────────────────────────────────────────
-/// Floating bottom bar that shows the currently playing song.
-/// Tapping it navigates to the full Player screen.
+/// Floating music player strip widget providing basic playback buttons and dismissible swipe controls.
 class MiniPlayer extends StatelessWidget {
+  /// Click event callback that transitions screen states to the expanded player views.
   final VoidCallback onTap;
-  final String      title;
-  final String      artist;
-  final String      coverUrl;
-  final bool        isPlaying;
-  final bool        hasNext;
+
+  /// Active track title display label.
+  final String title;
+
+  /// Active track artist name display label.
+  final String artist;
+
+  /// URL pointing to the song cover art image.
+  final String coverUrl;
+
+  /// Flag indicating if the player is currently outputting audio.
+  final bool isPlaying;
+
+  /// Boolean indicating if the active queue has another track waiting.
+  final bool hasNext;
+
+  /// Toggles active playback between play and pause.
   final VoidCallback onTogglePlay;
+
+  /// Action skipping forward to the next queued song.
   final VoidCallback onNext;
+
+  /// Swipe gesture callback that terminates playback.
   final VoidCallback onDismissed;
 
+  /// Constructs a [MiniPlayer] instance.
+  ///
+  /// [key] An optional key used for identifying the widget in the element tree.
+  /// [onTap] Navigation details press callback.
+  /// [title] Current song title string.
+  /// [artist] Current artist name string.
+  /// [coverUrl] Artwork network image URL string.
+  /// [isPlaying] Audio play state status.
+  /// [hasNext] Next item queue availability indicator.
+  /// [onTogglePlay] Play/pause toggle event.
+  /// [onNext] Skip forward transition callback.
+  /// [onDismissed] Swipe closing callback.
   const MiniPlayer({
     super.key,
     required this.onTap,
@@ -32,17 +63,21 @@ class MiniPlayer extends StatelessWidget {
   });
 
   @override
+  /// Builds the swipable player overlay bar with curved corner profiles.
+  ///
+  /// [context] The building context.
   Widget build(BuildContext context) {
     return Dismissible(
-      key: Key('mini_player_${title}_${artist}'), // Unique key
-      direction: DismissDirection.endToStart, // Swipe to the left
+      // Formulates a uniquely identifiable key using dynamic track and artist attributes.
+      key: Key('mini_player_${title}_$artist'),
+      direction: DismissDirection.endToStart,
       onDismissed: (_) => onDismissed(),
       background: Container(
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         padding: const EdgeInsets.only(right: 24),
         alignment: Alignment.centerRight,
         decoration: BoxDecoration(
-          color: Colors.redAccent.withAlpha(50),
+          color: Colors.redAccent.withValues(alpha: 0.2),
           borderRadius: BorderRadius.circular(32),
         ),
         child: const Icon(Icons.stop_circle_outlined, color: Colors.redAccent),
@@ -53,11 +88,11 @@ class MiniPlayer extends StatelessWidget {
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           decoration: BoxDecoration(
-            color: kSurfaceContainerHighest.withAlpha(242),
+            color: kSurfaceContainerHighest.withValues(alpha: 0.95),
             borderRadius: BorderRadius.circular(32),
             boxShadow: [
               BoxShadow(
-                color: kPrimary.withAlpha(38),
+                color: kPrimary.withValues(alpha: 0.15),
                 blurRadius: 20,
                 offset: const Offset(0, 4),
               ),
@@ -65,7 +100,6 @@ class MiniPlayer extends StatelessWidget {
           ),
           child: Row(
             children: [
-              // ── Cover Art ──────────────────────────────────────────────────
               ClipRRect(
                 borderRadius: BorderRadius.circular(50),
                 child: Image.network(
@@ -82,7 +116,6 @@ class MiniPlayer extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 12),
-              // ── Song Info ──────────────────────────────────────────────────
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -110,11 +143,10 @@ class MiniPlayer extends StatelessWidget {
                   ],
                 ),
               ),
-              // ── Controls ───────────────────────────────────────────────────
               IconButton(
                 icon: Icon(
                   Icons.skip_next,
-                  color: hasNext ? kPrimary : kOnSurfaceVariant.withAlpha(102),
+                  color: hasNext ? kPrimary : kOnSurfaceVariant.withValues(alpha: 0.4),
                   size: 22,
                 ),
                 onPressed: hasNext ? onNext : null,
