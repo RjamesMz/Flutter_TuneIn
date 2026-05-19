@@ -136,7 +136,9 @@ class PersonalInfoScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 10),
                        Text(
-                        currentUser?.name ?? 'Guest',
+                        (currentUser?.username != null && currentUser!.username!.isNotEmpty)
+                            ? '@${currentUser.username}'
+                            : currentUser?.name ?? 'Guest',
                         style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: Colors.white),
                       ),
                       Text(

@@ -48,7 +48,7 @@ class SongTile extends StatelessWidget {
     final isPlaying     = isCurrentSong && player.isPlaying;
     final isLiked       = user.isLiked(song.id);
     final auth          = context.watch<AuthProvider>();
-    final isPremium     = auth.currentUser?.plan != 'free';
+    final isPremium     = auth.currentUser?.plan.toLowerCase() == 'premium' || auth.currentUser?.plan.toLowerCase() == 'annual';
     final isDownloaded  = user.isDownloaded(song.id);
 
     return AnimatedContainer(

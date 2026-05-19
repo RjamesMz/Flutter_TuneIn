@@ -72,7 +72,9 @@ class SettingsScreen extends StatelessWidget {
               const SizedBox(height: 14),
 
               Text(
-                user?.name ?? 'Guest User',
+                (user?.username != null && user!.username!.isNotEmpty)
+                    ? '@${user.username}'
+                    : user?.name ?? 'Guest User',
                 style: const TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.w800,
