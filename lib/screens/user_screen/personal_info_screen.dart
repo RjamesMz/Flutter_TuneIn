@@ -352,6 +352,68 @@ class PersonalInfoScreen extends StatelessWidget {
                       label: const Text('Cancel Subscription', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                     ),
                   ],
+                  const SizedBox(height: 24),
+                  
+                  // "Delete My Account" button to allow users to completely purge their details,
+                  // subscriptions, playlists, and notifications from database nodes permanently.
+                  OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.redAccent,
+                      side: const BorderSide(color: Colors.redAccent),
+                      minimumSize: const Size(double.infinity, 54),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    ),
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        barrierDismissible: false,
+                        builder: (ctx) => AlertDialog(
+                          backgroundColor: kSurfaceContainerHighest,
+                          title: const Text('Delete My Account?', style: TextStyle(color: kOnSurface)),
+                          content: const Text(
+                            'Are you sure you want to permanently delete your account? This will immediately cancel your subscription and clear all your personal playlists, song likes, and notifications. This action is irreversible.',
+                            style: TextStyle(color: kOnSurfaceVariant),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(ctx),
+                              child: const Text('Cancel', style: TextStyle(color: kOnSurfaceVariant)),
+                            ),
+                            TextButton(
+                              onPressed: () async {
+                                Navigator.pop(ctx);
+                                showDialog(
+                                  context: context,
+                                  barrierDismissible: false,
+                                  builder: (loadingCtx) => const Center(
+                                    child: CircularProgressIndicator(),
+                                  ),
+                                );
+                                
+                                final success = await authProvider.deleteAccount();
+                                if (!context.mounted) return;
+                                Navigator.pop(context); // Pop the progress indicator
+                                
+                                if (success) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('Account successfully deleted.')),
+                                  );
+                                  Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text(authProvider.errorMessage ?? 'Failed to delete account.')),
+                                  );
+                                }
+                              },
+                              child: const Text('Delete permanently', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.delete_forever_outlined),
+                    label: const Text('Delete My Account', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                  ),
                 ],
               ),
             ),

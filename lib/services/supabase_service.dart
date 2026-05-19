@@ -1,4 +1,4 @@
-﻿/// File: lib/services/supabase_service.dart
+/// File: lib/services/supabase_service.dart
 /// Role: Provides administrative tools and database operations (publishing/deleting tracks,
 /// uploading storage assets to buckets, user-specific notifications, categories management).
 
@@ -337,5 +337,28 @@ class SupabaseService {
   /// [name] Genre name.
   Future<void> deleteCategory(String name) async {
     await _supabase.from('categories').delete().eq('name', name);
+  }
+
+  /// Deletes all user data (playlists and notifications) stored in Supabase.
+  /// This ensures no lingering records remain connected to the user ID after account deletion.
+  Future<void> clearAllUserData(String userId) async {
+    try {
+      // 1. Clear user notifications
+      await clearUserNotifications(userId);
+
+      // 2. Fetch user playlists to delete them
+      final playlists = await getUserPlaylists(userId);
+      for (final p in playlists) {
+        final playlistId = p['id'] as int?;
+        if (playlistId != null) {
+          try {
+            await _supabase.from('playlist_songs').delete().eq('playlist_id', playlistId);
+          } catch (_) {}
+          await deletePlaylist(playlistId);
+        }
+      }
+    } catch (e) {
+      print('Error clearing Supabase user data: $e');
+    }
   }
 }

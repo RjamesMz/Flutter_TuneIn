@@ -1,4 +1,4 @@
-﻿/// File: lib/services/auth_service.dart
+/// File: lib/services/auth_service.dart
 /// Role: Interacts with Firebase Auth for authentication transactions,
 /// and uses Cloud Firestore to store and query extended user profile documents.
 
@@ -267,5 +267,35 @@ class AuthService extends ChangeNotifier {
       gender: gender ?? _currentUser!.gender,
     );
     notifyListeners();
+  }
+
+  /// Completely deletes the current user's profile and credentials.
+  /// Clears the user's document in Cloud Firestore ('users' collection),
+  /// clears all playlists and notifications associated with the user in Supabase,
+  /// and deletes the user's account from Firebase Authentication.
+  Future<void> deleteAccount() async {
+    final firebaseUser = _auth.currentUser;
+    if (firebaseUser == null) throw Exception('Not authenticated');
+
+    final uid = firebaseUser.uid;
+
+    try {
+      // 1. Clear all user data from Supabase.
+      await SupabaseService.instance.clearAllUserData(uid);
+
+      // 2. Delete user document from Cloud Firestore.
+      await _firestore.collection('users').doc(uid).delete();
+
+      // 3. Delete the user authentication record from Firebase Auth.
+      await firebaseUser.delete();
+
+      // 4. Reset the local state.
+      _currentUser = null;
+      notifyListeners();
+    } on auth.FirebaseAuthException catch (e) {
+      throw Exception(_authErrorMessage(e));
+    } catch (e) {
+      throw Exception('Failed to delete account: ${e.toString()}');
+    }
   }
 }

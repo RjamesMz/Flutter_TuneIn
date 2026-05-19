@@ -1,4 +1,4 @@
-﻿/// File: lib/providers/auth_provider.dart
+/// File: lib/providers/auth_provider.dart
 /// Role: Manages authentication, profile edits, and subscription state updates.
 /// Directs operations to [AuthService], updates local states reactively,
 /// and signals UI listeners to rebuild.
@@ -204,6 +204,30 @@ class AuthProvider extends ChangeNotifier {
       return true;
     } catch (e) {
       _errorMessage = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  /// Completely deletes the current user's account, profiles, and authenticated credentials.
+  /// Stops any ongoing playback sessions before performing deletion, and resets auth states.
+  Future<bool> deleteAccount() async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      // Halts active music tracks during account deletion sequence to prevent background playback.
+      await _playerProvider?.stop();
+      await AuthService.instance.deleteAccount();
+
+      _currentUser = null;
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _errorMessage = e.toString().replaceFirst('Exception: ', '');
       _isLoading = false;
       notifyListeners();
       return false;
